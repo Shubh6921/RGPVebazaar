@@ -1073,7 +1073,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return `
         <div class="product-card" onclick="window.openProductDetailModal('${item.id}')">
           <div class="product-image-box">
-            <img src="${item.images[0]}" alt="${item.title}">
+            <img src="${item.images[0]}" alt="${item.title}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=600&auto=format&fit=crop&q=80';">
             <span class="product-type-badge badge-${item.listingType}">${item.listingType}</span>
             <button class="product-fav-btn ${isFav ? 'active' : ''}" onclick="event.stopPropagation(); window.toggleFavorite('${item.id}')" title="Save Item">
               ${isFav ? ICONS.heartFilled : ICONS.heart}
@@ -1130,9 +1130,14 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('modal-prod-price').textContent = item.price === 0 ? 'Free Giveaway' : '₹' + item.price;
     document.getElementById('modal-prod-condition').textContent = item.condition;
     document.getElementById('modal-prod-desc').textContent = item.description;
-    document.getElementById('modal-prod-location').textContent = item.meetupLocation;
-    document.getElementById('modal-prod-image').src = item.images[0];
-    document.getElementById('modal-prod-badge').className = `product-type-badge badge-${item.listingType}`;
+    const prodImgEl = document.getElementById('modal-prod-image');
+    if (prodImgEl) {
+      prodImgEl.src = item.images && item.images[0] ? item.images[0] : 'https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=600&auto=format&fit=crop&q=80';
+      prodImgEl.onerror = function() {
+        this.onerror = null;
+        this.src = 'https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=600&auto=format&fit=crop&q=80';
+      };
+    }
     document.getElementById('modal-prod-badge').textContent = item.listingType.toUpperCase();
 
     // Seller Info
@@ -1290,6 +1295,150 @@ document.addEventListener('DOMContentLoaded', () => {
     modal.classList.add('active');
   };
 
+  // Selected custom image for new listing
+  let selectedListingImage = null;
+
+  function initCreateListingImageHandlers() {
+    const dropzone = document.getElementById('listing-dropzone');
+    const fileInput = document.getElementById('create-listing-file-input');
+    const promptBox = document.getElementById('dropzone-prompt');
+    const previewContainer = document.getElementById('listing-image-preview-container');
+    const previewImg = document.getElementById('listing-image-preview');
+    const btnChangeImg = document.getElementById('btn-change-listing-img');
+    const btnRemoveImg = document.getElementById('btn-remove-listing-img');
+    const btnToggleUrl = document.getElementById('btn-toggle-url-input');
+    const customUrlContainer = document.getElementById('custom-url-input-container');
+    const customUrlInput = document.getElementById('create-listing-image-url');
+    const presetChips = document.querySelectorAll('.btn-img-preset');
+
+    if (!dropzone || !fileInput) return;
+
+    function setImagePreview(dataUrl) {
+      selectedListingImage = dataUrl;
+      if (previewImg) previewImg.src = dataUrl;
+      if (promptBox) promptBox.style.display = 'none';
+      if (previewContainer) previewContainer.style.display = 'block';
+    }
+
+    function clearImagePreview() {
+      selectedListingImage = null;
+      if (fileInput) fileInput.value = '';
+      if (previewImg) previewImg.src = '';
+      if (promptBox) promptBox.style.display = 'flex';
+      if (previewContainer) previewContainer.style.display = 'none';
+      presetChips.forEach(c => c.classList.remove('active'));
+      if (customUrlInput) customUrlInput.value = '';
+    }
+
+    // Dropzone click opens file dialog (unless clicking change/remove)
+    dropzone.addEventListener('click', (e) => {
+      if (e.target.closest('#btn-change-listing-img') || e.target.closest('#btn-remove-listing-img')) return;
+      if (!selectedListingImage) {
+        fileInput.click();
+      }
+    });
+
+    if (btnChangeImg) {
+      btnChangeImg.addEventListener('click', (e) => {
+        e.stopPropagation();
+        fileInput.click();
+      });
+    }
+
+    if (btnRemoveImg) {
+      btnRemoveImg.addEventListener('click', (e) => {
+        e.stopPropagation();
+        clearImagePreview();
+      });
+    }
+
+    // Drag & Drop
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.classList.add('dragover');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.classList.remove('dragover');
+      });
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+      const files = e.dataTransfer.files;
+      if (files && files.length > 0) {
+        handleImageFile(files[0]);
+      }
+    });
+
+    // File input change
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files && fileInput.files.length > 0) {
+        handleImageFile(fileInput.files[0]);
+      }
+    });
+
+    function handleImageFile(file) {
+      if (!file.type.startsWith('image/')) {
+        alert('Please select a valid image file (JPG, PNG, WebP).');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image file is too large. Maximum allowed size is 5MB.');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        setImagePreview(ev.target.result);
+        presetChips.forEach(c => c.classList.remove('active'));
+        if (customUrlInput) customUrlInput.value = '';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Preset buttons
+    presetChips.forEach(chip => {
+      chip.addEventListener('click', (e) => {
+        e.preventDefault();
+        presetChips.forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        const imgUrl = chip.getAttribute('data-img');
+        if (imgUrl) {
+          setImagePreview(imgUrl);
+          if (customUrlInput) customUrlInput.value = '';
+        }
+      });
+    });
+
+    // URL input toggle
+    if (btnToggleUrl && customUrlContainer) {
+      btnToggleUrl.addEventListener('click', () => {
+        const isHidden = customUrlContainer.style.display === 'none';
+        customUrlContainer.style.display = isHidden ? 'block' : 'none';
+        btnToggleUrl.textContent = isHidden ? 'Hide URL Input' : 'Paste Photo URL';
+        if (isHidden && customUrlInput) customUrlInput.focus();
+      });
+    }
+
+    if (customUrlInput) {
+      customUrlInput.addEventListener('input', () => {
+        const val = customUrlInput.value.trim();
+        if (val && (val.startsWith('http://') || val.startsWith('https://') || val.startsWith('data:image/'))) {
+          setImagePreview(val);
+          presetChips.forEach(c => c.classList.remove('active'));
+        }
+      });
+    }
+
+    window._resetListingImage = clearImagePreview;
+  }
+
   // Create Listing Modal
   window.openCreateListingModal = () => {
     const modal = document.getElementById('modal-create-listing');
@@ -1300,6 +1449,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('create-listing-price').value = '';
     document.getElementById('create-listing-desc').value = '';
     document.getElementById('create-listing-wish').value = '';
+    if (window._resetListingImage) window._resetListingImage();
 
     const typeRadios = document.querySelectorAll('input[name="listing-type"]');
     typeRadios.forEach(r => {
@@ -1341,8 +1491,13 @@ document.addEventListener('DOMContentLoaded', () => {
         'Electronics': 'https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?w=600&auto=format&fit=crop&q=80',
         'Hostel': 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=600&auto=format&fit=crop&q=80',
         'Furniture': 'https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?w=600&auto=format&fit=crop&q=80',
-        'Lab Equipment': 'https://images.unsplash.com/photo-1581291518655-9523c932edcf?w=600&auto=format&fit=crop&q=80'
+        'Lab Equipment': 'https://images.unsplash.com/photo-1581291518655-9523c932edcf?w=600&auto=format&fit=crop&q=80',
+        'Stationery': 'https://images.unsplash.com/photo-1583485088034-697b5bc54ccd?w=600&auto=format&fit=crop&q=80',
+        'Sports': 'https://images.unsplash.com/photo-1517649763962-0c623266ddc0?w=600&auto=format&fit=crop&q=80',
+        'Other': 'https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=600&auto=format&fit=crop&q=80'
       };
+
+      const finalImage = selectedListingImage || categoryImages[cat] || categoryImages['Other'];
 
       const result = window.Store.addListing({
         title,
@@ -1353,7 +1508,7 @@ document.addEventListener('DOMContentLoaded', () => {
         description: desc || 'Item available for campus handover.',
         exchangeWish: wish,
         meetupLocation: loc,
-        images: [categoryImages[cat] || 'https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=600&auto=format&fit=crop&q=80']
+        images: [finalImage]
       });
 
       if (!result.success) {
@@ -1882,7 +2037,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ${myItems.map(item => `
               <div class="product-card">
                 <div class="product-image-box">
-                  <img src="${item.images[0]}" alt="${item.title}">
+                  <img src="${item.images[0]}" alt="${item.title}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=600&auto=format&fit=crop&q=80';">
                   <span class="product-type-badge badge-${item.listingType}">${item.listingType}</span>
                 </div>
                 <div class="product-content">
@@ -2296,6 +2451,7 @@ document.addEventListener('DOMContentLoaded', () => {
   syncNavHeader();
   initGlobalSearch();
   initSupabaseSession();
+  initCreateListingImageHandlers();
   renderLanding();
 
   // If user navigated directly or defaults
