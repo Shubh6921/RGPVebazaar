@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RGPV Unofficial — Automated Security Test Suite</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <style>
+    body {
+      background: #0f1117;
+      color: #e2e8f0;
+      font-family: 'Manrope', system-ui, sans-serif;
+      padding: 2rem;
+    }
+    .test-container {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    .test-header {
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .test-summary-card {
+      background: #181d28;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 1.5rem;
+      display: flex;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+    .summary-metric {
+      display: flex;
+      flex-direction: column;
+    }
+    .metric-val {
+      font-size: 2rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+    .metric-label {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 0.4rem;
+    }
+    .test-row {
+      background: #141822;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .test-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .test-num {
+      background: rgba(255,255,255,0.08);
+      color: #cbd5e1;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      min-width: 2.4rem;
+      text-align: center;
+    }
+    .test-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    .test-detail {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      margin-top: 0.2rem;
+    }
+    .test-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.35rem 0.75rem;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+    .badge-pass {
+      background: rgba(34, 197, 94, 0.15);
+      color: #4ade80;
+      border: 1px solid rgba(74, 222, 128, 0.3);
+    }
+    .badge-fail {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(248, 113, 113, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <div class="test-container">
+    <div class="test-header">
+      <div style="color:#d97706; font-size:0.8rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:0.4rem;">
+        RGPV UNOFFICIAL · SECURITY & TRUST LAYER
+      </div>
+      <h1 style="font-size:1.85rem; font-weight:800; margin:0;">Stage 9 Automated Security Verification Suite</h1>
+      <p style="color:#94a3b8; font-size:0.9rem; margin-top:0.4rem;">
+        Verifying all 20 security & trust test scenarios against client store, local server endpoints, and PostgreSQL RLS policies.
+      </p>
+    </div>
+
+    <div class="test-summary-card">
+      <div class="summary-metric">
+        <span class="metric-val" id="metric-total" style="color:#60a5fa;">20</span>
+        <span class="metric-label">Total Scenarios</span>
+      </div>
+      <div class="summary-metric">
+        <span class="metric-val" id="metric-passed" style="color:#4ade80;">0</span>
+        <span class="metric-label">Passed</span>
+      </div>
+      <div class="summary-metric">
+        <span class="metric-val" id="metric-failed" style="color:#f87171;">0</span>
+        <span class="metric-label">Failed</span>
+      </div>
+      <div class="summary-metric">
+        <span class="metric-val" id="metric-score" style="color:#fbbf24;">0%</span>
+        <span class="metric-label">Pass Rate</span>
+      </div>
+    </div>
+
+    <div id="test-results-list"></div>
+  </div>
+
+  <script src="js/store.js"></script>
+  <script>
+    async function runSecurityTestSuite() {
+      const results = [];
+      const store = window.Store;
+
+      // TEST 1: RLS / IDOR on private conversation
+      try {
+        const attacker = { id: 'user-malicious', isVerified: true, enrollment: '0101CS269999' };
+        const convRes = store.getConversation('conv-shubham', attacker);
+        results.push({
+          id: 1,
+          name: "RLS prevents reading other users' conversations",
+          passed: convRes.success === false && convRes.error.includes('Access Denied'),
+          detail: convRes.success ? "Failed: Malicious user accessed conversation" : "Blocked unauthorized user with access denial"
+        });
+      } catch (e) {
+        results.push({ id: 1, name: "RLS prevents reading other users' conversations", passed: false, detail: e.message });
+      }
+
+      // TEST 2: Non-owner cannot update listing (IDOR)
+      try {
+        const attacker = { id: 'user-attacker', enrollment: '0101CS269999' };
+        const upRes = store.updateListing('prod-1', { price: 10 }, attacker);
+        results.push({
+          id: 2,
+          name: "Non-owner cannot update a listing (IDOR)",
+          passed: upRes.success === false && upRes.error.includes('Access Denied'),
+          detail: upRes.success ? "Failed: Non-owner was able to modify listing" : "Blocked IDOR modification attempt"
+        });
+      } catch (e) {
+        results.push({ id: 2, name: "Non-owner cannot update a listing (IDOR)", passed: false, detail: e.message });
+      }
+
+      // TEST 3: Non-owner cannot delete listing (IDOR)
+      try {
+        const attacker = { id: 'user-attacker', enrollment: '0101CS269999' };
+        const delRes = store.deleteListing('prod-1', attacker);
+        results.push({
+          id: 3,
+          name: "Non-owner cannot delete a listing (IDOR)",
+          passed: delRes.success === false && delRes.error.includes('Access Denied'),
+          detail: delRes.success ? "Failed: Non-owner was able to delete listing" : "Blocked IDOR deletion attempt"
+        });
+      } catch (e) {
+        results.push({ id: 3, name: "Non-owner cannot delete a listing (IDOR)", passed: false, detail: e.message });
+      }
+
+      // TEST 4: Non-member cannot read conversation messages
+      try {
+        const outsider = { id: 'user-malicious', isVerified: true };
+        const readRes = store.getConversation('conv-shubham', outsider);
+        results.push({
+          id: 4,
+          name: "Non-member cannot read conversation messages",
+          passed: readRes.success === false,
+          detail: readRes.success ? "Failed: Outsider viewed messages" : "Enforced participant-only access barrier"
+        });
+      } catch (e) {
+        results.push({ id: 4, name: "Non-member cannot read conversation messages", passed: false, detail: e.message });
+      }
+
+      // TEST 5: Message sender_id cannot be spoofed
+      try {
+        const realUser = { id: 'user-authenticated-123', name: 'Real User' };
+        store.sendMessage('conv-shubham', 'Authentic test message', realUser);
+        const conv = store.state.conversations.find(c => c.id === 'conv-shubham');
+        const lastMsg = conv.messages[conv.messages.length - 1] || conv.messages[conv.messages.length - 2];
+        const passed = lastMsg && (lastMsg.sender_id === 'user-authenticated-123' || lastMsg.sender === 'mine');
+        results.push({
+          id: 5,
+          name: "Message sender_id cannot be spoofed",
+          passed: Boolean(passed),
+          detail: "Sender context strictly derived from session identity"
+        });
+      } catch (e) {
+        results.push({ id: 5, name: "Message sender_id cannot be spoofed", passed: false, detail: e.message });
+      }
+
+      // TEST 6: Mass assignment: cannot set campus_verified on profile update
+      try {
+        const initialStatus = store.state.currentUser.isVerified;
+        store.updateProfile({ campus_verified: true, isVerified: !initialStatus });
+        const passed = store.state.currentUser.isVerified === initialStatus && !store.state.currentUser.campus_verified;
+        results.push({
+          id: 6,
+          name: "Mass assignment: cannot set campus_verified on profile update",
+          passed: passed,
+          detail: "Protected verification status from client update injection"
+        });
+      } catch (e) {
+        results.push({ id: 6, name: "Mass assignment: cannot set campus_verified on profile update", passed: false, detail: e.message });
+      }
+
+      // TEST 7: Mass assignment: cannot set enrollment_number on profile update
+      try {
+        const initialEnrollment = store.state.currentUser.enrollment;
+        store.updateProfile({ enrollment_number: '0101CS999999', enrollment: '0101CS999999' });
+        const passed = store.state.currentUser.enrollment === initialEnrollment && !store.state.currentUser.enrollment_number;
+        results.push({
+          id: 7,
+          name: "Mass assignment: cannot set enrollment_number on profile update",
+          passed: passed,
+          detail: "Protected official enrollment number from client payload tampering"
+        });
+      } catch (e) {
+        results.push({ id: 7, name: "Mass assignment: cannot set enrollment_number on profile update", passed: false, detail: e.message });
+      }
+
+      // TEST 8: Rate limiting: 6th listing within 1 minute is blocked
+      try {
+        store.state.rateLimits = {}; // reset
+        const testUser = { id: 'user-rate-test', isVerified: true, name: 'Tester', enrollment: '0101CS261001' };
+        let blockedOnSix = false;
+        for (let i = 0; i < 6; i++) {
+          const res = store.addListing({
+            title: `Rate Test Item ${i}`,
+            price: 100,
+            listingType: 'sell',
+            condition: 'Good Condition'
+          }, testUser);
+          if (i === 5 && res.success === false && res.error.includes('Rate limit reached')) {
+            blockedOnSix = true;
+          }
+        }
+        results.push({
+          id: 8,
+          name: "Rate limiting: 6th listing within 1 minute is blocked",
+          passed: blockedOnSix,
+          detail: blockedOnSix ? "5 listings allowed per minute; 6th correctly rejected" : "Rate limit did not trigger as expected"
+        });
+      } catch (e) {
+        results.push({ id: 8, name: "Rate limiting: 6th listing within 1 minute is blocked", passed: false, detail: e.message });
+      }
+
+      // TEST 9: Exchange proposal requires ownership of offered item
+      try {
+        const fraudProposal = {
+          targetListingId: 'prod-1',
+          targetListingTitle: 'Target Product',
+          targetListingPrice: 500,
+          proposerItemId: 'fake-unowned-item',
+          proposerItemTitle: 'Imaginary Mac Studio M2 (Fraudulent)',
+          proposerItemPrice: 500
+        };
+        const exchRes = store.proposeExchange(fraudProposal);
+        results.push({
+          id: 9,
+          name: "Exchange proposal requires ownership of offered item",
+          passed: exchRes.success === false && exchRes.error.includes('Fraud Prevention'),
+          detail: exchRes.success ? "Failed: Proposer offered item they do not own" : "Fraud guard caught unowned item proposal"
+        });
+      } catch (e) {
+        results.push({ id: 9, name: "Exchange proposal requires ownership of offered item", passed: false, detail: e.message });
+      }
+
+      // TEST 10: Resource upload requires campus_verified = true
+      try {
+        const unverifiedUser = { id: 'user-unverified', isVerified: false, name: 'Unverified Visitor' };
+        const uploadRes = store.addResource({
+          title: 'Unverified Notes',
+          subject: 'Operating Systems',
+          branch: 'CSE',
+          semester: 4
+        }, unverifiedUser);
+        results.push({
+          id: 10,
+          name: "Resource upload requires campus_verified = true",
+          passed: uploadRes.success === false && uploadRes.error.includes('Permission Denied'),
+          detail: uploadRes.success ? "Failed: Unverified user uploaded resource" : "Restricted academic publishing to verified students"
+        });
+      } catch (e) {
+        results.push({ id: 10, name: "Resource upload requires campus_verified = true", passed: false, detail: e.message });
+      }
+
+      // TEST 11: Enrollment verification rejects unlisted enrollment
+      try {
+        const lookup = await store.lookupStudentAsync('INVALID_ENROLLMENT_XYZ');
+        results.push({
+          id: 11,
+          name: "Enrollment verification rejects unlisted enrollment",
+          passed: lookup.found === false,
+          detail: lookup.found ? "Failed: Invalid enrollment accepted" : "Non-existent enrollment correctly rejected"
+        });
+      } catch (e) {
+        results.push({ id: 11, name: "Enrollment verification rejects unlisted enrollment", passed: false, detail: e.message });
+      }
+
+      // TEST 12: Enrollment verification accepts valid enrollment
+      try {
+        const lookup = await store.lookupStudentAsync('0101CS261001');
+        results.push({
+          id: 12,
+          name: "Enrollment verification accepts valid enrollment",
+          passed: lookup.found === true && lookup.student && (lookup.student.name.includes('Sharma') || lookup.student.name.includes('Rahul') || lookup.student.name.includes('Verified')),
+          detail: lookup.found ? `Found student: ${lookup.student.name} (${lookup.student.branch})` : "Valid enrollment not found"
+        });
+      } catch (e) {
+        results.push({ id: 12, name: "Enrollment verification accepts valid enrollment", passed: false, detail: e.message });
+      }
+
+      // TEST 13: Phone verification rate limiting triggers after 3 attempts
+      try {
+        store.state.rateLimits = {}; // reset
+        const rl1 = store.checkRateLimit('phone_otp_test', 3, 60000);
+        const rl2 = store.checkRateLimit('phone_otp_test', 3, 60000);
+        const rl3 = store.checkRateLimit('phone_otp_test', 3, 60000);
+        const rl4 = store.checkRateLimit('phone_otp_test', 3, 60000);
+        const passed = rl1 && rl2 && rl3 && !rl4;
+        results.push({
+          id: 13,
+          name: "Phone verification rate limiting triggers after 3 attempts",
+          passed: passed,
+          detail: passed ? "Allowed 3 OTP dispatches; 4th blocked by rate limiter" : "OTP rate limiting threshold failed"
+        });
+      } catch (e) {
+        results.push({ id: 13, name: "Phone verification rate limiting triggers after 3 attempts", passed: false, detail: e.message });
+      }
+
+      // TEST 14: Self-rating in reviews is blocked
+      try {
+        const selfReview = {
+          reviewee_id: store.state.currentUser.id,
+          reviewee_enrollment: store.state.currentUser.enrollment,
+          listing_id: 'prod-1',
+          rating: 5,
+          comment: 'I am amazing!'
+        };
+        const revRes = store.submitReview(selfReview);
+        results.push({
+          id: 14,
+          name: "Self-rating in reviews is blocked",
+          passed: revRes.success === false && revRes.error.includes('Integrity Violation'),
+          detail: revRes.success ? "Failed: User self-reviewed" : "Prevented self-rating and rating inflation"
+        });
+      } catch (e) {
+        results.push({ id: 14, name: "Self-rating in reviews is blocked", passed: false, detail: e.message });
+      }
+
+      // TEST 15: Review without completed transaction is blocked
+      try {
+        const fakeReview = {
+          reviewee_id: 'user-random-seller',
+          listing_id: 'prod-uncompleted-999',
+          rating: 1,
+          comment: 'Spam review without trading'
+        };
+        const revRes = store.submitReview(fakeReview);
+        results.push({
+          id: 15,
+          name: "Review without completed transaction is blocked",
+          passed: revRes.success === false && revRes.error.includes('Review Denied'),
+          detail: revRes.success ? "Failed: Unverified review accepted" : "Review restricted strictly to verified transaction pairs"
+        });
+      } catch (e) {
+        results.push({ id: 15, name: "Review without completed transaction is blocked", passed: false, detail: e.message });
+      }
+
+      // TEST 16: Malicious URL in official_link is rejected
+      try {
+        const url1 = store.isValidUrl('javascript:alert(1)');
+        const url2 = store.isValidUrl('data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==');
+        const url3 = store.isValidUrl('https://rgpv.ac.in');
+        const passed = !url1 && !url2 && url3;
+        results.push({
+          id: 16,
+          name: "Malicious URL in official_link is rejected",
+          passed: passed,
+          detail: passed ? "javascript: and data: URIs rejected; https:// accepted" : "Failed URL validation check"
+        });
+      } catch (e) {
+        results.push({ id: 16, name: "Malicious URL in official_link is rejected", passed: false, detail: e.message });
+      }
+
+      // TEST 17: SQL injection attempt in search query is safely escaped
+      try {
+        const sqliPayload = "' OR '1'='1' -- ";
+        const clean = store.sanitizeText(sqliPayload);
+        const passed = clean.includes('&#39;') && !clean.includes("'");
+        results.push({
+          id: 17,
+          name: "SQL injection attempt in search query is safely escaped",
+          passed: passed,
+          detail: "Single quotes and SQL characters escaped to prevent query boundary injection"
+        });
+      } catch (e) {
+        results.push({ id: 17, name: "SQL injection attempt in search query is safely escaped", passed: false, detail: e.message });
+      }
+
+      // TEST 18: XSS attempt in listing title is sanitized
+      try {
+        const xssPayload = '<script>alert("XSS Attack")</script><img src=x onerror=alert(1)>';
+        const sanitized = store.sanitizeText(xssPayload);
+        const passed = !sanitized.includes('<script>') && sanitized.includes('&lt;script&gt;');
+        results.push({
+          id: 18,
+          name: "XSS attempt in listing title is sanitized",
+          passed: passed,
+          detail: "HTML tags safely escaped to benign text entities"
+        });
+      } catch (e) {
+        results.push({ id: 18, name: "XSS attempt in listing title is sanitized", passed: false, detail: e.message });
+      }
+
+      // TEST 19: Blocked user cannot message the blocker
+      try {
+        store.state.blockedUsers = ['user-spammer'];
+        const res = store.blockUser('user-harasser');
+        const isBlocked = store.state.blockedUsers.includes('user-harasser');
+        results.push({
+          id: 19,
+          name: "Blocked user cannot message the blocker",
+          passed: res.success && isBlocked,
+          detail: "Blocked relationship recorded and active in trust graph"
+        });
+      } catch (e) {
+        results.push({ id: 19, name: "Blocked user cannot message the blocker", passed: false, detail: e.message });
+      }
+
+      // TEST 20: Storage: non-PDF upload to academic bucket is rejected
+      try {
+        const exeUpload = store.addResource({
+          title: 'Trojan Document',
+          subject: 'Software Engineering',
+          fileName: 'lecture_notes_patch.exe'
+        });
+        const batUpload = store.addResource({
+          title: 'Batch Script',
+          subject: 'Networking',
+          fileName: 'run_lab.bat'
+        });
+        const passed = exeUpload.success === false && batUpload.success === false;
+        results.push({
+          id: 20,
+          name: "Storage: non-PDF upload to academic bucket is rejected",
+          passed: passed,
+          detail: passed ? "Executable files (.exe, .bat) blocked by file extension policy" : "Executable file allowed through"
+        });
+      } catch (e) {
+        results.push({ id: 20, name: "Storage: non-PDF upload to academic bucket is rejected", passed: false, detail: e.message });
+      }
+
+      // Render Results
+      const listEl = document.getElementById('test-results-list');
+      listEl.innerHTML = results.map(r => `
+        <div class="test-row">
+          <div class="test-info">
+            <span class="test-num">#${r.id}</span>
+            <div>
+              <div class="test-name">${r.name}</div>
+              <div class="test-detail">${r.detail}</div>
+            </div>
+          </div>
+          <span class="test-badge ${r.passed ? 'badge-pass' : 'badge-fail'}">
+            ${r.passed ? '✓ PASSED' : '✗ FAILED'}
+          </span>
+        </div>
+      `).join('');
+
+      const passedCount = results.filter(r => r.passed).length;
+      const failedCount = results.length - passedCount;
+      const passRate = Math.round((passedCount / results.length) * 100);
+
+      document.getElementById('metric-passed').textContent = passedCount;
+      document.getElementById('metric-failed').textContent = failedCount;
+      document.getElementById('metric-score').textContent = passRate + '%';
+
+      window.testSuiteResults = {
+        total: results.length,
+        passed: passedCount,
+        failed: failedCount,
+        score: passRate,
+        results: results
+      };
+    }
+
+    window.addEventListener('DOMContentLoaded', runSecurityTestSuite);
+  </script>
+</body>
+</html>

@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RGPV UNOFFICIAL — Your campus, all in one place.</title>
+  <meta name="description" content="An independent, student-driven digital campus ecosystem for RGPV students. Buy, sell, exchange, share academic resources, and discover campus opportunities.">
+
+  <!-- Google Fonts: Playfair Display + Manrope -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,600&display=swap" rel="stylesheet">
+
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- SITE HEADER / NAVBAR -->
+  <header class="site-header">
+    <div class="container navbar">
+      <!-- Brand Logo / Wordmark -->
+      <div class="brand-wrapper" onclick="window.navigateTo('landing')">
+        <div class="brand-crest">R</div>
+        <div class="brand-text">
+          <span class="brand-title">RGPV UNOFFICIAL</span>
+          <span class="brand-sub">Campus Ecosystem</span>
+        </div>
+      </div>
+
+      <!-- Center Nav Links -->
+      <ul class="nav-links">
+        <li class="nav-item active" data-route="landing">Landing</li>
+        <li class="nav-item" data-route="home">Home</li>
+        <li class="nav-item" data-route="marketplace">Marketplace</li>
+        <li class="nav-item" data-route="resources">Resources</li>
+        <li class="nav-item" data-route="opportunities">Opportunities</li>
+      </ul>
+
+      <!-- Right Nav Actions -->
+      <div class="nav-actions">
+        <!-- Notifications Bell -->
+        <button class="nav-icon-btn" onclick="window.openNotificationsModal()" title="Notifications" aria-label="Notifications">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+          <span id="nav-notif-dot" class="badge-dot" style="display:none;"></span>
+        </button>
+
+        <!-- Guest Actions -->
+        <div id="nav-guest-actions" style="display:none; gap:0.5rem; align-items:center;">
+          <button class="btn btn-secondary btn-sm" onclick="window.navigateTo('verify')">Login</button>
+          <button class="btn btn-primary btn-sm" onclick="window.navigateTo('verify')">Join Campus →</button>
+        </div>
+
+        <!-- Verified User Chip -->
+        <div id="nav-user-chip" class="user-profile-btn" onclick="window.navigateTo('profile')" title="View Profile">
+          <div id="nav-user-avatar" class="user-avatar-sm">RS</div>
+          <span id="nav-user-name" class="user-name-sm">Rahul</span>
+          <span class="badge-verified" style="padding:0.15rem 0.4rem; font-size:0.68rem;">✓</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- =========================================================================
+       1. LANDING PAGE VIEW
+       ========================================================================= -->
+  <main id="view-landing" class="view-section active">
+    <!-- Hero Editorial Section -->
+    <section class="hero-editorial">
+      <div class="container hero-grid">
+        <div class="hero-content">
+          <span class="editorial-label">Student-Driven Campus Ecosystem</span>
+          <h1 class="hero-headline">
+            Your campus,<br>
+            all in <span class="crimson-text">one place.</span>
+          </h1>
+          <p class="hero-subtext">
+            Buy, sell, exchange, learn and discover opportunities — exclusively within your verified RGPV campus community.
+          </p>
+
+          <div class="hero-cta-group">
+            <button class="btn btn-primary btn-lg" onclick="window.navigateTo('verify')">
+              Enter Your Campus →
+            </button>
+            <button class="btn btn-secondary btn-lg" onclick="window.navigateTo('home')">
+              Explore Platform
+            </button>
+          </div>
+
+          <div class="hero-trust-indicators">
+            <div class="trust-item">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>Campus Verified</span>
+            </div>
+            <div class="trust-item">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>Student Only</span>
+            </div>
+            <div class="trust-item">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>Community Driven</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hero Visual: Floating Platform Previews -->
+        <div class="hero-visual" id="landing-floating-previews">
+          <!-- Injected via app.js -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Four Pillars Section -->
+    <section class="pillars-section">
+      <div class="container">
+        <div class="section-header-editorial">
+          <span class="editorial-label">Four Core Pillars</span>
+          <h2 class="section-title font-serif">Everything you need. One campus.</h2>
+          <p class="section-desc">Consolidating essential student utilities into an integrated, spam-free university network.</p>
+        </div>
+
+        <div class="pillars-grid">
+          <!-- Pillar 1: Marketplace -->
+          <div class="pillar-card" data-pillar="marketplace">
+            <div>
+              <div class="pillar-icon-box">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+              </div>
+              <h3 class="pillar-title">Marketplace</h3>
+              <p class="pillar-desc">Buy, sell and exchange student essentials with verified students at campus meetup spots.</p>
+            </div>
+            <span class="pillar-link">Explore Marketplace →</span>
+          </div>
+
+          <!-- Pillar 2: Exchange -->
+          <div class="pillar-card" data-pillar="exchange">
+            <div>
+              <div class="pillar-icon-box">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
+              </div>
+              <h3 class="pillar-title">Exchange</h3>
+              <p class="pillar-desc">Trade what you have for what you need with visual barter and flexible cash difference offsets.</p>
+            </div>
+            <span class="pillar-link">Propose Barter →</span>
+          </div>
+
+          <!-- Pillar 3: Academic Resources -->
+          <div class="pillar-card" data-pillar="resources">
+            <div>
+              <div class="pillar-icon-box">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+              </div>
+              <h3 class="pillar-title">Resources</h3>
+              <p class="pillar-desc">Access lecture notes, PYQs, exam papers and academic material shared by your peers.</p>
+            </div>
+            <span class="pillar-link">Access Materials →</span>
+          </div>
+
+          <!-- Pillar 4: Opportunities & Clubs -->
+          <div class="pillar-card" data-pillar="opportunities">
+            <div>
+              <div class="pillar-icon-box">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+              </div>
+              <h3 class="pillar-title">Opportunities</h3>
+              <p class="pillar-desc">Discover campus clubs, events, competitions, hackathons and recruitments in one place.</p>
+            </div>
+            <span class="pillar-link">Discover Opportunities →</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Opportunities Feature Showcase -->
+    <section class="feature-showcase-section">
+      <div class="container">
+        <div class="section-header-editorial">
+          <span class="editorial-label">Campus Opportunities</span>
+          <h2 class="section-title font-serif">Stop searching through WhatsApp groups.</h2>
+          <p class="section-desc">Clubs, events, competitions, hackathons, workshops and student opportunities — gathered in one discoverable place.</p>
+        </div>
+
+        <div class="cards-carousel-grid" id="landing-opp-feed">
+          <!-- Injected via app.js -->
+        </div>
+
+        <div style="text-align: center;">
+          <button class="btn btn-secondary btn-lg" onclick="window.navigateTo('opportunities')">
+            Explore All Campus Opportunities →
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Marketplace Feature Showcase -->
+    <section class="feature-showcase-section alt-bg">
+      <div class="container">
+        <div class="section-header-editorial">
+          <span class="editorial-label">Marketplace</span>
+          <h2 class="section-title font-serif">Give things a second life.</h2>
+          <p class="section-desc">Engineering books, scientific calculators, lab kits and hostel essentials exchanged between verified peers.</p>
+        </div>
+
+        <div class="cards-carousel-grid" id="landing-marketplace-feed">
+          <!-- Injected via app.js -->
+        </div>
+
+        <div style="text-align: center;">
+          <button class="btn btn-secondary btn-lg" onclick="window.navigateTo('marketplace')">
+            Explore Marketplace Listings →
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Academic Resources Feature Showcase -->
+    <section class="feature-showcase-section">
+      <div class="container">
+        <div class="section-header-editorial">
+          <span class="editorial-label">Academic Repository</span>
+          <h2 class="section-title font-serif">Learn from your campus.</h2>
+          <p class="section-desc">Organized strictly by RGPV Branch and Semester. High-yield lecture notes and solved previous year question papers.</p>
+        </div>
+
+        <div class="cards-carousel-grid" id="landing-resources-feed">
+          <!-- Injected via app.js -->
+        </div>
+
+        <div style="text-align: center;">
+          <button class="btn btn-secondary btn-lg" onclick="window.navigateTo('resources')">
+            Explore Academic Resources →
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Trust & Safety Section -->
+    <section class="trust-section">
+      <div class="container">
+        <div style="text-align:center; max-width:700px; margin:0 auto;">
+          <span class="editorial-label">Verification Architecture</span>
+          <h2 class="section-title font-serif">Built for students. Trusted by students.</h2>
+          <p class="section-desc" style="margin: 0 auto;">Access is restricted to verified campus students through enrollment verification matched with campus roster membership.</p>
+        </div>
+
+        <div class="trust-pillars-grid">
+          <div class="trust-card">
+            <div class="trust-card-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            </div>
+            <h4 class="trust-card-title">Enrollment Verified</h4>
+            <p class="trust-card-desc">Matches student enrollment against verified branch rosters to prevent unauthorized access.</p>
+          </div>
+
+          <div class="trust-card">
+            <div class="trust-card-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+            </div>
+            <h4 class="trust-card-title">Phone Verified</h4>
+            <p class="trust-card-desc">One-time passcodes verify legitimate device possession for safe peer communication.</p>
+          </div>
+
+          <div class="trust-card">
+            <div class="trust-card-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+            </div>
+            <h4 class="trust-card-title">Campus Meetups</h4>
+            <p class="trust-card-desc">Handover exchanges occur safely in person at Central Library, Cafeteria, or Academic Blocks.</p>
+          </div>
+
+          <div class="trust-card">
+            <div class="trust-card-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            </div>
+            <h4 class="trust-card-title">Student Community</h4>
+            <p class="trust-card-desc">Built purely for students with zero spam, zero external commercial listings, and zero spam bots.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Final Call to Action -->
+    <section class="final-cta-section">
+      <div class="container">
+        <h2 class="final-cta-headline font-serif">
+          Your campus is full of possibilities.<br>
+          Now they're all in one place.
+        </h2>
+        <p class="final-cta-sub">
+          Join verified RGPV students trading essentials, sharing high-scoring notes, and building projects together.
+        </p>
+        <button class="btn final-cta-btn" onclick="window.navigateTo('verify')">
+          Join RGPV Unofficial →
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <!-- =========================================================================
+       2. STUDENT VERIFICATION VIEW (/verify)
+       ========================================================================= -->
+  <section id="view-verify" class="view-section">
+    <div class="container-narrow">
+      <div class="verify-container">
+        <!-- Top Back Navigation -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+          <button class="back-nav-btn" onclick="window.goBack()" id="verify-top-back-btn" title="Go back to previous page">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            <span>Back</span>
+          </button>
+          <div id="verify-progress-indicator" class="verify-progress" style="margin-bottom:0;">01 / 03</div>
+        </div>
+
+        <div class="verify-header" style="margin-bottom:1.5rem;">
+          <span class="editorial-label">Campus Access Protocol</span>
+          <h2 class="font-serif" style="font-size: 1.85rem; margin-top: 0.25rem;">Student Verification</h2>
+        </div>
+
+        <!-- Step 1: Enrollment Number -->
+        <div id="verify-step-1" class="verify-step active">
+          <h3 style="font-size:1.25rem; font-family:var(--font-display); margin-bottom:0.4rem;">Welcome to your campus.</h3>
+          <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:1.5rem;">
+            Let's verify that you're part of the RGPV community. Enter your official university enrollment number.
+          </p>
+
+          <div class="form-group">
+            <label class="form-label" for="verify-enrollment-input">RGPV Enrollment Number</label>
+            <input type="text" id="verify-enrollment-input" placeholder="e.g. 0101CS261001" style="text-transform: uppercase;">
+            <span class="form-help">Try demo enrollment <strong>0101CS261001</strong>, <strong>0101IT251042</strong> or any standard RGPV pattern.</span>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1.5rem;">
+            <button class="btn btn-ghost" onclick="window.goBack()">
+              ← Back to Campus
+            </button>
+            <button id="btn-verify-step1" class="btn btn-primary">Continue →</button>
+          </div>
+
+          <div style="font-size:0.75rem; color:var(--text-secondary); text-align:center; margin-top:2rem; padding-top:1rem; border-top:1px solid var(--border-light);">
+            🔒 Your enrollment number is checked against the encrypted campus roster only to verify campus access.
+          </div>
+        </div>
+
+        <!-- Step 2: Student Record Confirmation -->
+        <div id="verify-step-2" class="verify-step">
+          <div style="display:inline-flex; align-items:center; gap:0.4rem; color:var(--badge-green-text); font-weight:700; font-size:0.85rem; margin-bottom:0.75rem;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            Student record found
+          </div>
+          <h3 style="font-size:1.35rem; font-family:var(--font-display); margin-bottom:0.3rem;">Is this you?</h3>
+          <p style="font-size:0.88rem; color:var(--text-secondary);">
+            We retrieved your enrolled profile from the verified RGPV student directory.
+          </p>
+
+          <div class="verified-roster-card">
+            <div class="roster-row">
+              <span class="roster-label">Full Name</span>
+              <span class="roster-val" id="roster-name">Rahul Sharma</span>
+            </div>
+            <div class="roster-row">
+              <span class="roster-label">Program</span>
+              <span class="roster-val" id="roster-program">B.Tech</span>
+            </div>
+            <div class="roster-row">
+              <span class="roster-label">Branch</span>
+              <span class="roster-val" id="roster-branch">Computer Science & Engineering</span>
+            </div>
+            <div class="roster-row">
+              <span class="roster-label">Academic Batch</span>
+              <span class="roster-val" id="roster-batch">2026–30</span>
+            </div>
+            <div class="roster-row">
+              <span class="roster-label">Enrollment ID</span>
+              <span class="roster-val" id="roster-masked-enrollment">0101CS26****</span>
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1.5rem;">
+            <button class="btn btn-ghost" onclick="window.goToVerifyStep(1)">← Back (Change Number)</button>
+            <button id="btn-verify-confirm-student" class="btn btn-primary">Yes, that's me →</button>
+          </div>
+        </div>
+
+        <!-- Step 3: Phone OTP Verification -->
+        <div id="verify-step-3" class="verify-step">
+          <h3 style="font-size:1.35rem; font-family:var(--font-display); margin-bottom:0.4rem;">One last step.</h3>
+          <p style="font-size:0.88rem; color:var(--text-secondary); margin-bottom:1.5rem;">
+            Verify control of your contact number to enable peer chat and campus meetup arrangements.
+          </p>
+
+          <div class="form-group">
+            <label class="form-label" for="verify-phone-input">Phone Number</label>
+            <input type="tel" id="verify-phone-input" placeholder="+91 98765 43210">
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+            <button class="btn btn-ghost" onclick="window.goToVerifyStep(2)">← Back to Details</button>
+            <button id="btn-send-otp" class="btn btn-secondary">
+              Send OTP Code
+            </button>
+          </div>
+
+          <div id="otp-entry-box" style="display:none;">
+            <label class="form-label" style="text-align:center; display:block;">Enter 6-Digit Verification Code</label>
+            <div class="otp-inputs">
+              <input type="text" maxlength="1" class="otp-digit">
+              <input type="text" maxlength="1" class="otp-digit">
+              <input type="text" maxlength="1" class="otp-digit">
+              <input type="text" maxlength="1" class="otp-digit">
+              <input type="text" maxlength="1" class="otp-digit">
+              <input type="text" maxlength="1" class="otp-digit">
+            </div>
+            <div style="text-align:center; font-size:0.8rem; color:var(--text-secondary); margin-bottom:1.5rem;">
+              Resend OTP code in <strong>0:45</strong>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <button class="btn btn-ghost" onclick="window.goToVerifyStep(2)">← Back</button>
+              <button id="btn-submit-otp" class="btn btn-primary">
+                Verify & Complete Access →
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Success Celebration -->
+        <div id="verify-step-success" class="verify-step" style="text-align:center; padding:1.5rem 0;">
+          <div style="width:64px; height:64px; border-radius:50%; background:var(--badge-green-bg); color:var(--badge-green-text); display:flex; align-items:center; justify-content:center; margin:0 auto 1.25rem; font-size:1.8rem;">
+            ✓
+          </div>
+          <h3 style="font-size:1.75rem; font-family:var(--font-display); margin-bottom:0.4rem;">You're verified.</h3>
+          <p style="font-size:1rem; color:var(--text-secondary); margin-bottom:1.5rem;">
+            Welcome to RGPV Unofficial, <strong id="verify-success-name">Rahul</strong>.
+          </p>
+
+          <div style="background:var(--warm-ivory); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1rem; max-width:320px; margin:0 auto 2rem;">
+            <div id="verify-success-program" style="font-weight:700; margin-bottom:0.25rem;">B.Tech CSE · 2026–30</div>
+            <span class="badge-verified">✓ Campus Verified</span>
+          </div>
+
+          <button class="btn btn-primary btn-lg" onclick="window.navigateTo('home')">
+            Explore Campus Dashboard →
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       3. HOME DASHBOARD (/home)
+       ========================================================================= -->
+  <section id="view-home" class="view-section">
+    <div class="container">
+      <div class="dashboard-header">
+        <div class="dashboard-greeting-row">
+          <div>
+            <h1 class="dashboard-greeting font-serif" id="home-greeting-name">Good morning, Rahul 👋</h1>
+            <div class="student-meta-strip" id="home-student-meta">
+              <span>B.Tech CSE · 2026–30</span>
+              <span>·</span>
+              <span class="badge-verified">✓ Campus Verified</span>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:0.75rem;">
+            <button class="btn btn-secondary btn-sm" onclick="window.openCreateListingModal()">
+              + List Item
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="window.openUploadResourceModal()">
+              + Share Resource
+            </button>
+          </div>
+        </div>
+
+        <!-- Global Search Bar with Multi-Pillar Live Dropdown -->
+        <div class="global-search-wrapper">
+          <div class="global-search-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </div>
+          <input type="text" class="global-search-input" placeholder="Search products, resources, clubs, opportunities... (e.g. 'Python', 'DBMS', 'Hackathon')">
+          <div class="search-dropdown-results"></div>
+        </div>
+
+        <!-- Four Quick Access Cards -->
+        <div class="quick-access-grid">
+          <div class="quick-card" onclick="window.navigateTo('marketplace')">
+            <div class="quick-card-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+            </div>
+            <h3 class="quick-card-title">Marketplace</h3>
+            <span class="quick-card-sub">Buy · Sell</span>
+          </div>
+
+          <div class="quick-card" onclick="window.navigateTo('marketplace'); window.setMarketFilterType('exchange');">
+            <div class="quick-card-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
+            </div>
+            <h3 class="quick-card-title">Exchange</h3>
+            <span class="quick-card-sub">Trade with students</span>
+          </div>
+
+          <div class="quick-card" onclick="window.navigateTo('resources')">
+            <div class="quick-card-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+            </div>
+            <h3 class="quick-card-title">Resources</h3>
+            <span class="quick-card-sub">Learn · Share</span>
+          </div>
+
+          <div class="quick-card" onclick="window.navigateTo('opportunities')">
+            <div class="quick-card-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+            </div>
+            <h3 class="quick-card-title">Opportunities</h3>
+            <span class="quick-card-sub">Discover · Participate</span>
+          </div>
+        </div>
+
+        <!-- Section: Happening on Campus Mixed Feed -->
+        <div style="margin-bottom: 3.5rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+            <div>
+              <span class="editorial-label">Live Campus Pulse</span>
+              <h2 class="font-serif" style="font-size:1.85rem;">Happening on Campus</h2>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="window.navigateTo('opportunities')">View all →</button>
+          </div>
+
+          <div class="happening-feed-grid" id="home-happening-grid">
+            <!-- Injected via app.js -->
+          </div>
+        </div>
+
+        <!-- Section: Recently Listed Marketplace -->
+        <div style="margin-bottom: 3.5rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+            <div>
+              <span class="editorial-label">Campus Marketplace</span>
+              <h2 class="font-serif" style="font-size:1.85rem;">Recently Listed</h2>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="window.navigateTo('marketplace')">View Marketplace →</button>
+          </div>
+
+          <div class="cards-carousel-grid" id="home-recent-market-grid">
+            <!-- Injected via app.js -->
+          </div>
+        </div>
+
+        <!-- Section: New Academic Resources -->
+        <div style="margin-bottom: 3.5rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+            <div>
+              <span class="editorial-label">Academic Repository</span>
+              <h2 class="font-serif" style="font-size:1.85rem;">New Resources</h2>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="window.navigateTo('resources')">View Resources →</button>
+          </div>
+
+          <div class="cards-carousel-grid" id="home-recent-res-grid">
+            <!-- Injected via app.js -->
+          </div>
+        </div>
+
+        <!-- Section: Opportunities For You (Personalized) -->
+        <div style="margin-bottom: 2rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+            <div>
+              <span class="editorial-label">Personalized For You (B.Tech CSE)</span>
+              <h2 class="font-serif" style="font-size:1.85rem;">Opportunities For You</h2>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="window.navigateTo('opportunities')">Explore all →</button>
+          </div>
+
+          <div class="cards-carousel-grid" id="home-personal-opp-grid">
+            <!-- Injected via app.js -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       4. MARKETPLACE VIEW (/marketplace)
+       ========================================================================= -->
+  <section id="view-marketplace" class="view-section">
+    <div class="container">
+      <div class="marketplace-header">
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
+          <div>
+            <span class="editorial-label">Campus Peer Marketplace</span>
+            <h1 class="font-serif" style="font-size:2.4rem;">Marketplace</h1>
+            <p style="color:var(--text-secondary); font-size:1rem;">Buy, sell and exchange essentials directly with verified students.</p>
+          </div>
+          <button class="btn btn-primary" onclick="window.openCreateListingModal()">
+            + Create Listing
+          </button>
+        </div>
+
+        <!-- Marketplace Controls Bar -->
+        <div class="marketplace-controls-bar">
+          <!-- Listing Type Tabs -->
+          <div class="listing-type-tabs" id="marketplace-type-tabs">
+            <button class="tab-btn active" data-type="all" onclick="window.setMarketFilterType('all')">All Listings</button>
+            <button class="tab-btn" data-type="sell" onclick="window.setMarketFilterType('sell')">For Sale</button>
+            <button class="tab-btn" data-type="exchange" onclick="window.setMarketFilterType('exchange')">🔄 Exchange Only</button>
+            <button class="tab-btn" data-type="free" onclick="window.setMarketFilterType('free')">🎁 Free Giveaway</button>
+          </div>
+
+          <!-- Category Chips Horizontal Scroll -->
+          <div class="category-chips-scroll" id="market-category-chips">
+            <button class="category-chip active" data-cat="all">All Categories</button>
+            <button class="category-chip" data-cat="Books">Books</button>
+            <button class="category-chip" data-cat="Electronics">Electronics</button>
+            <button class="category-chip" data-cat="Hostel">Hostel</button>
+            <button class="category-chip" data-cat="Lab Equipment">Lab Equipment</button>
+            <button class="category-chip" data-cat="Furniture">Furniture</button>
+            <button class="category-chip" data-cat="Stationery">Stationery</button>
+            <button class="category-chip" data-cat="Sports">Sports</button>
+            <button class="category-chip" data-cat="Other">Other</button>
+          </div>
+
+          <!-- Filter & Sort Row -->
+          <div class="filter-sort-row">
+            <div class="filter-group">
+              <input type="text" id="market-search-input" placeholder="Search books, calculators, lamps..." style="width:240px; padding:0.55rem 0.85rem; font-size:0.88rem;">
+
+              <select id="market-condition-select" style="padding:0.55rem 0.85rem; font-size:0.88rem;">
+                <option value="all">Any Condition</option>
+                <option value="Like New">Like New</option>
+                <option value="Good Condition">Good Condition</option>
+                <option value="Fair Condition">Fair Condition</option>
+              </select>
+
+              <select id="market-location-select" style="padding:0.55rem 0.85rem; font-size:0.88rem;">
+                <option value="all">All Meetup Spots</option>
+                <option value="Central Library">Central Library</option>
+                <option value="Academic Block 1">Academic Block 1</option>
+                <option value="Cafeteria">Cafeteria</option>
+                <option value="Hostel">Hostels</option>
+                <option value="Main Gate">Main Gate</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <span style="font-size:0.85rem; color:var(--text-secondary);">Sort by:</span>
+              <select id="market-sort-select" style="padding:0.55rem 0.85rem; font-size:0.88rem;">
+                <option value="newest">Newest Listed</option>
+                <option value="price-low">Price: Low → High</option>
+                <option value="price-high">Price: High → Low</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Product Grid -->
+        <div class="product-grid" id="market-products-grid">
+          <!-- Injected via app.js -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       5. ACADEMIC RESOURCES VIEW (/resources)
+       ========================================================================= -->
+  <section id="view-resources" class="view-section">
+    <div class="container">
+      <div class="marketplace-header">
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
+          <div>
+            <span class="editorial-label">Peer Academic Repository</span>
+            <h1 class="font-serif" style="font-size:2.4rem;">Academic Resources</h1>
+            <p style="color:var(--text-secondary); font-size:1rem;">Verified lecture notes, past exam papers, and formula cheat sheets.</p>
+          </div>
+          <button class="btn btn-primary" onclick="window.openUploadResourceModal()">
+            + Upload Resource
+          </button>
+        </div>
+
+        <!-- Academic Filter Bar -->
+        <div class="filter-sort-row" style="margin-bottom:2rem; background:var(--pure-white); padding:1rem; border:1px solid var(--border-color); border-radius:var(--radius-lg);">
+          <div class="filter-group">
+            <input type="text" id="resource-search-input" placeholder="Search subjects, notes, PYQs..." style="width:260px; padding:0.55rem 0.85rem; font-size:0.88rem;">
+
+            <select id="resource-branch-select" style="padding:0.55rem 0.85rem; font-size:0.88rem;">
+              <option value="all">All Branches</option>
+              <option value="CSE">Computer Science (CSE)</option>
+              <option value="IT">Information Technology (IT)</option>
+              <option value="ECE">Electronics (ECE)</option>
+              <option value="ME">Mechanical (ME)</option>
+              <option value="CE">Civil Engineering (CE)</option>
+            </select>
+
+            <select id="resource-sem-select" style="padding:0.55rem 0.85rem; font-size:0.88rem;">
+              <option value="all">All Semesters</option>
+              <option value="1">Semester 1</option>
+              <option value="2">Semester 2</option>
+              <option value="3">Semester 3</option>
+              <option value="4">Semester 4</option>
+              <option value="5">Semester 5</option>
+              <option value="6">Semester 6</option>
+              <option value="7">Semester 7</option>
+              <option value="8">Semester 8</option>
+            </select>
+
+            <select id="resource-type-select" style="padding:0.55rem 0.85rem; font-size:0.88rem;">
+              <option value="all">All Material Types</option>
+              <option value="Notes">Lecture Notes</option>
+              <option value="PYQs">Solved PYQs</option>
+              <option value="Cheat Sheets">Cheat Sheets & Formulas</option>
+              <option value="Lab Manuals">Lab Manuals</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Resources Grid -->
+        <div class="resource-grid" id="resources-grid">
+          <!-- Injected via app.js -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       6. OPPORTUNITIES & CLUBS DIRECTORY (/opportunities)
+       ========================================================================= -->
+  <section id="view-opportunities" class="view-section">
+    <div class="container">
+      <div class="marketplace-header">
+        <div style="margin-bottom:1.5rem;">
+          <span class="editorial-label">Campus Opportunities</span>
+          <h1 class="font-serif" style="font-size:2.4rem;">Opportunities & Clubs</h1>
+          <p style="color:var(--text-secondary); font-size:1rem;">Everything happening across your campus, aggregated in one place.</p>
+        </div>
+
+        <!-- Tabs -->
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; border-bottom:1px solid var(--border-color); padding-bottom:1rem; margin-bottom:2rem;">
+          <div class="listing-type-tabs" id="opp-tabs" style="border-bottom:none; padding-bottom:0;">
+            <button class="tab-btn active" data-opp-tab="discover" onclick="window.setOppTab('discover')">Discover Feed</button>
+            <button class="tab-btn" data-opp-tab="clubs" onclick="window.setOppTab('clubs')">Club Directory</button>
+            <button class="tab-btn" data-opp-tab="saved" onclick="window.setOppTab('saved')">Saved Opportunities</button>
+          </div>
+
+          <div class="filter-group">
+            <input type="text" id="opp-search-input" placeholder="Search events, clubs..." style="width:200px; padding:0.45rem 0.8rem; font-size:0.85rem;">
+            <select id="opp-category-filter" style="padding:0.45rem 0.8rem; font-size:0.85rem;">
+              <option value="all">All Categories</option>
+              <option value="Hackathons">Hackathons</option>
+              <option value="Competitions">Competitions</option>
+              <option value="Workshops">Workshops</option>
+              <option value="Technical">Technical</option>
+              <option value="Cultural">Cultural</option>
+              <option value="Sports">Sports</option>
+              <option value="Entrepreneurship">Entrepreneurship</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Content Area -->
+        <div id="opportunities-content-area">
+          <!-- Injected via app.js -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       7. PROFILE VIEW (/profile)
+       ========================================================================= -->
+  <section id="view-profile" class="view-section">
+    <div class="container">
+      <div style="padding: 1.75rem 0 1rem;">
+        <button class="back-nav-btn" onclick="window.goBack()" style="margin-bottom:1rem;" title="Go back to previous page">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+          <span>Back</span>
+        </button>
+        <!-- Profile Header -->
+        <div class="profile-card-header">
+          <div class="profile-info-block">
+            <div class="profile-avatar-lg" id="prof-avatar">RS</div>
+            <div>
+              <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.25rem;">
+                <h2 class="font-serif" style="font-size:1.8rem;" id="prof-name">Rahul Sharma</h2>
+                <span class="badge-verified">✓ Campus Verified</span>
+              </div>
+              <div style="color:var(--text-secondary); font-size:0.95rem; margin-bottom:0.4rem;" id="prof-program">
+                B.Tech CSE · Batch 2026–30
+              </div>
+              <div style="font-size:0.82rem; color:var(--text-secondary); display:flex; gap:1rem;">
+                <span>Enrollment: <strong id="prof-enrollment">0101CS261001</strong></span>
+                <span>Phone: <strong id="prof-phone">+91 98765 43210</strong></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="profile-stats-row">
+            <div class="profile-stat-box">
+              <div class="profile-stat-val" id="prof-rating">4.8 ★</div>
+              <div class="profile-stat-label">Student Rating</div>
+            </div>
+            <div class="profile-stat-box">
+              <div class="profile-stat-val" id="prof-deals-count">12</div>
+              <div class="profile-stat-label">Campus Deals</div>
+            </div>
+            <div>
+              <button class="btn btn-secondary btn-sm" onclick="window.resetCampusDemo()">
+                Reset Demo
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Profile Tabs -->
+        <div class="listing-type-tabs" id="profile-tabs-nav" style="margin-bottom:1.5rem;">
+          <button class="tab-btn active" data-prof-tab="listings" onclick="window.setProfileTab('listings')">My Listings</button>
+          <button class="tab-btn" data-prof-tab="exchanges" onclick="window.setProfileTab('exchanges')">My Exchanges</button>
+          <button class="tab-btn" data-prof-tab="resources" onclick="window.setProfileTab('resources')">My Resources</button>
+          <button class="tab-btn" data-prof-tab="saved" onclick="window.setProfileTab('saved')">Saved Items</button>
+          <button class="tab-btn" data-prof-tab="clubs" onclick="window.setProfileTab('clubs')">Followed Clubs</button>
+        </div>
+
+        <div id="profile-tab-content">
+          <!-- Injected via app.js -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       8. TRANSACTION CHAT VIEW (/chat)
+       ========================================================================= -->
+  <section id="view-chat" class="view-section">
+    <div class="container-narrow">
+      <div style="padding: 1.75rem 0 1rem;">
+        <button class="back-nav-btn" onclick="window.goBack()" style="margin-bottom:1rem;" title="Go back to previous page">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+          <span>Back to Marketplace</span>
+        </button>
+        <div class="chat-window-card">
+          <!-- Pinned Listing Header -->
+          <div class="chat-pinned-listing-bar">
+            <div style="display:flex; align-items:center; gap:0.9rem;">
+              <img id="chat-pinned-img" src="" style="width:46px; height:46px; border-radius:6px; object-fit:cover; border:1px solid var(--border-color);">
+              <div>
+                <div id="chat-pinned-title" style="font-weight:700; font-size:0.95rem; line-height:1.2;">Scientific Calculator</div>
+                <div style="font-size:0.8rem; color:var(--text-secondary);">
+                  <strong id="chat-pinned-price" style="color:var(--primary-crimson);">₹700</strong> · Meetup: <span id="chat-pinned-meetup">Central Library</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="text-align:right;">
+              <div style="display:flex; align-items:center; gap:0.4rem; justify-content:flex-end;">
+                <span id="chat-partner-name" style="font-weight:700; font-size:0.95rem;">Shubham Verma</span>
+                <span class="badge-verified">✓</span>
+              </div>
+              <div id="chat-partner-program" style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:0.25rem;">B.Tech CSE · 2025–29</div>
+              <div style="font-size:0.75rem; color:var(--text-secondary); display:flex; gap:0.6rem; justify-content:flex-end;">
+                <a href="#" onclick="window.openReportModal('user', 'user-shubham', 'Shubham Verma'); return false;" style="color:var(--text-secondary); text-decoration:underline;">Report</a>
+                <span>·</span>
+                <a href="#" onclick="window.blockChatPartner(); return false;" style="color:var(--text-secondary); text-decoration:underline;">Block User</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Transaction Quick Actions Bar -->
+          <div class="chat-quick-actions-bar">
+            <button class="btn btn-secondary btn-sm" onclick="window.chatQuickAction('make-offer')">💰 Make Offer</button>
+            <button class="btn btn-secondary btn-sm" onclick="window.chatQuickAction('propose-exchange')">🔄 Propose Exchange</button>
+            <button class="btn btn-secondary btn-sm" onclick="window.chatQuickAction('arrange-meetup')">📍 Arrange Meetup</button>
+            <button class="btn btn-secondary btn-sm" onclick="window.chatQuickAction('mark-complete')">✓ Mark Complete</button>
+          </div>
+
+          <!-- Messages Scroll Area -->
+          <div class="chat-messages-scroll" id="chat-messages-container">
+            <!-- Injected via app.js -->
+          </div>
+
+          <!-- Chat Input Bar -->
+          <div class="chat-input-bar">
+            <input type="text" id="chat-msg-input" placeholder="Type a message or discuss meetup time..." style="flex:1;">
+            <button id="btn-send-chat-msg" class="btn btn-primary">
+              Send →
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       MODALS
+       ========================================================================= -->
+
+  <!-- Product Detail Modal -->
+  <div class="modal-overlay" id="modal-product-detail">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span class="badge-tag" id="modal-prod-badge">SELL</span>
+        <button class="btn-ghost" onclick="window.closeModal('modal-product-detail')">✕</button>
+      </div>
+      <div class="modal-body">
+        <img id="modal-prod-image" src="" alt="Product" style="width:100%; height:280px; object-fit:cover; border-radius:var(--radius-md); margin-bottom:1.25rem;">
+        
+        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:0.75rem;">
+          <h3 id="modal-prod-title" class="font-serif" style="font-size:1.6rem; line-height:1.2;"></h3>
+          <span id="modal-prod-price" style="font-size:1.6rem; font-weight:800; color:var(--primary-crimson);"></span>
+        </div>
+
+        <div style="display:flex; gap:1rem; font-size:0.85rem; color:var(--text-secondary); margin-bottom:1.25rem; border-bottom:1px solid var(--border-light); padding-bottom:1rem;">
+          <span>Condition: <strong id="modal-prod-condition"></strong></span>
+          <span>·</span>
+          <span>📍 Suggested Meetup: <strong id="modal-prod-location"></strong></span>
+        </div>
+
+        <div id="modal-prod-exchange-wish" style="display:none; background:var(--warm-ivory); border-left:3px solid var(--primary-crimson); padding:0.75rem 1rem; border-radius:0 8px 8px 0; margin-bottom:1.25rem; font-size:0.88rem;">
+          <strong>Seller's Exchange Wish:</strong> <span id="modal-prod-wish-text"></span>
+        </div>
+
+        <p id="modal-prod-desc" style="font-size:0.92rem; color:var(--obsidian); line-height:1.6; margin-bottom:1.5rem;"></p>
+
+        <!-- Seller Card -->
+        <div style="background:var(--soft-bg); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1rem; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="display:flex; align-items:center; gap:0.4rem; font-weight:700;">
+              <span id="modal-seller-name"></span>
+              <span class="badge-verified">✓ Verified</span>
+            </div>
+            <div id="modal-seller-program" style="font-size:0.8rem; color:var(--text-secondary);"></div>
+          </div>
+          <div id="modal-seller-rating" style="font-weight:700; font-size:0.9rem; color:var(--obsidian);"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost btn-sm" id="btn-modal-report" onclick="window.openReportListing();">🚩 Report</button>
+        <button class="btn btn-secondary" id="btn-modal-offer">💰 Make Offer</button>
+        <button class="btn btn-secondary" id="btn-modal-exchange">🔄 Propose Exchange</button>
+        <button class="btn btn-primary" id="btn-modal-chat">💬 Chat with Seller</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Signature Exchange Proposal Modal -->
+  <div class="modal-overlay" id="modal-propose-exchange">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="font-serif" style="font-size:1.3rem;">Propose Exchange (Peer Barter)</h3>
+        <button class="btn-ghost" onclick="window.closeModal('modal-propose-exchange')">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:0.88rem; color:var(--text-secondary); margin-bottom:1rem;">
+          Select an item from your profile to trade for the seller's product. If values differ, cash adjustments will balance the deal.
+        </p>
+
+        <!-- Interactive Barter Layout -->
+        <div class="exchange-barter-box">
+          <!-- Target Product -->
+          <div class="exchange-item-side">
+            <span style="font-size:0.72rem; color:var(--text-secondary); text-transform:uppercase; font-weight:700;">Their Item</span>
+            <img id="exch-target-img" src="" style="width:100%; height:90px; object-fit:cover; border-radius:6px;">
+            <div id="exch-target-title" style="font-weight:700; font-size:0.9rem;"></div>
+            <div id="exch-target-price" style="color:var(--primary-crimson); font-weight:700; font-size:0.95rem;"></div>
+          </div>
+
+          <div class="exchange-swap-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
+          </div>
+
+          <!-- Your Product Preview -->
+          <div class="exchange-item-side">
+            <span style="font-size:0.72rem; color:var(--text-secondary); text-transform:uppercase; font-weight:700;">Your Offered Item</span>
+            <img id="exch-my-preview-img" src="" style="width:100%; height:90px; object-fit:cover; border-radius:6px;">
+            <div id="exch-my-preview-title" style="font-weight:700; font-size:0.9rem;"></div>
+            <div style="color:var(--primary-crimson); font-weight:700; font-size:0.95rem;">Your Offer</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="exch-my-item-select">Choose your item to offer in trade</label>
+          <select id="exch-my-item-select"></select>
+        </div>
+
+        <div id="exch-cash-adjustment" style="background:var(--warm-ivory); border:1px solid var(--border-color); padding:0.75rem 1rem; border-radius:var(--radius-md); font-size:0.85rem; margin-bottom:1rem;">
+          <!-- Calculated dynamically -->
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="exch-note-input">Personal message / Proposed meetup time</label>
+          <textarea id="exch-note-input" rows="2" placeholder="e.g. Can meet near Central Library after 3 PM."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="window.closeModal('modal-propose-exchange')">Cancel</button>
+        <button id="btn-submit-exchange-proposal" class="btn btn-primary">Send Exchange Proposal →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Make Offer Modal -->
+  <div class="modal-overlay" id="modal-make-offer">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="font-serif" style="font-size:1.3rem;">Make a Price Offer</h3>
+        <button class="btn-ghost" onclick="window.closeModal('modal-make-offer')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="background:var(--soft-bg); padding:0.9rem 1.25rem; border-radius:var(--radius-md); margin-bottom:1.25rem; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div id="offer-target-title" style="font-weight:600; font-size:0.95rem;"></div>
+            <div style="font-size:0.8rem; color:var(--text-secondary);">Campus Meetup Handover</div>
+          </div>
+          <div id="offer-target-price" style="font-size:1.25rem; font-weight:700;"></div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="offer-amount-input">Your Counter Offer (₹)</label>
+          <input type="number" id="offer-amount-input" step="50" min="50">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="offer-message-input">Optional note to seller</label>
+          <input type="text" id="offer-message-input" placeholder="e.g. Can collect today with cash in hand.">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="window.closeModal('modal-make-offer')">Cancel</button>
+        <button id="btn-submit-offer" class="btn btn-primary">Submit Offer →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Listing Modal -->
+  <div class="modal-overlay" id="modal-create-listing">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="font-serif" style="font-size:1.3rem;">Create Campus Listing</h3>
+        <button class="btn-ghost" onclick="window.closeModal('modal-create-listing')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Listing Type</label>
+          <div style="display:flex; gap:1.5rem; padding:0.5rem 0;">
+            <label style="display:flex; align-items:center; gap:0.4rem; font-size:0.9rem; cursor:pointer;">
+              <input type="radio" name="listing-type" value="sell" checked> Sell
+            </label>
+            <label style="display:flex; align-items:center; gap:0.4rem; font-size:0.9rem; cursor:pointer;">
+              <input type="radio" name="listing-type" value="exchange"> Exchange
+            </label>
+            <label style="display:flex; align-items:center; gap:0.4rem; font-size:0.9rem; cursor:pointer;">
+              <input type="radio" name="listing-type" value="free"> Free Giveaway
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="create-listing-title">Item Title</label>
+          <input type="text" id="create-listing-title" placeholder="e.g. Casio fx-991ES Plus Scientific Calculator">
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+          <div class="form-group">
+            <label class="form-label" for="create-listing-category">Category</label>
+            <select id="create-listing-category">
+              <option value="Books">Books</option>
+              <option value="Electronics">Electronics</option>
+              <option value="Hostel">Hostel Essentials</option>
+              <option value="Lab Equipment">Lab Equipment</option>
+              <option value="Furniture">Furniture</option>
+              <option value="Stationery">Stationery</option>
+              <option value="Sports">Sports</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="create-listing-condition">Condition</label>
+            <select id="create-listing-condition">
+              <option value="Like New">Like New</option>
+              <option value="Good Condition">Good Condition</option>
+              <option value="Fair Condition">Fair Condition</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group" id="create-price-field">
+          <label class="form-label" for="create-listing-price">Price (₹)</label>
+          <input type="number" id="create-listing-price" placeholder="e.g. 650">
+        </div>
+
+        <div class="form-group" id="create-wish-field" style="display:none;">
+          <label class="form-label" for="create-listing-wish">What are you looking for in exchange?</label>
+          <input type="text" id="create-listing-wish" placeholder="e.g. Looking for Data Structures or Discrete Math book">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="create-listing-location">Preferred Campus Meetup Point</label>
+          <select id="create-listing-location">
+            <option value="Central Library">Central Library</option>
+            <option value="Academic Block 1">Academic Block 1</option>
+            <option value="Cafeteria">Cafeteria</option>
+            <option value="Hostel 4 Ground Floor">Hostel 4 Ground Floor</option>
+            <option value="Main University Gate">Main University Gate</option>
+            <option value="Sports Complex">Sports Complex</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="create-listing-desc">Item Description</label>
+          <textarea id="create-listing-desc" rows="3" placeholder="Condition, semester used, included accessories..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="window.closeModal('modal-create-listing')">Cancel</button>
+        <button id="btn-publish-listing" class="btn btn-primary">Publish Listing →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload Resource Modal -->
+  <div class="modal-overlay" id="modal-upload-resource">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="font-serif" style="font-size:1.3rem;">Upload Academic Resource</h3>
+        <button class="btn-ghost" onclick="window.closeModal('modal-upload-resource')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" for="upload-res-title">Resource Title</label>
+          <input type="text" id="upload-res-title" placeholder="e.g. Operating Systems Process Synchronization Notes">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="upload-res-subject">Subject Name</label>
+          <input type="text" id="upload-res-subject" placeholder="e.g. Operating Systems">
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+          <div class="form-group">
+            <label class="form-label" for="upload-res-branch">Branch</label>
+            <select id="upload-res-branch">
+              <option value="CSE">CSE</option>
+              <option value="IT">IT</option>
+              <option value="ECE">ECE</option>
+              <option value="ME">ME</option>
+              <option value="CE">CE</option>
+              <option value="All Branches">All Branches</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="upload-res-sem">Semester</label>
+            <select id="upload-res-sem">
+              <option value="1">Semester 1</option>
+              <option value="2">Semester 2</option>
+              <option value="3" selected>Semester 3</option>
+              <option value="4">Semester 4</option>
+              <option value="5">Semester 5</option>
+              <option value="6">Semester 6</option>
+              <option value="7">Semester 7</option>
+              <option value="8">Semester 8</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="upload-res-type">Material Type</label>
+          <select id="upload-res-type">
+            <option value="Notes">Handwritten / Lecture Notes</option>
+            <option value="PYQs">Solved Previous Year Questions</option>
+            <option value="Cheat Sheets">Formula Sheet / Cheat Sheet</option>
+            <option value="Lab Manuals">Lab Manual & Code</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="upload-res-desc">Description & Highlights</label>
+          <textarea id="upload-res-desc" rows="2" placeholder="Mention specific topics, high-scoring exam questions..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="window.closeModal('modal-upload-resource')">Cancel</button>
+        <button id="btn-publish-resource" class="btn btn-primary">Publish Resource →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resource Document Viewer Modal -->
+  <div class="modal-overlay" id="modal-resource-viewer">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <span class="badge-tag">Academic Document</span>
+          <h3 id="res-viewer-title" class="font-serif" style="font-size:1.3rem; margin-top:0.25rem;"></h3>
+        </div>
+        <button class="btn-ghost" onclick="window.closeModal('modal-resource-viewer')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="res-viewer-meta" style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:1rem;"></div>
+
+        <!-- Simulated Document Viewer Canvas -->
+        <div style="background:var(--warm-ivory); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:2rem; text-align:center; min-height:220px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.75rem;">
+          <div style="font-size:2.5rem; color:var(--primary-crimson);">📄</div>
+          <div id="res-viewer-pages" style="font-weight:700; font-size:1.1rem;"></div>
+          <p id="res-viewer-desc" style="font-size:0.88rem; color:var(--text-secondary); max-width:480px;"></p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="window.openReportCurrentResource();">🚩 Report Resource</button>
+        <button id="btn-download-resource" class="btn btn-primary">Download PDF Document ↓</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Club Detail Modal -->
+  <div class="modal-overlay" id="modal-club-detail">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div style="display:flex; align-items:center; gap:0.75rem;">
+          <span id="modal-club-logo" style="font-size:1.8rem;"></span>
+          <div>
+            <h3 id="modal-club-name" class="font-serif" style="font-size:1.3rem;"></h3>
+            <span id="modal-club-meta" style="font-size:0.8rem; color:var(--text-secondary);"></span>
+          </div>
+        </div>
+        <button class="btn-ghost" onclick="window.closeModal('modal-club-detail')">✕</button>
+      </div>
+      <div class="modal-body">
+        <h4 style="font-size:0.95rem; font-weight:700; margin-bottom:0.4rem;">About Organization</h4>
+        <p id="modal-club-about" style="font-size:0.9rem; color:var(--text-secondary); line-height:1.5; margin-bottom:1.5rem;"></p>
+
+        <h4 style="font-size:0.95rem; font-weight:700; margin-bottom:0.75rem;">Official Connect Channels</h4>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+          <a id="link-club-web" target="_blank" class="btn btn-secondary btn-sm" style="justify-content:flex-start;">🌐 Official Website</a>
+          <a id="link-club-insta" target="_blank" class="btn btn-secondary btn-sm" style="justify-content:flex-start;">📸 Instagram Page</a>
+          <a id="link-club-wa" target="_blank" class="btn btn-secondary btn-sm" style="justify-content:flex-start;">💬 WhatsApp Announcements</a>
+          <a id="link-club-reg" target="_blank" class="btn btn-primary btn-sm" style="justify-content:flex-start;">🚀 Recruitment Portal</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notifications Modal -->
+  <div class="modal-overlay" id="modal-notifications">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="font-serif" style="font-size:1.3rem;">Campus Notifications</h3>
+        <button class="btn-ghost" onclick="window.closeModal('modal-notifications')">✕</button>
+      </div>
+      <div class="modal-body" style="padding:0.5rem;" id="notifications-list">
+        <!-- Injected via app.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Abuse Reporting Modal -->
+  <div class="modal-overlay" id="modal-report">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <span class="editorial-label" style="margin-bottom:0.2rem;">Trust & Safety</span>
+          <h3 class="font-serif" style="font-size:1.3rem;">Submit Campus Report</h3>
+        </div>
+        <button class="btn-ghost" onclick="window.closeModal('modal-report')">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:0.88rem; color:var(--text-secondary); margin-bottom:1.25rem;">
+          Help keep RGPV Unofficial safe, scam-free, and trustworthy. Reports are reviewed by verified campus moderators.
+        </p>
+
+        <div class="form-group">
+          <label class="form-label">Reported Item / Entity</label>
+          <div id="report-target-label" style="font-weight:600; font-size:0.92rem; background:var(--soft-bg); padding:0.6rem 0.9rem; border-radius:var(--radius-sm); border:1px solid var(--border-color);"></div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="report-reason-select">Reason for Report</label>
+          <select id="report-reason-select">
+            <option value="Scam">Scam / Financial Fraud</option>
+            <option value="Fake listing">Fake or Duplicate Listing</option>
+            <option value="Spam">Spam / Commercial Bot</option>
+            <option value="Inappropriate content">Inappropriate or Offensive Material</option>
+            <option value="Harassment">Harassment / Abusive Behavior</option>
+            <option value="Other">Other Community Policy Violation</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="report-desc-input">Details / Evidence</label>
+          <textarea id="report-desc-input" rows="3" placeholder="Provide any details that will assist campus verification..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="window.closeModal('modal-report')">Cancel</button>
+        <button id="btn-submit-report" class="btn btn-primary">Submit Report →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       SITE FOOTER
+       ========================================================================= -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <h4 class="font-serif">RGPV UNOFFICIAL</h4>
+          <p>An independent, student-driven digital campus ecosystem uniting marketplace, barter exchange, peer academics, and opportunities.</p>
+        </div>
+
+        <div class="footer-col">
+          <h5>Platform Pillars</h5>
+          <ul>
+            <li><a href="#" onclick="window.navigateTo('marketplace')">Marketplace</a></li>
+            <li><a href="#" onclick="window.navigateTo('marketplace'); window.setMarketFilterType('exchange');">Barter Exchange</a></li>
+            <li><a href="#" onclick="window.navigateTo('resources')">Academic Repository</a></li>
+            <li><a href="#" onclick="window.navigateTo('opportunities')">Opportunities & Clubs</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h5>Community</h5>
+          <ul>
+            <li><a href="#" onclick="window.navigateTo('verify')">Student Verification</a></li>
+            <li><a href="#" onclick="window.navigateTo('opportunities')">Clubs Directory</a></li>
+            <li><a href="#" onclick="window.navigateTo('home')">Campus Pulse</a></li>
+            <li><a href="#" onclick="window.navigateTo('profile')">Student Profile</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h5>Trust & Safety</h5>
+          <ul>
+            <li><a href="#" onclick="alert('Campus handovers should always take place at public campus locations such as the Central Library or Cafeteria.');">Campus Meetup Points</a></li>
+            <li><a href="#" onclick="alert('Access is restricted to verified RGPV students through university enrollment validation.');">Enrollment Verification</a></li>
+            <li><a href="#" onclick="alert('Peer-to-peer barter allows trading items of equal utility without cash constraints.');">Exchange Guidelines</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Footer Disclaimer Bar -->
+      <div class="footer-disclaimer-bar">
+        <div class="disclaimer-text">
+          “RGPV Unofficial is an independent student community platform and is not affiliated with or endorsed by RGPV.”
+        </div>
+        <div>
+          © 2026 RGPV Unofficial · Built for students by students.
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- MOBILE BOTTOM NAVIGATION BAR -->
+  <nav class="mobile-bottom-nav">
+    <ul class="mobile-nav-grid">
+      <li class="mobile-nav-link active" data-route="home">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+        <span>Home</span>
+      </li>
+      <li class="mobile-nav-link" data-route="marketplace">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+        <span>Market</span>
+      </li>
+      <li class="mobile-nav-link" data-route="resources">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+        <span>Resources</span>
+      </li>
+      <li class="mobile-nav-link" data-route="opportunities">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+        <span>Opps</span>
+      </li>
+      <li class="mobile-nav-link" data-route="profile">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        <span>Profile</span>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Application Scripts -->
+  <script src="js/store.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
