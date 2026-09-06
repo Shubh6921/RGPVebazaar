@@ -4,7 +4,7 @@
  * Includes: Stage 9 Security, Trust, Authorization & RLS Emulation Layer
  */
 
-const STORAGE_KEY = 'rgpv_unofficial_store_v1';
+const STORAGE_KEY = 'rgpv_unofficial_store_v2';
 
 // Seed Verified Student Registry (Protected Roster)
 const STUDENT_REGISTRY = {
@@ -77,286 +77,18 @@ const DEFAULT_STATE = {
     phone: '+91 98765 43210',
     avatar: 'RS',
     rating: 4.8,
-    transactions: 12,
+    transactions: 0,
     verificationBadge: 'Campus Verified',
     followedClubs: ['coding-club', 'gdsc-rgpv', 'ecell-rgpv'],
-    savedListings: ['prod-1', 'prod-4'],
-    savedResources: ['res-1', 'res-3'],
+    savedListings: [],
+    savedResources: [],
     savedOpportunities: ['opp-1']
   },
 
-  listings: [
-    {
-      id: 'prod-1',
-      seller_id: 'user-shubham',
-      title: 'Scientific Calculator (Casio fx-991ES Plus)',
-      category: 'Electronics',
-      price: 700,
-      condition: 'Good Condition',
-      listingType: 'sell',
-      exchangeWish: '',
-      description: 'Used for two semesters in Engineering Mathematics and Physics. Perfectly working condition, solar and battery cell responsive. Original sliding cover included.',
-      images: ['https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?w=600&auto=format&fit=crop&q=80'],
-      seller: {
-        id: 'user-shubham',
-        name: 'Shubham Verma',
-        enrollment: '0101CS251088',
-        program: 'B.Tech CSE',
-        batch: '2025–29',
-        rating: 4.9,
-        transactions: 15,
-        isVerified: true
-      },
-      meetupLocation: 'Central Library',
-      postedDate: '2 hours ago',
-      status: 'available'
-    },
-    {
-      id: 'prod-2',
-      seller_id: 'user-neha',
-      title: 'Engineering Mathematics (B.S. Grewal, 44th Edition)',
-      category: 'Books',
-      price: 450,
-      condition: 'Like New',
-      listingType: 'exchange',
-      exchangeWish: 'Looking for Data Structures with C++ or Discrete Math Book',
-      description: 'Barely marked textbook with all solved examples for Sem 1, 2 & 3. No torn pages. Ready to sell or exchange for standard CSE reference book.',
-      images: ['https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80'],
-      seller: {
-        id: 'user-neha',
-        name: 'Neha Joshi',
-        enrollment: '0101IT261019',
-        program: 'B.Tech IT',
-        batch: '2026–30',
-        rating: 4.8,
-        transactions: 7,
-        isVerified: true
-      },
-      meetupLocation: 'Academic Block 1',
-      postedDate: '5 hours ago',
-      status: 'available'
-    },
-    {
-      id: 'prod-3',
-      seller_id: 'user-rohan',
-      title: 'Mini Drafter & Engineering Drawing Board Set',
-      category: 'Lab Equipment',
-      price: 550,
-      condition: 'Good Condition',
-      listingType: 'sell',
-      exchangeWish: '',
-      description: 'Complete Omega mini drafter with clamp, clips, and standard drawing board. Essential for 1st year Engineering Graphics.',
-      images: ['https://images.unsplash.com/photo-1581291518655-9523c932edcf?w=600&auto=format&fit=crop&q=80'],
-      seller: {
-        id: 'user-rohan',
-        name: 'Rohan Mehra',
-        enrollment: '0101ME251073',
-        program: 'B.Tech ME',
-        batch: '2025–29',
-        rating: 4.7,
-        transactions: 11,
-        isVerified: true
-      },
-      meetupLocation: 'Cafeteria',
-      postedDate: 'Yesterday',
-      status: 'available'
-    },
-    {
-      id: 'prod-4',
-      seller_id: 'user-aryan',
-      title: 'Ergonomic Hostel Study Table & Desk Lamp',
-      category: 'Furniture',
-      price: 1200,
-      condition: 'Good Condition',
-      listingType: 'sell',
-      exchangeWish: '',
-      description: 'Foldable wooden study table suitable for hostel room corners. Comes with adjustable warm LED desk lamp. Leaving hostel next week.',
-      images: ['https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?w=600&auto=format&fit=crop&q=80'],
-      seller: {
-        id: 'user-aryan',
-        name: 'Aryan Dixit',
-        enrollment: '0101EC241031',
-        program: 'B.Tech ECE',
-        batch: '2024–28',
-        rating: 4.9,
-        transactions: 22,
-        isVerified: true
-      },
-      meetupLocation: 'Hostel 4 Ground Floor',
-      postedDate: '1 day ago',
-      status: 'available'
-    },
-    {
-      id: 'prod-5',
-      seller_id: 'user-riya',
-      title: 'Electric Kettle (1.5L Pigeon Stainless Steel)',
-      category: 'Hostel',
-      price: 0,
-      condition: 'Fair Condition',
-      listingType: 'free',
-      exchangeWish: '',
-      description: 'Clean electric kettle, fully functional. Heating coil heats in 3 minutes. Giving away free to any junior moving into campus hostel.',
-      images: ['https://images.unsplash.com/photo-1544816155-12df9643f363?w=600&auto=format&fit=crop&q=80'],
-      seller: {
-        id: 'user-riya',
-        name: 'Riya Sen',
-        enrollment: '0101IT241008',
-        program: 'B.Tech IT',
-        batch: '2024–28',
-        rating: 5.0,
-        transactions: 16,
-        isVerified: true
-      },
-      meetupLocation: 'Girls Hostel Gate',
-      postedDate: '2 days ago',
-      status: 'available'
-    },
-    {
-      id: 'prod-6',
-      seller_id: 'user-tanmay',
-      title: 'Operating System Concepts (Galvin & Silberschatz)',
-      category: 'Books',
-      price: 600,
-      condition: 'Like New',
-      listingType: 'exchange',
-      exchangeWish: 'Trade with Computer Networking: A Top-Down Approach (Kurose/Ross)',
-      description: 'Hardcover 9th Edition. Immaculate condition, helpful for Sem 4 OS course and GATE prep. Looking to trade for Computer Networks book.',
-      images: ['https://images.unsplash.com/photo-1532012164546-f432f2e3777a?w=600&auto=format&fit=crop&q=80'],
-      seller: {
-        id: 'user-tanmay',
-        name: 'Tanmay Roy',
-        enrollment: '0101CS241065',
-        program: 'B.Tech CSE',
-        batch: '2024–28',
-        rating: 4.8,
-        transactions: 19,
-        isVerified: true
-      },
-      meetupLocation: 'Academic Block 2',
-      postedDate: '3 days ago',
-      status: 'available'
-    }
-  ],
-
-  // User's own items available for barter/exchange
-  myListings: [
-    {
-      id: 'my-prod-1',
-      seller_id: 'user-current',
-      title: 'Python Programming & Algorithms (Core Reference)',
-      category: 'Books',
-      price: 500,
-      condition: 'Like New',
-      listingType: 'exchange',
-      description: 'Used during Semester 2. Clean pages, no highlights.',
-      images: ['https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=600&auto=format&fit=crop&q=80'],
-      status: 'available',
-      meetupLocation: 'Central Library'
-    },
-    {
-      id: 'my-prod-2',
-      seller_id: 'user-current',
-      title: 'Logitech Wireless Mouse M221 (Silent Click)',
-      category: 'Electronics',
-      price: 400,
-      condition: 'Good Condition',
-      listingType: 'sell',
-      description: 'Compact wireless mouse with USB nano receiver.',
-      images: ['https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=600&auto=format&fit=crop&q=80'],
-      status: 'available',
-      meetupLocation: 'Main Gate'
-    }
-  ],
-
-  // Signature Exchange Proposals
-  exchanges: [
-    {
-      id: 'exch-101',
-      sender_id: 'user-shubham',
-      receiver_id: 'user-current',
-      targetListingId: 'prod-1',
-      targetListingTitle: 'Scientific Calculator (Casio fx-991ES Plus)',
-      targetListingPrice: 700,
-      targetListingImage: 'https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?w=600&auto=format&fit=crop&q=80',
-      proposerName: 'Shubham Verma',
-      proposerEnrollment: '0101CS251088',
-      proposerItemTitle: 'Engineering Mathematics Book (B.S. Grewal)',
-      proposerItemPrice: 500,
-      proposerItemImage: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80',
-      cashDifference: 200,
-      cashDifferenceDirection: 'proposer_pays',
-      status: 'pending',
-      note: 'Hey, I can give you my B.S. Grewal maths book plus ₹200 cash for your scientific calculator. Can meet at Central Library tomorrow at 4 PM!',
-      date: 'Today, 11:20 AM'
-    }
-  ],
-
-  // Academic Resources
-  resources: [
-    {
-      id: 'res-1',
-      uploader_id: 'user-current',
-      title: 'Data Structures & Algorithms — Complete Handwritten Notes',
-      subject: 'Data Structures',
-      branch: 'CSE',
-      semester: 3,
-      resourceType: 'Notes',
-      fileType: 'PDF',
-      pages: 84,
-      fileSize: '14.2 MB',
-      description: 'Comprehensive handwritten notes covering Trees, Graphs, Sorting, Hash Maps, and Dynamic Programming with RGPV exam questions highlighted.',
-      uploadedBy: {
-        name: 'Rahul Sharma',
-        enrollment: '0101CS261001',
-        isVerified: true
-      },
-      uploadDate: '3 days ago',
-      downloads: 342,
-      upvotes: 89
-    },
-    {
-      id: 'res-2',
-      uploader_id: 'user-priya',
-      title: 'Database Management Systems (DBMS) Solved PYQs (2018–2025)',
-      subject: 'DBMS',
-      branch: 'CSE',
-      semester: 4,
-      resourceType: 'PYQs',
-      fileType: 'PDF',
-      pages: 62,
-      fileSize: '9.8 MB',
-      description: 'Last 7 years of RGPV end-semester question papers with step-by-step SQL queries, ER diagram solutions, and normalization proofs.',
-      uploadedBy: {
-        name: 'Priya Patel',
-        enrollment: '0101IT251042',
-        isVerified: true
-      },
-      uploadDate: '1 week ago',
-      downloads: 512,
-      upvotes: 142
-    },
-    {
-      id: 'res-3',
-      uploader_id: 'user-aditya',
-      title: 'Engineering Mathematics III — Formulas & Cheat Sheet',
-      subject: 'Mathematics III',
-      branch: 'All Branches',
-      semester: 3,
-      resourceType: 'Cheat Sheets',
-      fileType: 'PDF',
-      pages: 18,
-      fileSize: '3.4 MB',
-      description: 'Quick revision formulas for Fourier Transform, Laplace Transform, PDE, and Numerical Methods. Formatted for fast pre-exam review.',
-      uploadedBy: {
-        name: 'Aditya Malviya',
-        enrollment: '0101EC251004',
-        isVerified: true
-      },
-      uploadDate: '2 weeks ago',
-      downloads: 680,
-      upvotes: 198
-    }
-  ],
+  listings: [],
+  myListings: [],
+  exchanges: [],
+  resources: [],
 
   // Opportunities & Campus Events
   opportunities: [
@@ -448,69 +180,14 @@ const DEFAULT_STATE = {
   ],
 
   // Conversations (transaction-focused)
-  conversations: [
-    {
-      id: 'conv-shubham',
-      participants: ['user-current', 'user-shubham'],
-      partnerId: 'user-shubham',
-      partnerName: 'Shubham Verma',
-      partnerEnrollment: '0101CS251088',
-      partnerProgram: 'B.Tech CSE',
-      isVerified: true,
-      listingId: 'prod-1',
-      listingTitle: 'Scientific Calculator (Casio fx-991ES Plus)',
-      listingPrice: 700,
-      listingMeetup: 'Central Library',
-      listingImage: 'https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?w=600&auto=format&fit=crop&q=80',
-      messages: [
-        {
-          id: 'msg-1',
-          sender: 'theirs',
-          sender_id: 'user-shubham',
-          text: 'Hi Rahul, is the Casio calculator still available?',
-          time: '10:45 AM'
-        },
-        {
-          id: 'msg-2',
-          sender: 'mine',
-          sender_id: 'user-current',
-          text: 'Yes Shubham, it is in great condition. Can meet at Central Library.',
-          time: '10:48 AM'
-        }
-      ]
-    }
-  ],
+  conversations: [],
 
   // Offers
-  offers: [
-    {
-      id: 'off-1',
-      listingId: 'prod-1',
-      buyer_id: 'user-amit',
-      seller_id: 'user-current',
-      listingTitle: 'Scientific Calculator (Casio fx-991ES Plus)',
-      listedPrice: 700,
-      offeredPrice: 600,
-      buyerName: 'Amit Verma',
-      buyerEnrollment: '0101EC241018',
-      status: 'pending',
-      note: 'Can pay in cash and collect today outside Central Library.'
-    }
-  ],
+  offers: [],
 
   // Completed Transactions & Reviews
-  completedTransactions: ['prod-1'],
-  reviews: [
-    {
-      id: 'rev-1',
-      reviewer_id: 'user-shubham',
-      reviewee_id: 'user-current',
-      listing_id: 'prod-1',
-      rating: 5,
-      comment: 'Prompt meetup at Central Library. Book was in exact stated condition.',
-      date: 'Yesterday'
-    }
-  ],
+  completedTransactions: [],
+  reviews: [],
 
   // Reports
   reports: [],
@@ -522,17 +199,7 @@ const DEFAULT_STATE = {
   securityEvents: [],
 
   // Notifications
-  notifications: [
-    {
-      id: 'notif-1',
-      icon: '🔄',
-      title: 'Exchange proposal received',
-      desc: 'Shubham wants to exchange: Scientific Calculator ↔ Engineering Mathematics Book + ₹200',
-      time: '15m ago',
-      unread: true,
-      action: 'view-exchange'
-    }
-  ]
+  notifications: []
 };
 
 // Store Wrapper Class
@@ -545,14 +212,22 @@ class CampusStore {
 
   loadState() {
     try {
+      localStorage.removeItem('rgpv_unofficial_store_v1');
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
+        if (!parsed.listings) parsed.listings = [];
+        if (!parsed.resources) parsed.resources = [];
+        if (!parsed.myListings) parsed.myListings = [];
+        if (!parsed.exchanges) parsed.exchanges = [];
+        if (!parsed.conversations) parsed.conversations = [];
+        if (!parsed.offers) parsed.offers = [];
         if (!parsed.reports) parsed.reports = [];
         if (!parsed.blockedUsers) parsed.blockedUsers = [];
         if (!parsed.securityEvents) parsed.securityEvents = [];
-        if (!parsed.reviews) parsed.reviews = DEFAULT_STATE.reviews;
-        if (!parsed.completedTransactions) parsed.completedTransactions = DEFAULT_STATE.completedTransactions;
+        if (!parsed.reviews) parsed.reviews = [];
+        if (!parsed.completedTransactions) parsed.completedTransactions = [];
+        if (!parsed.notifications) parsed.notifications = [];
         return parsed;
       }
     } catch (e) {

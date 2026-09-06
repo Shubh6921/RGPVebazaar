@@ -485,91 +485,162 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         </div>
 
-        <div class="happening-card" onclick="window.navigateTo('resources')">
-          <div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
-              <span class="badge-tag">📚 New Resource</span>
-              <span style="font-size:0.75rem; color:var(--text-secondary);">Today</span>
+        ${(() => {
+          const resList = window.Store.state.resources || [];
+          if (resList.length > 0) {
+            const r = resList[0];
+            return `
+              <div class="happening-card" onclick="window.openResourceViewerModal('${r.id}')">
+                <div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                    <span class="badge-tag">📚 New Resource</span>
+                    <span style="font-size:0.75rem; color:var(--text-secondary);">${r.uploadDate || 'Recent'}</span>
+                  </div>
+                  <h4 style="font-size:1.15rem; font-family:var(--font-display); margin-bottom:0.4rem;">${r.title}</h4>
+                  <p style="font-size:0.85rem; color:var(--text-secondary); line-height:1.45;">${r.uploadedBy.name} · ${r.branch} Sem ${r.semester} · ${r.pages} pages</p>
+                </div>
+                <div style="padding-top:1rem; border-top:1px solid var(--border-light); font-size:0.82rem; font-weight:600; color:var(--primary-crimson); display:flex; align-items:center; justify-content:space-between;">
+                  <span>View Verified Document</span>
+                  <span>${ICONS.chevronRight}</span>
+                </div>
+              </div>
+            `;
+          }
+          return `
+            <div class="happening-card" onclick="window.navigateTo('resources')">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                  <span class="badge-tag">📚 Academic Repository</span>
+                  <span style="font-size:0.75rem; color:var(--text-secondary);">All Branches</span>
+                </div>
+                <h4 style="font-size:1.15rem; font-family:var(--font-display); margin-bottom:0.4rem;">Academic Notes & PYQ Bank</h4>
+                <p style="font-size:0.85rem; color:var(--text-secondary); line-height:1.45;">Access verified handwritten lecture notes, formula sheets, and solved papers.</p>
+              </div>
+              <div style="padding-top:1rem; border-top:1px solid var(--border-light); font-size:0.82rem; font-weight:600; color:var(--primary-crimson); display:flex; align-items:center; justify-content:space-between;">
+                <span>Upload or Browse Notes</span>
+                <span>${ICONS.chevronRight}</span>
+              </div>
             </div>
-            <h4 style="font-size:1.15rem; font-family:var(--font-display); margin-bottom:0.4rem;">DBMS Solved PYQs (2018–2025)</h4>
-            <p style="font-size:0.85rem; color:var(--text-secondary); line-height:1.45;">Priya Patel · CSE Sem 4 · Step-by-step SQL queries & normalization proofs</p>
-          </div>
-          <div style="padding-top:1rem; border-top:1px solid var(--border-light); font-size:0.82rem; font-weight:600; color:var(--primary-crimson); display:flex; align-items:center; justify-content:space-between;">
-            <span>62 Pages Verified PDF</span>
-            <span>${ICONS.chevronRight}</span>
-          </div>
-        </div>
+          `;
+        })()}
 
-        <div class="happening-card" onclick="window.navigateTo('marketplace'); setMarketFilterType('exchange');">
-          <div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
-              <span class="badge-tag">🔄 Barter Opportunity</span>
-              <span class="badge-verified">${ICONS.check} Verified Student</span>
+        ${(() => {
+          const exchItem = (window.Store.state.listings || []).find(l => l.listingType === 'exchange');
+          if (exchItem) {
+            return `
+              <div class="happening-card" onclick="window.openProductDetailModal('${exchItem.id}')">
+                <div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                    <span class="badge-tag">🔄 Barter Opportunity</span>
+                    <span class="badge-verified">${ICONS.check} Verified Student</span>
+                  </div>
+                  <h4 style="font-size:1.15rem; font-family:var(--font-display); margin-bottom:0.4rem;">${exchItem.title}</h4>
+                  <p style="font-size:0.85rem; color:var(--text-secondary); line-height:1.45;">${exchItem.seller.name}: ${exchItem.exchangeWish || 'Available for barter swap'}</p>
+                </div>
+                <div style="padding-top:1rem; border-top:1px solid var(--border-light); font-size:0.82rem; font-weight:600; color:var(--primary-crimson); display:flex; align-items:center; justify-content:space-between;">
+                  <span>Propose Exchange</span>
+                  <span>${ICONS.chevronRight}</span>
+                </div>
+              </div>
+            `;
+          }
+          return `
+            <div class="happening-card" onclick="window.navigateTo('marketplace'); setMarketFilterType('exchange');">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                  <span class="badge-tag">🔄 Barter Exchange</span>
+                  <span class="badge-verified">${ICONS.check} Campus Verified</span>
+                </div>
+                <h4 style="font-size:1.15rem; font-family:var(--font-display); margin-bottom:0.4rem;">Peer-to-Peer Barter Exchange</h4>
+                <p style="font-size:0.85rem; color:var(--text-secondary); line-height:1.45;">Propose direct item swaps with classmates for drafters, calculators, or textbooks.</p>
+              </div>
+              <div style="padding-top:1rem; border-top:1px solid var(--border-light); font-size:0.82rem; font-weight:600; color:var(--primary-crimson); display:flex; align-items:center; justify-content:space-between;">
+                <span>Explore Barter System</span>
+                <span>${ICONS.chevronRight}</span>
+              </div>
             </div>
-            <h4 style="font-size:1.15rem; font-family:var(--font-display); margin-bottom:0.4rem;">B.S. Grewal Higher Engg Mathematics</h4>
-            <p style="font-size:0.85rem; color:var(--text-secondary); line-height:1.45;">Neha Joshi is offering to trade for Data Structures or Discrete Math Book</p>
-          </div>
-          <div style="padding-top:1rem; border-top:1px solid var(--border-light); font-size:0.82rem; font-weight:600; color:var(--primary-crimson); display:flex; align-items:center; justify-content:space-between;">
-            <span>Propose Exchange</span>
-            <span>${ICONS.chevronRight}</span>
-          </div>
-        </div>
+          `;
+        })()}
       `;
     }
 
     // Recently Listed
     const recentMarketEl = document.getElementById('home-recent-market-grid');
     if (recentMarketEl) {
-      recentMarketEl.innerHTML = window.Store.state.listings.slice(0, 4).map(item => `
-        <div class="product-card" onclick="window.openProductDetailModal('${item.id}')">
-          <div class="product-image-box">
-            <img src="${item.images[0]}" alt="${item.title}">
-            <span class="product-type-badge badge-${item.listingType}">${item.listingType}</span>
+      const activeListings = window.Store.state.listings || [];
+      if (activeListings.length === 0) {
+        recentMarketEl.innerHTML = `
+          <div class="empty-state-box" style="grid-column: 1 / -1; padding: 2rem 1rem; text-align: center; background: var(--warm-ivory); border-radius: var(--radius-md); border: 1px dashed var(--border-color);">
+            <div style="font-size: 1.8rem; margin-bottom: 0.35rem;">🛒</div>
+            <h4 style="font-size: 1.05rem; margin-bottom: 0.25rem;">No items listed yet</h4>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">Be the first student to list textbooks, lab equipment, or electronics.</p>
+            <button class="btn btn-sm btn-primary" onclick="window.openCreateListingModal()">+ Create Listing</button>
           </div>
-          <div class="product-content">
-            <div>
-              <h4 class="product-title">${item.title}</h4>
-              <div class="product-price-row">
-                <span class="product-price">${item.price === 0 ? 'Free' : '₹' + item.price}</span>
-                <span class="product-condition">· ${item.condition}</span>
+        `;
+      } else {
+        recentMarketEl.innerHTML = activeListings.slice(0, 4).map(item => `
+          <div class="product-card" onclick="window.openProductDetailModal('${item.id}')">
+            <div class="product-image-box">
+              <img src="${item.images[0]}" alt="${item.title}">
+              <span class="product-type-badge badge-${item.listingType}">${item.listingType}</span>
+            </div>
+            <div class="product-content">
+              <div>
+                <h4 class="product-title">${item.title}</h4>
+                <div class="product-price-row">
+                  <span class="product-price">${item.price === 0 ? 'Free' : '₹' + item.price}</span>
+                  <span class="product-condition">· ${item.condition}</span>
+                </div>
+              </div>
+              <div class="product-card-footer">
+                <div class="product-seller-info">
+                  <span class="badge-verified">${ICONS.check} ${item.seller.name.split(' ')[0]}</span>
+                  <span class="product-location">${ICONS.mapPin} ${item.meetupLocation}</span>
+                </div>
               </div>
             </div>
-            <div class="product-card-footer">
-              <div class="product-seller-info">
-                <span class="badge-verified">${ICONS.check} ${item.seller.name.split(' ')[0]}</span>
-                <span class="product-location">${ICONS.mapPin} ${item.meetupLocation}</span>
-              </div>
-            </div>
           </div>
-        </div>
-      `).join('');
+        `).join('');
+      }
     }
 
     // New Resources
     const recentResEl = document.getElementById('home-recent-res-grid');
     if (recentResEl) {
-      recentResEl.innerHTML = window.Store.state.resources.slice(0, 3).map(res => `
-        <div class="resource-card" onclick="window.openResourceViewerModal('${res.id}')">
-          <div>
-            <div class="resource-top">
-              <div class="resource-file-icon">${ICONS.fileText}</div>
-              <span class="badge-tag">${res.resourceType}</span>
+      const activeResources = window.Store.state.resources || [];
+      if (activeResources.length === 0) {
+        recentResEl.innerHTML = `
+          <div class="empty-state-box" style="grid-column: 1 / -1; padding: 2rem 1rem; text-align: center; background: var(--warm-ivory); border-radius: var(--radius-md); border: 1px dashed var(--border-color);">
+            <div style="font-size: 1.8rem; margin-bottom: 0.35rem;">📚</div>
+            <h4 style="font-size: 1.05rem; margin-bottom: 0.25rem;">No resources uploaded yet</h4>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">Share verified lecture notes, formula cheat sheets, or solved PYQs.</p>
+            <button class="btn btn-sm btn-primary" onclick="window.openUploadResourceModal()">+ Upload Resource</button>
+          </div>
+        `;
+      } else {
+        recentResEl.innerHTML = activeResources.slice(0, 3).map(res => `
+          <div class="resource-card" onclick="window.openResourceViewerModal('${res.id}')">
+            <div>
+              <div class="resource-top">
+                <div class="resource-file-icon">${ICONS.fileText}</div>
+                <span class="badge-tag">${res.resourceType}</span>
+              </div>
+              <h4 class="resource-title">${res.title}</h4>
+              <div class="resource-meta-strip">
+                <span>${res.branch}</span>
+                <span>·</span>
+                <span>Semester ${res.semester}</span>
+                <span>·</span>
+                <span>${res.pages} pages</span>
+              </div>
             </div>
-            <h4 class="resource-title">${res.title}</h4>
-            <div class="resource-meta-strip">
-              <span>${res.branch}</span>
-              <span>·</span>
-              <span>Semester ${res.semester}</span>
-              <span>·</span>
-              <span>${res.pages} pages</span>
+            <div class="resource-footer">
+              <span class="badge-verified">${ICONS.check} ${res.uploadedBy.name}</span>
+              <button class="btn btn-sm btn-secondary">View / Download</button>
             </div>
           </div>
-          <div class="resource-footer">
-            <span class="badge-verified">${ICONS.check} ${res.uploadedBy.name}</span>
-            <button class="btn btn-sm btn-secondary">View / Download</button>
-          </div>
-        </div>
-      `).join('');
+        `).join('');
+      }
     }
 
     // Personalized Opportunities (Personalized for B.Tech CSE)
@@ -1608,111 +1679,144 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
       }
     } else if (profileActiveTab === 'exchanges') {
-      const exchs = window.Store.state.exchanges;
-      tabContainer.innerHTML = `
-        <div style="display:flex; flex-direction:column; gap:1.25rem;">
-          ${exchs.map(e => `
-            <div style="background:var(--pure-white); border:1px solid var(--border-color); border-radius:var(--radius-lg); padding:1.5rem;">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-                <div>
-                  <span class="badge-tag">Proposal: ${e.id}</span>
-                  <span style="font-size:0.8rem; color:var(--text-secondary); margin-left:0.5rem;">${e.date}</span>
+      const exchs = window.Store.state.exchanges || [];
+      if (exchs.length === 0) {
+        tabContainer.innerHTML = `
+          <div class="empty-state-box">
+            <div class="empty-state-icon">🔄</div>
+            <h3 class="empty-state-title">No exchange proposals yet</h3>
+            <p class="empty-state-sub">When you propose or receive a barter trade with another student, proposals will appear here.</p>
+            <button class="btn btn-primary" onclick="window.navigateTo('marketplace')">Explore Marketplace</button>
+          </div>
+        `;
+      } else {
+        tabContainer.innerHTML = `
+          <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            ${exchs.map(e => `
+              <div style="background:var(--pure-white); border:1px solid var(--border-color); border-radius:var(--radius-lg); padding:1.5rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                  <div>
+                    <span class="badge-tag">Proposal: ${e.id}</span>
+                    <span style="font-size:0.8rem; color:var(--text-secondary); margin-left:0.5rem;">${e.date}</span>
+                  </div>
+                  <span class="badge-${e.status === 'accepted' ? 'green' : 'amber'}">${e.status.toUpperCase()}</span>
                 </div>
-                <span class="badge-${e.status === 'accepted' ? 'green' : 'amber'}">${e.status.toUpperCase()}</span>
-              </div>
 
-              <!-- Barter Visual -->
-              <div class="exchange-barter-box">
-                <div class="exchange-item-side">
-                  <span style="font-size:0.75rem; color:var(--text-secondary); text-transform:uppercase;">Target Item</span>
-                  <div style="font-weight:700; font-size:1.05rem;">${e.targetListingTitle}</div>
-                  <div style="font-size:0.85rem; color:var(--primary-crimson); font-weight:600;">₹${e.targetListingPrice}</div>
-                </div>
+                <!-- Barter Visual -->
+                <div class="exchange-barter-box">
+                  <div class="exchange-item-side">
+                    <span style="font-size:0.75rem; color:var(--text-secondary); text-transform:uppercase;">Target Item</span>
+                    <div style="font-weight:700; font-size:1.05rem;">${e.targetListingTitle}</div>
+                    <div style="font-size:0.85rem; color:var(--primary-crimson); font-weight:600;">₹${e.targetListingPrice}</div>
+                  </div>
 
-                <div class="exchange-swap-icon">${ICONS.swap}</div>
+                  <div class="exchange-swap-icon">${ICONS.swap}</div>
 
-                <div class="exchange-item-side">
-                  <span style="font-size:0.75rem; color:var(--text-secondary); text-transform:uppercase;">Offered Item</span>
-                  <div style="font-weight:700; font-size:1.05rem;">${e.proposerItemTitle}</div>
-                  <div style="font-size:0.85rem; color:var(--primary-crimson); font-weight:600;">
-                    ₹${e.proposerItemPrice} ${e.cashDifference > 0 ? `(+ ₹${e.cashDifference} Cash)` : ''}
+                  <div class="exchange-item-side">
+                    <span style="font-size:0.75rem; color:var(--text-secondary); text-transform:uppercase;">Offered Item</span>
+                    <div style="font-weight:700; font-size:1.05rem;">${e.proposerItemTitle}</div>
+                    <div style="font-size:0.85rem; color:var(--primary-crimson); font-weight:600;">
+                      ₹${e.proposerItemPrice} ${e.cashDifference > 0 ? `(+ ₹${e.cashDifference} Cash)` : ''}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div style="font-size:0.88rem; color:var(--text-secondary); margin-bottom:1rem; font-style:italic;">
-                “${e.note}”
-              </div>
+                <div style="font-size:0.88rem; color:var(--text-secondary); margin-bottom:1rem; font-style:italic;">
+                  “${e.note}”
+                </div>
 
-              ${e.status === 'pending' ? `
-                <div style="display:flex; justify-content:flex-end; gap:0.75rem;">
-                  <button class="btn btn-sm btn-ghost" onclick="window.Store.updateExchangeStatus('${e.id}', 'rejected'); window.renderProfile();">Reject</button>
-                  <button class="btn btn-sm btn-secondary" onclick="window.Store.updateExchangeStatus('${e.id}', 'countered'); window.renderProfile();">Counter Offer</button>
-                  <button class="btn btn-sm btn-primary" onclick="window.Store.updateExchangeStatus('${e.id}', 'accepted'); window.renderProfile();">Accept Exchange</button>
-                </div>
-              ` : `
-                <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.85rem;">
-                  <span style="color:var(--text-secondary);">Meetup planned at campus location.</span>
-                  <button class="btn btn-sm btn-secondary" onclick="window.navigateTo('chat')">Open Meetup Chat →</button>
-                </div>
-              `}
-            </div>
-          `).join('')}
-        </div>
-      `;
+                ${e.status === 'pending' ? `
+                  <div style="display:flex; justify-content:flex-end; gap:0.75rem;">
+                    <button class="btn btn-sm btn-ghost" onclick="window.Store.updateExchangeStatus('${e.id}', 'rejected'); window.renderProfile();">Reject</button>
+                    <button class="btn btn-sm btn-secondary" onclick="window.Store.updateExchangeStatus('${e.id}', 'countered'); window.renderProfile();">Counter Offer</button>
+                    <button class="btn btn-sm btn-primary" onclick="window.Store.updateExchangeStatus('${e.id}', 'accepted'); window.renderProfile();">Accept Exchange</button>
+                  </div>
+                ` : `
+                  <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.85rem;">
+                    <span style="color:var(--text-secondary);">Meetup planned at campus location.</span>
+                    <button class="btn btn-sm btn-secondary" onclick="window.navigateTo('chat')">Open Meetup Chat →</button>
+                  </div>
+                `}
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
     } else if (profileActiveTab === 'resources') {
-      const myRes = window.Store.state.resources.filter(r => r.uploadedBy.name === user.name);
-      tabContainer.innerHTML = `
-        <div class="resource-grid">
-          ${myRes.map(res => `
-            <div class="resource-card">
-              <div>
-                <div class="resource-top">
-                  <div class="resource-file-icon">${ICONS.fileText}</div>
-                  <span class="badge-tag">${res.resourceType}</span>
-                </div>
-                <h4 class="resource-title">${res.title}</h4>
-                <div class="resource-meta-strip">
-                  <span>${res.branch}</span>
-                  <span>·</span>
-                  <span>Sem ${res.semester}</span>
-                  <span>·</span>
-                  <span>${res.downloads} downloads</span>
-                </div>
-              </div>
-              <div class="resource-footer">
-                <span class="badge-green">${ICONS.check} Verified Notes</span>
-                <button class="btn btn-sm btn-secondary" onclick="window.openResourceViewerModal('${res.id}')">View</button>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      `;
-    } else if (profileActiveTab === 'saved') {
-      const favListings = window.Store.state.listings.filter(l => (user.savedListings || []).includes(l.id));
-      tabContainer.innerHTML = `
-        <div class="product-grid">
-          ${favListings.map(item => `
-            <div class="product-card" onclick="window.openProductDetailModal('${item.id}')">
-              <div class="product-image-box">
-                <img src="${item.images[0]}" alt="${item.title}">
-                <span class="product-type-badge badge-${item.listingType}">${item.listingType}</span>
-              </div>
-              <div class="product-content">
+      const myRes = (window.Store.state.resources || []).filter(r => r.uploadedBy && r.uploadedBy.name === user.name);
+      if (myRes.length === 0) {
+        tabContainer.innerHTML = `
+          <div class="empty-state-box">
+            <div class="empty-state-icon">📚</div>
+            <h3 class="empty-state-title">No uploaded resources</h3>
+            <p class="empty-state-sub">Share your handwritten notes, formula cheat sheets, or solved question papers.</p>
+            <button class="btn btn-primary" onclick="window.openUploadResourceModal()">+ Upload Resource</button>
+          </div>
+        `;
+      } else {
+        tabContainer.innerHTML = `
+          <div class="resource-grid">
+            ${myRes.map(res => `
+              <div class="resource-card">
                 <div>
-                  <h4 class="product-title">${item.title}</h4>
-                  <div class="product-price-row">
-                    <span class="product-price">₹${item.price}</span>
+                  <div class="resource-top">
+                    <div class="resource-file-icon">${ICONS.fileText}</div>
+                    <span class="badge-tag">${res.resourceType}</span>
+                  </div>
+                  <h4 class="resource-title">${res.title}</h4>
+                  <div class="resource-meta-strip">
+                    <span>${res.branch}</span>
+                    <span>·</span>
+                    <span>Sem ${res.semester}</span>
+                    <span>·</span>
+                    <span>${res.downloads} downloads</span>
                   </div>
                 </div>
-                <div class="product-card-footer">
-                  <span class="product-location">${ICONS.mapPin} ${item.meetupLocation}</span>
+                <div class="resource-footer">
+                  <span class="badge-green">${ICONS.check} Verified Notes</span>
+                  <button class="btn btn-sm btn-secondary" onclick="window.openResourceViewerModal('${res.id}')">View</button>
                 </div>
               </div>
-            </div>
-          `).join('')}
-        </div>
-      `;
+            `).join('')}
+          </div>
+        `;
+      }
+    } else if (profileActiveTab === 'saved') {
+      const favListings = (window.Store.state.listings || []).filter(l => (user.savedListings || []).includes(l.id));
+      if (favListings.length === 0) {
+        tabContainer.innerHTML = `
+          <div class="empty-state-box">
+            <div class="empty-state-icon">🔖</div>
+            <h3 class="empty-state-title">No bookmarked items</h3>
+            <p class="empty-state-sub">Tap the heart icon on any listing in the marketplace to bookmark it for later.</p>
+            <button class="btn btn-primary" onclick="window.navigateTo('marketplace')">Explore Marketplace</button>
+          </div>
+        `;
+      } else {
+        tabContainer.innerHTML = `
+          <div class="product-grid">
+            ${favListings.map(item => `
+              <div class="product-card" onclick="window.openProductDetailModal('${item.id}')">
+                <div class="product-image-box">
+                  <img src="${item.images[0]}" alt="${item.title}">
+                  <span class="product-type-badge badge-${item.listingType}">${item.listingType}</span>
+                </div>
+                <div class="product-content">
+                  <div>
+                    <h4 class="product-title">${item.title}</h4>
+                    <div class="product-price-row">
+                      <span class="product-price">₹${item.price}</span>
+                    </div>
+                  </div>
+                  <div class="product-card-footer">
+                    <span class="product-location">${ICONS.mapPin} ${item.meetupLocation}</span>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
     } else if (profileActiveTab === 'clubs') {
       const followedClubs = window.Store.state.clubs.filter(c => (user.followedClubs || []).includes(c.id));
       tabContainer.innerHTML = `

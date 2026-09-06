@@ -142,6 +142,25 @@
       const results = [];
       const store = window.Store;
 
+      // Seed isolated mock test fixtures so automated tests run reliably without demo data
+      if (!store.state.conversations.find(c => c.id === 'conv-shubham')) {
+        store.state.conversations.push({
+          id: 'conv-shubham',
+          participants: ['user-current', 'user-shubham'],
+          messages: [{ id: 'm1', sender_id: 'user-shubham', text: 'Private' }]
+        });
+      }
+      if (!store.state.listings.find(l => l.id === 'prod-1')) {
+        store.state.listings.push({
+          id: 'prod-1',
+          seller_id: 'user-shubham',
+          seller: { id: 'user-shubham', name: 'Shubham Verma', enrollment: '0101CS251088' },
+          title: 'Casio Calculator Test Fixture',
+          price: 700,
+          condition: 'Good Condition'
+        });
+      }
+
       // TEST 1: RLS / IDOR on private conversation
       try {
         const attacker = { id: 'user-malicious', isVerified: true, enrollment: '0101CS269999' };

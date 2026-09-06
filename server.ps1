@@ -4,11 +4,23 @@ param (
 )
 
 $listener = New-Object System.Net.HttpListener
-$listener.Prefixes.Add("http://localhost:$Port/")
+$loopbackPrefixes = @(
+    "http://localhost:$Port/",
+    "http://127.0.0.1:$Port/",
+    "http://[::1]:$Port/"
+)
+
+foreach ($prefix in $loopbackPrefixes) {
+    try {
+        $listener.Prefixes.Add($prefix)
+    } catch {
+        # Fallback if specific prefix is unavailable
+    }
+}
 
 try {
     $listener.Start()
-    Write-Host "RGPV Unofficial Secure Server running at http://localhost:$Port/"
+    Write-Host "RGPV Unofficial Secure Server running at http://localhost:$Port/ and http://127.0.0.1:$Port/"
     Write-Host "Serving files and security APIs from $Root"
 } catch {
     Write-Error "Failed to start listener on port $($Port): $_"
@@ -108,6 +120,17 @@ while ($listener.IsListening) {
         $clientIp = $request.RemoteEndPoint.Address.ToString()
         $rawUrl = $request.Url.LocalPath
         $method = $request.HttpMethod.ToUpper()
+
+        # Handle CORS preflight OPTIONS requests
+        if ($method -eq "OPTIONS") {
+            Add-SecurityHeaders $response
+            $response.Headers.Set("Access-Control-Allow-Origin", "*")
+            $response.Headers.Set("Access-Control-Allow-Methods", "GET, POST, HEAD, OPTIONS")
+            $response.Headers.Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+            $response.StatusCode = 200
+            $response.OutputStream.Close()
+            continue
+        }
 
         # ======================================================================
         # 1. SERVER-SIDE SECURITY & TRUST APIS
