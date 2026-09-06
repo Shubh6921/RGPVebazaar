@@ -386,25 +386,28 @@ class CampusStore {
   }
 
   verifyUser(enrollment, studentData, phone) {
-    const clean = enrollment.toUpperCase().trim();
-
-    // Check unique enrollment constraint
-    if (this.state.currentUser.enrollment === clean && this.state.currentUser.isVerified) {
-      // Already verified to this account
-    }
+    const clean = (enrollment || '').toUpperCase().trim();
+    const data = studentData || {};
+    const fullName = data.full_name || data.name || 'Verified Student';
+    const branchName = data.branch || 'Engineering';
+    const batchYear = data.batch || '2026';
+    const prog = data.program || 'B.Tech';
+    const branchCode = data.branchCode || (clean.length >= 6 ? clean.substring(4, 6).toUpperCase() : 'CS');
+    const initials = fullName.split(' ').filter(Boolean).map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'RS';
 
     this.state.currentUser = {
       id: 'user-' + clean.toLowerCase(),
       isVerified: true,
       enrollment: clean,
-      name: studentData.name,
-      program: studentData.program,
-      branch: studentData.branch,
-      branchCode: studentData.branchCode,
-      batch: studentData.batch,
-      semester: studentData.semester || 3,
-      phone: phone,
-      avatar: studentData.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase(),
+      name: fullName,
+      full_name: fullName,
+      program: prog,
+      branch: branchName,
+      branchCode: branchCode,
+      batch: batchYear,
+      semester: data.semester || 3,
+      phone: phone || '+91 98765 43210',
+      avatar: initials,
       rating: 5.0,
       transactions: 0,
       verificationBadge: 'Campus Verified',
@@ -418,7 +421,7 @@ class CampusStore {
     this.addNotification({
       icon: '✓',
       title: 'Enrollment Verified',
-      desc: `Welcome to RGPV Unofficial, ${studentData.name}. Verified as ${studentData.branchCode}.`
+      desc: `Welcome to RGPV Unofficial, ${fullName}. Verified as ${branchCode}.`
     });
     this.saveState();
   }

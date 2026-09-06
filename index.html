@@ -329,7 +329,13 @@
           <div class="form-group">
             <label class="form-label" for="verify-enrollment-input">RGPV Enrollment Number</label>
             <input type="text" id="verify-enrollment-input" placeholder="e.g. 0101CS261001" style="text-transform: uppercase;">
-            <span class="form-help">Try demo enrollment <strong>0101CS261001</strong>, <strong>0101IT251042</strong> or any standard RGPV pattern.</span>
+            <div id="verify-step1-error" style="display:none; color:#b91c1c; font-size:0.85rem; margin-top:0.5rem; padding:0.5rem 0.75rem; background:#fef2f2; border-radius:6px; border:1px solid #fecaca;"></div>
+            <span class="form-help" style="margin-top:0.5rem; display:block;">
+              Quick test rosters (click to fill):
+              <button type="button" class="btn-enroll-chip" data-enroll="0101CS261001" style="cursor:pointer; background:var(--badge-blue-bg,#e0f2fe); color:var(--badge-blue-text,#0369a1); border:1px solid #bae6fd; padding:3px 8px; border-radius:12px; font-size:0.75rem; font-weight:600; margin:2px;">0101CS261001</button>
+              <button type="button" class="btn-enroll-chip" data-enroll="0101IT261001" style="cursor:pointer; background:var(--badge-blue-bg,#e0f2fe); color:var(--badge-blue-text,#0369a1); border:1px solid #bae6fd; padding:3px 8px; border-radius:12px; font-size:0.75rem; font-weight:600; margin:2px;">0101IT261001</button>
+              <button type="button" class="btn-enroll-chip" data-enroll="0101AU261001" style="cursor:pointer; background:var(--badge-blue-bg,#e0f2fe); color:var(--badge-blue-text,#0369a1); border:1px solid #bae6fd; padding:3px 8px; border-radius:12px; font-size:0.75rem; font-weight:600; margin:2px;">0101AU261001</button>
+            </span>
           </div>
 
           <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1.5rem;">
@@ -393,7 +399,8 @@
 
           <div class="form-group">
             <label class="form-label" for="verify-phone-input">Phone Number</label>
-            <input type="tel" id="verify-phone-input" placeholder="+91 98765 43210">
+            <input type="tel" id="verify-phone-input" placeholder="+91 98765 43210" value="+91 98765 43210">
+            <div id="verify-step3-error" style="display:none; color:#b91c1c; font-size:0.85rem; margin-top:0.5rem; padding:0.5rem 0.75rem; background:#fef2f2; border-radius:6px; border:1px solid #fecaca;"></div>
           </div>
 
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
@@ -404,17 +411,28 @@
           </div>
 
           <div id="otp-entry-box" style="display:none;">
+            <!-- Sandbox / Real OTP Info Box -->
+            <div id="otp-info-banner" style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:0.75rem 1rem; margin-bottom:1.25rem; font-size:0.85rem; color:#166534; display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <span>📱 <strong>Test Verification Code:</strong> <code id="otp-code-display" style="font-size:1.05rem; font-weight:700; color:#15803d; letter-spacing:2px; background:#dcfce7; padding:2px 6px; border-radius:4px;">123456</code></span>
+              </div>
+              <button type="button" id="btn-auto-fill-otp" class="btn btn-sm btn-secondary" style="font-size:0.75rem; padding:3px 8px; cursor:pointer;">
+                ⚡ Fill 123456
+              </button>
+            </div>
+
             <label class="form-label" style="text-align:center; display:block;">Enter 6-Digit Verification Code</label>
             <div class="otp-inputs">
-              <input type="text" maxlength="1" class="otp-digit">
-              <input type="text" maxlength="1" class="otp-digit">
-              <input type="text" maxlength="1" class="otp-digit">
-              <input type="text" maxlength="1" class="otp-digit">
-              <input type="text" maxlength="1" class="otp-digit">
-              <input type="text" maxlength="1" class="otp-digit">
+              <input type="text" maxlength="1" class="otp-digit" inputmode="numeric" autocomplete="one-time-code">
+              <input type="text" maxlength="1" class="otp-digit" inputmode="numeric">
+              <input type="text" maxlength="1" class="otp-digit" inputmode="numeric">
+              <input type="text" maxlength="1" class="otp-digit" inputmode="numeric">
+              <input type="text" maxlength="1" class="otp-digit" inputmode="numeric">
+              <input type="text" maxlength="1" class="otp-digit" inputmode="numeric">
             </div>
+            <div id="verify-otp-error" style="display:none; color:#b91c1c; font-size:0.85rem; margin-top:0.5rem; margin-bottom:0.75rem; text-align:center; padding:0.4rem 0.6rem; background:#fef2f2; border-radius:6px; border:1px solid #fecaca;"></div>
             <div style="text-align:center; font-size:0.8rem; color:var(--text-secondary); margin-bottom:1.5rem;">
-              Resend OTP code in <strong>0:45</strong>
+              Sandbox active for this project · Use code <strong>123456</strong>
             </div>
 
             <div style="display:flex; justify-content:space-between; align-items:center;">
