@@ -1,5 +1,5 @@
 param (
-    [string]$CsvPath = "scripts/roster.csv",
+    [string]$CsvPath = "",
     [string]$SupabaseUrl = "https://jjcmiubasrvubfrkystv.supabase.co",
     [string]$ServiceRoleKey = $env:SUPABASE_SERVICE_ROLE_KEY
 )
@@ -8,15 +8,10 @@ Write-Host "========================================================" -Foregroun
 Write-Host " RGPV UNOFFICIAL - CSV Enrollment Roster Ingestion Tool " -ForegroundColor Cyan
 Write-Host "========================================================" -ForegroundColor Cyan
 
-if (-not (Test-Path $CsvPath)) {
-    if (Test-Path "roster.csv") { $CsvPath = "roster.csv" }
-    elseif (Test-Path "sample_roster.csv") { $CsvPath = "sample_roster.csv" }
-    elseif (Test-Path "scripts/sample_roster.csv") { $CsvPath = "scripts/sample_roster.csv" }
-    else {
-        Write-Error ("CSV file not found at: " + $CsvPath)
-        Write-Host "Usage: .\seed_enrollments_from_csv.ps1 -CsvPath 'path\to\your_roster.csv'"
-        exit 1
-    }
+if (-not $CsvPath -or -not (Test-Path $CsvPath)) {
+    Write-Host "Please provide the path to your student roster CSV file." -ForegroundColor Yellow
+    Write-Host "Usage: .\seed_enrollments_from_csv.ps1 -CsvPath 'path\to\your_roster.csv'" -ForegroundColor Cyan
+    exit 1
 }
 
 $rows = Import-Csv -Path $CsvPath

@@ -1,10 +1,11 @@
 param (
-    [string]$CsvPath = "scripts/roster.csv",
+    [string]$CsvPath = "",
     [string]$OutputPath = "supabase/seed_roster.sql"
 )
 
-if (-not (Test-Path $CsvPath)) {
-    Write-Error "CSV file not found: $CsvPath"
+if (-not $CsvPath -or -not (Test-Path $CsvPath)) {
+    Write-Host "Please provide the path to the roster CSV file." -ForegroundColor Yellow
+    Write-Host "Usage: .\convert_csv_to_sql.ps1 -CsvPath 'path\to\roster.csv'" -ForegroundColor Cyan
     exit 1
 }
 
