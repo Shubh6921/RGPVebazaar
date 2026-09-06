@@ -142,7 +142,7 @@ window.SupaAuth = {
 
     return {
       found: false,
-      error: 'Enrollment record not found in official campus roster. Please check your enrollment number.'
+      error: 'Unable to retrieve your student record. Please try again.'
     };
   },
 
@@ -253,9 +253,12 @@ window.SupaAuth = {
     const norm = (enrollmentNo || '').trim().toUpperCase();
     const cleanPhone = normalizePhone(phone);
     const sData = studentData || {};
-    const fullName = sData.full_name || sData.name || 'Verified Student';
-    const branch = sData.branch || 'Engineering';
-    const batch = sData.batch || '2026';
+    const fullName = (sData.full_name || sData.name || '').trim();
+    if (!fullName || fullName === 'Verified Student') {
+      return { success: false, error: 'Unable to retrieve your student record. Please try again.' };
+    }
+    const branch = (sData.branch || '').trim() || 'Engineering';
+    const batch = (sData.batch || '').trim() || '2026';
 
     const verifiedRecord = {
       enrollment_no: norm,

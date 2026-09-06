@@ -387,18 +387,23 @@ class CampusStore {
       console.warn('Server endpoint unavailable, checking fallback:', e);
     }
 
-    return { found: false, error: 'Enrollment record not found in official campus roster.' };
+    return { found: false, error: 'Unable to retrieve your student record. Please try again.' };
   }
 
   verifyUser(enrollment, studentData, phone) {
     const clean = (enrollment || '').toUpperCase().trim();
     const data = studentData || {};
-    const fullName = data.full_name || data.name || 'Verified Student';
-    const branchName = data.branch || 'Engineering';
-    const batchYear = data.batch || '2026';
+    const fullName = (data.full_name || data.name || '').trim();
+    
+    if (!fullName || fullName === 'Verified Student') {
+      return { success: false, error: 'Unable to retrieve your student record. Please try again.' };
+    }
+
+    const branchName = (data.branch || '').trim() || 'Engineering';
+    const batchYear = (data.batch || '').trim() || '2026';
     const prog = data.program || 'B.Tech';
     const branchCode = data.branchCode || (clean.length >= 6 ? clean.substring(4, 6).toUpperCase() : 'CS');
-    const initials = fullName.split(' ').filter(Boolean).map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'RS';
+    const initials = fullName.split(' ').filter(Boolean).map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'ST';
 
     this.state.currentUser = {
       id: 'user-' + clean.toLowerCase(),

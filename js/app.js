@@ -429,20 +429,25 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
 
-        if (!lookup || !lookup.found) {
-          showVerifyError('verify-step1-error', lookup?.error || 'Enrollment number not found in official campus roster. Please try one of the test enrollments below.');
+        if (!lookup || !lookup.found || !lookup.student || (!lookup.student.name && !lookup.student.full_name)) {
+          showVerifyError('verify-step1-error', lookup?.error || 'Unable to retrieve your student record. Please try again.');
+          return;
+        }
+
+        const studentName = (lookup.student.full_name || lookup.student.name || '').trim();
+        if (!studentName || studentName === 'Verified Student') {
+          showVerifyError('verify-step1-error', 'Unable to retrieve your student record. Please try again.');
           return;
         }
 
         verifyStepData.enrollment = val;
         verifyStepData.student = lookup.student;
 
-        // Populate Step 2 confirmation card
-        const studentName = lookup.student.full_name || lookup.student.name;
+        // Populate Step 2 confirmation card with real roster data
         document.getElementById('roster-name').textContent = studentName;
         document.getElementById('roster-program').textContent = lookup.student.program || 'B.Tech';
-        document.getElementById('roster-branch').textContent = lookup.student.branch;
-        document.getElementById('roster-batch').textContent = lookup.student.batch;
+        document.getElementById('roster-branch').textContent = lookup.student.branch || 'Engineering';
+        document.getElementById('roster-batch').textContent = lookup.student.batch || '2026–30';
         
         // Masked enrollment
         const masked = lookup.student.maskedEnrollment || (val.length >= 6 ? val.substring(0, val.length - 4) + '****' : val);
@@ -2398,9 +2403,28 @@ document.addEventListener('DOMContentLoaded', () => {
         const active = await window.SupaAuth.getActiveSession();
         if (active && active.profile && active.profile.is_verified) {
           console.info('Restored verified Supabase session:', active.profile.enrollment_no);
-          const fn = active.profile.full_name || active.profile.name || 'Verified Student';
+          let fn = active.profile.full_name || active.profile.name;
+          let branch = active.profile.branch;
+          let program = active.profile.program || 'B.Tech';
+          let batch = active.profile.batch || '2026-30';
+
+          if (!fn || fn === 'Verified Student' || fn.startsWith('Verified Student') || !branch || branch === 'Engineering') {
+            const rec = await window.Store.lookupStudentAsync(active.profile.enrollment_no);
+            if (rec && rec.found && rec.student) {
+              fn = rec.student.name || rec.student.full_name || fn;
+              branch = rec.student.branch || branch;
+              program = rec.student.program || program;
+              batch = rec.student.batch || batch;
+            }
+          }
+
+          if (!fn || fn.startsWith('Verified Student')) {
+            console.warn('Session has unverified or generic student name, aborting restoration.');
+            return;
+          }
+
           const initials = fn.split(' ').filter(Boolean).map(w => w[0]).join('').substring(0, 2).toUpperCase() || 'ST';
-          const bCode = active.profile.branch ? active.profile.branch.split(' ').filter(Boolean).map(w => w[0]).join('') : 'ENG';
+          const bCode = branch ? branch.split(' ').filter(Boolean).map(w => w[0]).join('') : 'ENG';
 
           window.Store.state.currentUser = {
             id: active.user.id || 'user-' + (active.profile.enrollment_no || '').toLowerCase(),
@@ -2408,10 +2432,10 @@ document.addEventListener('DOMContentLoaded', () => {
             enrollment: active.profile.enrollment_no,
             name: fn,
             full_name: fn,
-            program: 'B.Tech',
-            branch: active.profile.branch || 'Engineering',
+            program: program,
+            branch: branch,
             branchCode: bCode,
-            batch: active.profile.batch || '2026',
+            batch: batch,
             phone: active.profile.phone || '+91 98765 43210',
             avatar: initials,
             rating: 5.0,
