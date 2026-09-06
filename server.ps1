@@ -95,8 +95,7 @@ function Add-SecurityHeaders($response) {
     $response.Headers.Set("X-Content-Type-Options", "nosniff")
     $response.Headers.Set("X-Frame-Options", "DENY")
     $response.Headers.Set("Referrer-Policy", "strict-origin-when-cross-origin")
-    $response.Headers.Set("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
-    $response.Headers.Set("Content-Security-Policy", "default-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://images.unsplash.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; frame-ancestors 'none';")
+    $response.Headers.Set("Content-Security-Policy", "default-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://images.unsplash.com https://*.supabase.co https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; connect-src 'self' https://*.supabase.co wss://*.supabase.co; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; frame-ancestors 'none';")
     $response.Headers.Set("Cache-Control", "no-cache, no-store, must-revalidate")
 }
 

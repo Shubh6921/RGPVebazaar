@@ -364,9 +364,22 @@ document.addEventListener('DOMContentLoaded', () => {
       btnEnrollContinue.disabled = true;
 
       try {
-        const lookup = await window.Store.lookupStudentAsync(val);
-        if (!lookup.found) {
-          alert(lookup.error || 'Enrollment number not found in official campus roster. Try 0101CS261001 or any standard RGPV pattern.');
+        let lookup = null;
+        // 1. Query real Supabase valid_enrollments table / RPC
+        if (window.SupaAuth) {
+          lookup = await window.SupaAuth.checkEnrollment(val);
+        }
+
+        // 2. Fallback to Store roster if Supabase is initializing
+        if (!lookup || !lookup.found) {
+          const storeLookup = await window.Store.lookupStudentAsync(val);
+          if (storeLookup && storeLookup.found) {
+            lookup = storeLookup;
+          }
+        }
+
+        if (!lookup || !lookup.found) {
+          alert(lookup?.error || 'Enrollment number not found in official campus roster. Please enter a valid RGPV enrollment number.');
           return;
         }
 
@@ -374,8 +387,9 @@ document.addEventListener('DOMContentLoaded', () => {
         verifyStepData.student = lookup.student;
 
         // Populate Step 2 confirmation card
-        document.getElementById('roster-name').textContent = lookup.student.name;
-        document.getElementById('roster-program').textContent = lookup.student.program;
+        const studentName = lookup.student.full_name || lookup.student.name;
+        document.getElementById('roster-name').textContent = studentName;
+        document.getElementById('roster-program').textContent = lookup.student.program || 'B.Tech';
         document.getElementById('roster-branch').textContent = lookup.student.branch;
         document.getElementById('roster-batch').textContent = lookup.student.batch;
         
@@ -384,6 +398,9 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('roster-masked-enrollment').textContent = masked;
 
         goToVerifyStep(2);
+      } catch (err) {
+        console.error('Enrollment check error:', err);
+        alert(err.message || 'Unable to check enrollment number. Please retry.');
       } finally {
         btnEnrollContinue.textContent = 'Continue →';
         btnEnrollContinue.disabled = false;
@@ -395,55 +412,149 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnConfirmStudent = document.getElementById('btn-verify-confirm-student');
   if (btnConfirmStudent) {
     btnConfirmStudent.addEventListener('click', () => {
-      // Pre-fill phone if available
+      // Pre-fill phone if available from record
       const phoneInput = document.getElementById('verify-phone-input');
       if (phoneInput && verifyStepData.student) {
-        phoneInput.value = verifyStepData.student.phone || '+91 98765 43210';
+        if (verifyStepData.student.phone) {
+          phoneInput.value = verifyStepData.student.phone;
+        } else if (!phoneInput.value) {
+          phoneInput.value = '+91 ';
+        }
       }
       goToVerifyStep(3);
     });
   }
 
-  // Handle Step 3 Send OTP
+  // Handle OTP digit navigation and auto-advancing
+  const otpDigits = document.querySelectorAll('.otp-digit');
+  otpDigits.forEach((digitInput, idx) => {
+    digitInput.addEventListener('input', () => {
+      if (digitInput.value.length >= 1) {
+        digitInput.value = digitInput.value.slice(-1); // Only keep single digit
+        if (idx < otpDigits.length - 1) {
+          otpDigits[idx + 1].focus();
+        }
+      }
+    });
+    digitInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !digitInput.value && idx > 0) {
+        otpDigits[idx - 1].focus();
+      }
+    });
+    digitInput.addEventListener('paste', (e) => {
+      const paste = (e.clipboardData || window.clipboardData).getData('text').trim();
+      if (paste.length === 6 && /^\d+$/.test(paste)) {
+        e.preventDefault();
+        paste.split('').forEach((char, i) => {
+          if (otpDigits[i]) otpDigits[i].value = char;
+        });
+        if (otpDigits[5]) otpDigits[5].focus();
+      }
+    });
+  });
+
+  // Handle Step 3 Send Phone OTP via Supabase Auth
   const btnSendOtp = document.getElementById('btn-send-otp');
   const otpEntryBox = document.getElementById('otp-entry-box');
   if (btnSendOtp) {
-    btnSendOtp.addEventListener('click', () => {
-      const phoneVal = document.getElementById('verify-phone-input').value;
-      verifyStepData.phone = phoneVal;
-      btnSendOtp.style.display = 'none';
-      if (otpEntryBox) otpEntryBox.style.display = 'block';
+    btnSendOtp.addEventListener('click', async () => {
+      const phoneInput = document.getElementById('verify-phone-input');
+      const phoneVal = (phoneInput.value || '').trim();
 
-      // Auto focus OTP inputs
-      const firstOtp = document.querySelector('.otp-digit');
-      if (firstOtp) {
-        firstOtp.value = '7';
-        document.querySelectorAll('.otp-digit')[1].value = '4';
-        document.querySelectorAll('.otp-digit')[2].value = '2';
-        document.querySelectorAll('.otp-digit')[3].value = '9';
-        document.querySelectorAll('.otp-digit')[4].value = '1';
-        document.querySelectorAll('.otp-digit')[5].value = '8';
+      if (!phoneVal || phoneVal.length < 10) {
+        alert('Please enter a valid mobile number (e.g. +91 98765 43210).');
+        return;
       }
-      showToast('Verification OTP sent: 742918');
+
+      btnSendOtp.textContent = 'Sending OTP...';
+      btnSendOtp.disabled = true;
+
+      try {
+        verifyStepData.phone = phoneVal;
+        let otpRes = { success: true, message: 'Verification code sent.' };
+
+        if (window.SupaAuth) {
+          otpRes = await window.SupaAuth.sendPhoneOtp(phoneVal);
+        }
+
+        if (!otpRes.success) {
+          alert(otpRes.error || 'Failed to send OTP. Please check the phone number.');
+          return;
+        }
+
+        btnSendOtp.style.display = 'none';
+        if (otpEntryBox) otpEntryBox.style.display = 'block';
+
+        // Clear and focus first OTP digit
+        otpDigits.forEach(d => d.value = '');
+        if (otpDigits[0]) otpDigits[0].focus();
+
+        showToast(otpRes.message || 'Verification OTP code dispatched!');
+      } catch (err) {
+        alert(err.message || 'Failed to dispatch OTP. Please check your network connection.');
+      } finally {
+        btnSendOtp.textContent = 'Send OTP Code';
+        btnSendOtp.disabled = false;
+      }
     });
   }
 
-  // Handle OTP Submit
+  // Handle Step 3 Submit OTP Verification
   const btnVerifyOtp = document.getElementById('btn-submit-otp');
   if (btnVerifyOtp) {
-    btnVerifyOtp.addEventListener('click', () => {
-      window.Store.verifyUser(verifyStepData.enrollment, verifyStepData.student, verifyStepData.phone);
-      syncNavHeader();
+    btnVerifyOtp.addEventListener('click', async () => {
+      let otpCode = '';
+      otpDigits.forEach(d => otpCode += (d.value || '').trim());
 
-      // Show celebration step
-      document.querySelectorAll('.verify-step').forEach(el => el.classList.remove('active'));
-      const successEl = document.getElementById('verify-step-success');
-      if (successEl) {
-        successEl.classList.add('active');
-        document.getElementById('verify-success-name').textContent = verifyStepData.student.name;
-        document.getElementById('verify-success-program').textContent = `${verifyStepData.student.program} ${verifyStepData.student.branchCode} · ${verifyStepData.student.batch}`;
+      if (!otpCode || otpCode.length < 6) {
+        alert('Please enter the complete 6-digit verification code.');
+        return;
       }
-      showToast('Campus verification complete! Welcome.');
+
+      btnVerifyOtp.textContent = 'Verifying...';
+      btnVerifyOtp.disabled = true;
+
+      try {
+        let verifyRes = { success: true };
+        if (window.SupaAuth) {
+          verifyRes = await window.SupaAuth.verifyPhoneOtp(verifyStepData.phone, otpCode);
+        }
+
+        if (!verifyRes.success) {
+          alert(verifyRes.error || 'Invalid or expired OTP verification code.');
+          return;
+        }
+
+        // Link verified profile in Supabase PostgreSQL
+        if (window.SupaAuth) {
+          await window.SupaAuth.saveVerifiedProfile(
+            verifyStepData.enrollment,
+            verifyStepData.student,
+            verifyStepData.phone
+          );
+        }
+
+        // Sync local client store
+        window.Store.verifyUser(verifyStepData.enrollment, verifyStepData.student, verifyStepData.phone);
+        syncNavHeader();
+
+        // Show celebration step
+        document.querySelectorAll('.verify-step').forEach(el => el.classList.remove('active'));
+        const successEl = document.getElementById('verify-step-success');
+        if (successEl) {
+          successEl.classList.add('active');
+          const studentName = verifyStepData.student.full_name || verifyStepData.student.name;
+          document.getElementById('verify-success-name').textContent = studentName;
+          document.getElementById('verify-success-program').textContent = `${verifyStepData.student.program || 'B.Tech'} ${verifyStepData.student.branch} · ${verifyStepData.student.batch}`;
+        }
+        showToast('Campus verification complete! Welcome to RGPV Unofficial.');
+      } catch (err) {
+        console.error('OTP verification error:', err);
+        alert(err.message || 'Verification failed. Please try again.');
+      } finally {
+        btnVerifyOtp.textContent = 'Verify & Complete Access →';
+        btnVerifyOtp.disabled = false;
+      }
     });
   }
 
@@ -2011,11 +2122,64 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Auto-restore Supabase session on app startup
+  async function initSupabaseSession() {
+    if (window.SupaAuth) {
+      try {
+        const active = await window.SupaAuth.getActiveSession();
+        if (active && active.profile && active.profile.is_verified) {
+          console.info('Restored verified Supabase session:', active.profile.enrollment_no);
+          window.Store.state.currentUser = {
+            id: active.user.id,
+            isVerified: true,
+            enrollment: active.profile.enrollment_no,
+            name: active.profile.full_name,
+            program: 'B.Tech',
+            branch: active.profile.branch,
+            branchCode: active.profile.branch ? active.profile.branch.split(' ').map(w => w[0]).join('') : 'ENG',
+            batch: active.profile.batch,
+            phone: active.profile.phone,
+            avatar: active.profile.full_name ? active.profile.full_name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase() : 'ST',
+            rating: 5.0,
+            transactions: 0,
+            verificationBadge: 'Campus Verified',
+            followedClubs: window.Store.state.currentUser.followedClubs || ['coding-club', 'gdsc-rgpv'],
+            savedListings: [],
+            savedResources: [],
+            savedOpportunities: ['opp-1']
+          };
+          window.Store.saveState();
+          syncNavHeader();
+        }
+      } catch (err) {
+        console.warn('Could not auto-restore session:', err);
+      }
+    }
+  }
+
+  // Sign out handler
+  window.signOutUser = async () => {
+    if (confirm('Are you sure you want to sign out of your campus account?')) {
+      if (window.SupaAuth) {
+        await window.SupaAuth.signOut();
+      }
+      window.Store.state.currentUser.isVerified = false;
+      window.Store.state.currentUser.name = 'Campus Guest';
+      window.Store.state.currentUser.enrollment = '';
+      window.Store.saveState();
+      syncNavHeader();
+      navigate('landing');
+      showToast('Signed out of campus session.');
+    }
+  };
+
   // Initialize
   syncNavHeader();
   initGlobalSearch();
+  initSupabaseSession();
   renderLanding();
 
   // If user navigated directly or defaults
   navigate('landing');
 });
+
