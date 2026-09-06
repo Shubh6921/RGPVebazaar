@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
       routeHistory.push(currentRoute);
       try {
         window.history.pushState({ route, param }, '', '#' + route);
-      } catch (e) { }
+      } catch (e) {}
     }
     currentRoute = route;
 
@@ -185,64 +185,51 @@ document.addEventListener('DOMContentLoaded', () => {
   // LANDING PAGE RENDER
   // =========================================================================
   function renderLanding() {
-    // Floating luxury preview cards
-    const p1 = window.Store.state.listings[0] || {
-      title: 'Scientific Calculator (fx-991EX)',
-      price: 650,
-      condition: 'Pristine',
-      meetupLocation: 'Campus Cafeteria',
-      seller: { name: 'Shivam V.', branchCode: 'CSE' }
-    };
-    const r1 = window.Store.state.resources[0] || {
-      title: 'Engineering Mathematics III',
-      branchCode: 'CSE',
-      pages: 42,
-      uploadedBy: { name: 'Aman V.' }
-    };
+    // Floating previews
+    const p1 = window.Store.state.listings[0];
+    const r1 = window.Store.state.resources[0];
+    const o1 = window.Store.state.opportunities[0];
 
     const previewContainer = document.getElementById('landing-floating-previews');
-    if (previewContainer) {
+    if (previewContainer && p1 && r1 && o1) {
       previewContainer.innerHTML = `
-        <div class="hero-glass-card card-drop" onclick="window.navigateTo('marketplace')">
-          <div class="glass-card-header">
-            <span class="tag-pill tag-hot">HOT DROP</span>
-            <span class="micro-badge">Campus Marketplace</span>
+        <div class="preview-card-floating offset-left" onclick="window.navigateTo('marketplace')">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem;">
+            <span class="badge-tag">Marketplace</span>
+            <span class="badge-verified">${ICONS.check} Campus Verified</span>
           </div>
-          <div class="glass-card-body">
-            <div class="glass-card-title">${p1.title}</div>
-            <div class="glass-card-meta">
-              <span class="price-val">₹${p1.price}</span>
-              <span class="status-dot-green">●</span>
-              <span class="status-txt">${p1.condition} · ${p1.meetupLocation}</span>
-            </div>
-          </div>
-          <div class="glass-card-footer">
-            <span class="peer-avatar">${(p1.seller && p1.seller.name ? p1.seller.name.substring(0, 2).toUpperCase() : 'SV')}</span>
-            <span class="peer-name">${p1.seller ? p1.seller.name : 'Shivam V.'} (${p1.seller ? p1.seller.branchCode || 'CSE' : 'CSE'}) · Verified ✓</span>
-          </div>
-        </div>
-
-        <div class="hero-glass-card card-barter" onclick="window.navigateTo('marketplace'); if(window.setMarketFilterType) window.setMarketFilterType('exchange');">
-          <div class="glass-card-header">
-            <span class="tag-pill tag-exchange">ACTIVE BARTER ⇄</span>
-            <span class="micro-badge">Zero Cash Diff</span>
-          </div>
-          <div class="glass-card-body">
-            <div class="glass-card-title">Engineering Chemistry ⇄ Basic Mech</div>
-            <div class="glass-card-meta">
-              <span class="status-dot-pulse">●</span>
-              <span class="status-txt">Meetup: Central Library Hub</span>
+          <div style="display:flex; gap:0.9rem; align-items:center;">
+            <img src="${p1.images[0]}" style="width:55px; height:55px; border-radius:8px; object-fit:cover;">
+            <div>
+              <h5 style="font-size:0.95rem; font-weight:600; line-height:1.2; margin-bottom:0.2rem;">${p1.title}</h5>
+              <div style="font-weight:700; color:var(--primary-crimson);">₹${p1.price} <span style="font-weight:400; color:var(--text-secondary); font-size:0.75rem;">· ${p1.meetupLocation}</span></div>
             </div>
           </div>
         </div>
 
-        <div class="hero-glass-card card-trust" onclick="window.navigateTo('verify')">
-          <div class="trust-crest">🎓</div>
-          <div>
-            <div class="trust-title">RGPV Student Pass</div>
-            <div class="trust-sub micro-mono">0101CS26**** · 99.8% Peer Score</div>
+        <div class="preview-card-floating offset-right" onclick="window.navigateTo('resources')">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem;">
+            <span class="badge-tag">Academic Resource</span>
+            <span style="font-size:0.75rem; color:var(--text-secondary); font-weight:600;">CSE · Semester 3</span>
           </div>
-          <span class="badge-verified">✓ Active</span>
+          <div style="display:flex; gap:0.9rem; align-items:center;">
+            <div style="width:45px; height:45px; border-radius:8px; background:var(--crimson-subtle); color:var(--primary-crimson); display:flex; align-items:center; justify-content:center;">
+              ${ICONS.fileText}
+            </div>
+            <div>
+              <h5 style="font-size:0.95rem; font-weight:600; line-height:1.2; margin-bottom:0.2rem;">${r1.title}</h5>
+              <div style="font-size:0.78rem; color:var(--text-secondary);">${r1.pages} pages PDF · By ${r1.uploadedBy.name}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="preview-card-floating" onclick="window.navigateTo('opportunities')">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem;">
+            <span class="badge-tag">${o1.category}</span>
+            <span class="opp-deadline-pill">${o1.deadline}</span>
+          </div>
+          <h5 style="font-size:1.05rem; font-family:var(--font-display); line-height:1.2; margin-bottom:0.3rem;">${o1.title}</h5>
+          <div style="font-size:0.8rem; color:var(--text-secondary);">Organized by <strong>${o1.organization}</strong> · ${o1.prize}</div>
         </div>
       `;
     }
@@ -456,7 +443,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('roster-program').textContent = lookup.student.program || 'B.Tech';
         document.getElementById('roster-branch').textContent = lookup.student.branch;
         document.getElementById('roster-batch').textContent = lookup.student.batch;
-
+        
         // Masked enrollment
         const masked = lookup.student.maskedEnrollment || (val.length >= 6 ? val.substring(0, val.length - 4) + '****' : val);
         document.getElementById('roster-masked-enrollment').textContent = masked;
@@ -1146,7 +1133,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const prodImgEl = document.getElementById('modal-prod-image');
     if (prodImgEl) {
       prodImgEl.src = item.images && item.images[0] ? item.images[0] : 'https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=600&auto=format&fit=crop&q=80';
-      prodImgEl.onerror = function () {
+      prodImgEl.onerror = function() {
         this.onerror = null;
         this.src = 'https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=600&auto=format&fit=crop&q=80';
       };
@@ -1856,8 +1843,8 @@ document.addEventListener('DOMContentLoaded', () => {
       container.innerHTML = `
         <div class="opp-grid">
           ${filtered.map(opp => {
-        const isSaved = savedOpps.includes(opp.id);
-        return `
+            const isSaved = savedOpps.includes(opp.id);
+            return `
               <div class="opp-card">
                 <div>
                   <div class="opp-header">
@@ -1887,7 +1874,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
               </div>
             `;
-      }).join('')}
+          }).join('')}
         </div>
       `;
     } else if (oppTab === 'clubs') {
@@ -1903,8 +1890,8 @@ document.addEventListener('DOMContentLoaded', () => {
       container.innerHTML = `
         <div class="club-card-grid">
           ${filteredClubs.map(club => {
-        const isFollowing = followed.includes(club.id);
-        return `
+            const isFollowing = followed.includes(club.id);
+            return `
               <div class="club-card">
                 <div>
                   <div class="club-header">
@@ -1931,7 +1918,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
               </div>
             `;
-      }).join('')}
+          }).join('')}
         </div>
       `;
     } else if (oppTab === 'saved') {

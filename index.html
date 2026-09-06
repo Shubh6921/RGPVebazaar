@@ -1,37 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RGPV MARKETPLACE — Independent Student Ecosystem</title>
-  <meta name="description"
-    content="An independent, student-driven digital campus ecosystem for RGPV students. Buy, sell, exchange, share academic resources, and discover campus opportunities.">
+  <title>RGPV UNOFFICIAL — Your campus, all in one place.</title>
+  <meta name="description" content="An independent, student-driven digital campus ecosystem for RGPV students. Buy, sell, exchange, share academic resources, and discover campus opportunities.">
 
-  <!-- Google Fonts: Plus Jakarta Sans + Instrument Serif + Space Mono -->
+  <!-- Google Fonts: Playfair Display + Manrope -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Space+Mono:wght@400;700&display=swap"
-    rel="stylesheet">
-
-  <!-- Three.js for 3D Hero Sculpture -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,600&display=swap" rel="stylesheet">
 
   <!-- Main Stylesheet -->
   <link rel="stylesheet" href="styles/main.css">
 </head>
-
 <body>
-
-  <!-- Custom Luxury Cursor -->
-  <div id="custom-cursor" class="custom-cursor">
-    <div class="cursor-dot"></div>
-    <div class="cursor-ring"><span class="cursor-label"></span></div>
-  </div>
-
-  <!-- Command Palette Modal -->
-  <div id="modal-command-palette" class="palette-overlay"></div>
 
   <!-- Toast Container -->
   <div id="toast-container" class="toast-container"></div>
@@ -43,8 +26,8 @@
       <div class="brand-wrapper" onclick="window.navigateTo('landing')">
         <div class="brand-crest">R</div>
         <div class="brand-text">
-          <span class="brand-title">RGPV MARKETPLACE</span>
-          <span class="brand-sub">Independent Student Ecosystem</span>
+          <span class="brand-title">RGPV UNOFFICIAL</span>
+          <span class="brand-sub">Campus Ecosystem</span>
         </div>
       </div>
 
@@ -59,24 +42,9 @@
 
       <!-- Right Nav Actions -->
       <div class="nav-actions">
-        <!-- Quick Search Bar Trigger (⌘K) -->
-        <button class="nav-search-btn" onclick="window.openCommandPalette()" title="Search (⌘K)" aria-label="Quick Search">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
-          <span class="nav-search-text">Search...</span>
-          <kbd class="nav-search-kbd">⌘K</kbd>
-        </button>
-
         <!-- Notifications Bell -->
-        <button class="nav-icon-btn" onclick="window.openNotificationsModal()" title="Notifications"
-          aria-label="Notifications">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-          </svg>
+        <button class="nav-icon-btn" onclick="window.openNotificationsModal()" title="Notifications" aria-label="Notifications">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
           <span id="nav-notif-dot" class="badge-dot" style="display:none;"></span>
         </button>
 
@@ -102,120 +70,45 @@
   <main id="view-landing" class="view-section active">
     <!-- Hero Editorial Section -->
     <section class="hero-editorial">
-      <div class="hero-ambient-mesh"></div>
-      <div class="hero-grid-overlay"></div>
       <div class="container hero-grid">
         <div class="hero-content">
-          <!-- Live Campus Verification Status Pill -->
-          <div class="hero-status-pill">
-            <span class="radar-ping-ring"></span>
-            <span class="status-dot"></span>
-            <span class="status-label">STUDENT ECOSYSTEM · 955+ ENROLLED & VERIFIED</span>
-          </div>
-
-          <!-- Majestic Luxury Headline -->
+          <span class="editorial-label">Student-Driven Campus Ecosystem</span>
           <h1 class="hero-headline">
-            Your campus.<br>
-            <span class="hero-serif-italic">Everything</span> you <span class="hero-crimson-gradient">need.</span>
+            Your campus,<br>
+            all in <span class="crimson-text">one place.</span>
           </h1>
-
           <p class="hero-subtext">
-            An independent, zero-brokerage trading floor and academic archive built exclusively for verified RGPV engineers. Textbooks, drafting gear, notes, and peer-to-peer barter — without middlemen.
+            Buy, sell, exchange, learn and discover opportunities — exclusively within your verified RGPV campus community.
           </p>
 
-          <!-- Interactive Hero Search Trigger -->
-          <div class="hero-search-bar" onclick="window.openCommandPalette()">
-            <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-            <span class="search-placeholder">Search engineering notes, Casio fx-991EX, drafters, PYQs...</span>
-            <span class="search-kbd-shortcut"><kbd>⌘K</kbd> / <kbd>Ctrl+K</kbd></span>
-          </div>
-
           <div class="hero-cta-group">
-            <button class="btn btn-primary btn-lg" onclick="window.navigateTo('marketplace')">
-              Explore Marketplace →
+            <button class="btn btn-primary btn-lg" onclick="window.navigateTo('verify')">
+              Enter Your Campus →
             </button>
-            <button class="btn btn-secondary btn-lg" onclick="window.navigateTo('marketplace'); if(window.setMarketFilterType) window.setMarketFilterType('exchange');">
-              Propose Barter ⇄
+            <button class="btn btn-secondary btn-lg" onclick="window.navigateTo('home')">
+              Explore Platform
             </button>
           </div>
 
-          <!-- Live Luxury Social Proof Stats Strip -->
-          <div class="hero-stats-strip">
-            <div class="stat-cell">
-              <div class="stat-number font-serif">955+</div>
-              <div class="stat-caption">VERIFIED PEERS</div>
+          <div class="hero-trust-indicators">
+            <div class="trust-item">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>Campus Verified</span>
             </div>
-            <div class="stat-divider"></div>
-            <div class="stat-cell">
-              <div class="stat-number font-serif">₹4.8L+</div>
-              <div class="stat-caption">SAVED IN BARTER</div>
+            <div class="trust-item">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>Student Only</span>
             </div>
-            <div class="stat-divider"></div>
-            <div class="stat-cell">
-              <div class="stat-number font-serif">0%</div>
-              <div class="stat-caption">BROKERAGE</div>
-            </div>
-            <div class="stat-divider"></div>
-            <div class="stat-cell">
-              <div class="stat-number font-serif">100%</div>
-              <div class="stat-caption">STUDENT EXCLUSIVE</div>
+            <div class="trust-item">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>Community Driven</span>
             </div>
           </div>
         </div>
 
-        <!-- Hero Visual: 3D Scene + Floating Luxury Glass Previews -->
-        <div class="hero-visual-stage">
-          <div class="hero-mesh-glow"></div>
-          <div id="hero-3d-container" class="hero-3d-container"></div>
-
-          <!-- Floating Interactive Luxury Glass Cards -->
-          <div class="hero-floating-cards" id="landing-floating-previews">
-            <div class="hero-glass-card card-drop" onclick="window.navigateTo('marketplace')">
-              <div class="glass-card-header">
-                <span class="tag-pill tag-hot">HOT DROP</span>
-                <span class="micro-badge">Casio fx-991EX</span>
-              </div>
-              <div class="glass-card-body">
-                <div class="glass-card-title">Scientific Calculator (ClassWiz)</div>
-                <div class="glass-card-meta">
-                  <span class="price-val">₹650</span>
-                  <span class="price-mrp">MRP ₹1,495</span>
-                  <span class="status-dot-green">●</span>
-                  <span class="status-txt">In Stock</span>
-                </div>
-              </div>
-              <div class="glass-card-footer">
-                <span class="peer-avatar">SV</span>
-                <span class="peer-name">Shivam V. (CSE 3rd) · Verified ✓</span>
-              </div>
-            </div>
-
-            <div class="hero-glass-card card-barter" onclick="window.navigateTo('marketplace'); if(window.setMarketFilterType) window.setMarketFilterType('exchange');">
-              <div class="glass-card-header">
-                <span class="tag-pill tag-exchange">ACTIVE BARTER ⇄</span>
-                <span class="micro-badge">Zero Cash Diff</span>
-              </div>
-              <div class="glass-card-body">
-                <div class="glass-card-title">Engineering Chemistry ⇄ Basic Mech</div>
-                <div class="glass-card-meta">
-                  <span class="status-dot-pulse">●</span>
-                  <span class="status-txt">Meetup: Central Library</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="hero-glass-card card-trust" onclick="window.navigateTo('verify')">
-              <div class="trust-crest">🎓</div>
-              <div>
-                <div class="trust-title">RGPV Student Pass</div>
-                <div class="trust-sub micro-mono">0101CS26**** · 99.8% Trust</div>
-              </div>
-              <span class="badge-verified">✓ Active</span>
-            </div>
-          </div>
+        <!-- Hero Visual: Floating Platform Previews -->
+        <div class="hero-visual" id="landing-floating-previews">
+          <!-- Injected via app.js -->
         </div>
       </div>
     </section>
@@ -226,8 +119,7 @@
         <div class="section-header-editorial">
           <span class="editorial-label">Four Core Pillars</span>
           <h2 class="section-title font-serif">Everything you need. One campus.</h2>
-          <p class="section-desc">Consolidating essential student utilities into an integrated, spam-free university
-            network.</p>
+          <p class="section-desc">Consolidating essential student utilities into an integrated, spam-free university network.</p>
         </div>
 
         <div class="pillars-grid">
@@ -235,15 +127,10 @@
           <div class="pillar-card" data-pillar="marketplace">
             <div>
               <div class="pillar-icon-box">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="9" cy="21" r="1"></circle>
-                  <circle cx="20" cy="21" r="1"></circle>
-                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                </svg>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
               </div>
               <h3 class="pillar-title">Marketplace</h3>
-              <p class="pillar-desc">Buy, sell and exchange student essentials with verified students at campus meetup
-                spots.</p>
+              <p class="pillar-desc">Buy, sell and exchange student essentials with verified students at campus meetup spots.</p>
             </div>
             <span class="pillar-link">Explore Marketplace →</span>
           </div>
@@ -252,17 +139,10 @@
           <div class="pillar-card" data-pillar="exchange">
             <div>
               <div class="pillar-icon-box">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="16 3 21 3 21 8"></polyline>
-                  <line x1="4" y1="20" x2="21" y2="3"></line>
-                  <polyline points="21 16 21 21 16 21"></polyline>
-                  <line x1="15" y1="15" x2="21" y2="21"></line>
-                  <line x1="4" y1="4" x2="9" y2="9"></line>
-                </svg>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
               </div>
               <h3 class="pillar-title">Exchange</h3>
-              <p class="pillar-desc">Trade what you have for what you need with visual barter and flexible cash
-                difference offsets.</p>
+              <p class="pillar-desc">Trade what you have for what you need with visual barter and flexible cash difference offsets.</p>
             </div>
             <span class="pillar-link">Propose Barter →</span>
           </div>
@@ -271,14 +151,10 @@
           <div class="pillar-card" data-pillar="resources">
             <div>
               <div class="pillar-icon-box">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                </svg>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
               </div>
               <h3 class="pillar-title">Resources</h3>
-              <p class="pillar-desc">Access lecture notes, PYQs, exam papers and academic material shared by your peers.
-              </p>
+              <p class="pillar-desc">Access lecture notes, PYQs, exam papers and academic material shared by your peers.</p>
             </div>
             <span class="pillar-link">Access Materials →</span>
           </div>
@@ -287,15 +163,10 @@
           <div class="pillar-card" data-pillar="opportunities">
             <div>
               <div class="pillar-icon-box">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polygon
-                    points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
-                  </polygon>
-                </svg>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
               </div>
               <h3 class="pillar-title">Opportunities</h3>
-              <p class="pillar-desc">Discover campus clubs, events, competitions, hackathons and recruitments in one
-                place.</p>
+              <p class="pillar-desc">Discover campus clubs, events, competitions, hackathons and recruitments in one place.</p>
             </div>
             <span class="pillar-link">Discover Opportunities →</span>
           </div>
@@ -309,8 +180,7 @@
         <div class="section-header-editorial">
           <span class="editorial-label">Campus Opportunities</span>
           <h2 class="section-title font-serif">Stop searching through WhatsApp groups.</h2>
-          <p class="section-desc">Clubs, events, competitions, hackathons, workshops and student opportunities —
-            gathered in one discoverable place.</p>
+          <p class="section-desc">Clubs, events, competitions, hackathons, workshops and student opportunities — gathered in one discoverable place.</p>
         </div>
 
         <div class="cards-carousel-grid" id="landing-opp-feed">
@@ -331,8 +201,7 @@
         <div class="section-header-editorial">
           <span class="editorial-label">Marketplace</span>
           <h2 class="section-title font-serif">Give things a second life.</h2>
-          <p class="section-desc">Engineering books, scientific calculators, lab kits and hostel essentials exchanged
-            between verified peers.</p>
+          <p class="section-desc">Engineering books, scientific calculators, lab kits and hostel essentials exchanged between verified peers.</p>
         </div>
 
         <div class="cards-carousel-grid" id="landing-marketplace-feed">
@@ -353,8 +222,7 @@
         <div class="section-header-editorial">
           <span class="editorial-label">Academic Repository</span>
           <h2 class="section-title font-serif">Learn from your campus.</h2>
-          <p class="section-desc">Organized strictly by RGPV Branch and Semester. High-yield lecture notes and solved
-            previous year question papers.</p>
+          <p class="section-desc">Organized strictly by RGPV Branch and Semester. High-yield lecture notes and solved previous year question papers.</p>
         </div>
 
         <div class="cards-carousel-grid" id="landing-resources-feed">
@@ -375,59 +243,40 @@
         <div style="text-align:center; max-width:700px; margin:0 auto;">
           <span class="editorial-label">Verification Architecture</span>
           <h2 class="section-title font-serif">Built for students. Trusted by students.</h2>
-          <p class="section-desc" style="margin: 0 auto;">Access is restricted to verified campus students through
-            enrollment verification matched with campus roster membership.</p>
+          <p class="section-desc" style="margin: 0 auto;">Access is restricted to verified campus students through enrollment verification matched with campus roster membership.</p>
         </div>
 
         <div class="trust-pillars-grid">
           <div class="trust-card">
             <div class="trust-card-icon">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-              </svg>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
             </div>
             <h4 class="trust-card-title">Enrollment Verified</h4>
-            <p class="trust-card-desc">Matches student enrollment against verified branch rosters to prevent
-              unauthorized access.</p>
+            <p class="trust-card-desc">Matches student enrollment against verified branch rosters to prevent unauthorized access.</p>
           </div>
 
           <div class="trust-card">
             <div class="trust-card-icon">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path
-                  d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
-                </path>
-              </svg>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
             </div>
             <h4 class="trust-card-title">Phone Verified</h4>
-            <p class="trust-card-desc">One-time passcodes verify legitimate device possession for safe peer
-              communication.</p>
+            <p class="trust-card-desc">One-time passcodes verify legitimate device possession for safe peer communication.</p>
           </div>
 
           <div class="trust-card">
             <div class="trust-card-icon">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                <circle cx="12" cy="10" r="3"></circle>
-              </svg>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
             </div>
             <h4 class="trust-card-title">Campus Meetups</h4>
-            <p class="trust-card-desc">Handover exchanges occur safely in person at Central Library, Cafeteria, or
-              Academic Blocks.</p>
+            <p class="trust-card-desc">Handover exchanges occur safely in person at Central Library, Cafeteria, or Academic Blocks.</p>
           </div>
 
           <div class="trust-card">
             <div class="trust-card-icon">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-              </svg>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
             </div>
             <h4 class="trust-card-title">Student Community</h4>
-            <p class="trust-card-desc">Built purely for students with zero spam, zero external commercial listings, and
-              zero spam bots.</p>
+            <p class="trust-card-desc">Built purely for students with zero spam, zero external commercial listings, and zero spam bots.</p>
           </div>
         </div>
       </div>
@@ -458,13 +307,8 @@
       <div class="verify-container">
         <!-- Top Back Navigation -->
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-          <button class="back-nav-btn" onclick="window.goBack()" id="verify-top-back-btn"
-            title="Go back to previous page">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-              stroke-linecap="round" stroke-linejoin="round">
-              <line x1="19" y1="12" x2="5" y2="12"></line>
-              <polyline points="12 19 5 12 12 5"></polyline>
-            </svg>
+          <button class="back-nav-btn" onclick="window.goBack()" id="verify-top-back-btn" title="Go back to previous page">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             <span>Back</span>
           </button>
           <div id="verify-progress-indicator" class="verify-progress" style="margin-bottom:0;">01 / 03</div>
@@ -477,27 +321,20 @@
 
         <!-- Step 1: Enrollment Number -->
         <div id="verify-step-1" class="verify-step active">
-          <h3 style="font-size:1.25rem; font-family:var(--font-display); margin-bottom:0.4rem;">Welcome to your campus.
-          </h3>
+          <h3 style="font-size:1.25rem; font-family:var(--font-display); margin-bottom:0.4rem;">Welcome to your campus.</h3>
           <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:1.5rem;">
             Let's verify that you're part of the RGPV community. Enter your official university enrollment number.
           </p>
 
           <div class="form-group">
             <label class="form-label" for="verify-enrollment-input">RGPV Enrollment Number</label>
-            <input type="text" id="verify-enrollment-input" placeholder="e.g. 0101CS261001"
-              style="text-transform: uppercase;">
-            <div id="verify-step1-error"
-              style="display:none; color:#b91c1c; font-size:0.85rem; margin-top:0.5rem; padding:0.5rem 0.75rem; background:#fef2f2; border-radius:6px; border:1px solid #fecaca;">
-            </div>
+            <input type="text" id="verify-enrollment-input" placeholder="e.g. 0101CS261001" style="text-transform: uppercase;">
+            <div id="verify-step1-error" style="display:none; color:#b91c1c; font-size:0.85rem; margin-top:0.5rem; padding:0.5rem 0.75rem; background:#fef2f2; border-radius:6px; border:1px solid #fecaca;"></div>
             <span class="form-help" style="margin-top:0.5rem; display:block;">
               Quick test rosters (click to fill):
-              <button type="button" class="btn-enroll-chip" data-enroll="0101CS261001"
-                style="cursor:pointer; background:var(--badge-blue-bg,#e0f2fe); color:var(--badge-blue-text,#0369a1); border:1px solid #bae6fd; padding:3px 8px; border-radius:12px; font-size:0.75rem; font-weight:600; margin:2px;">0101CS261001</button>
-              <button type="button" class="btn-enroll-chip" data-enroll="0101IT261001"
-                style="cursor:pointer; background:var(--badge-blue-bg,#e0f2fe); color:var(--badge-blue-text,#0369a1); border:1px solid #bae6fd; padding:3px 8px; border-radius:12px; font-size:0.75rem; font-weight:600; margin:2px;">0101IT261001</button>
-              <button type="button" class="btn-enroll-chip" data-enroll="0101AU261001"
-                style="cursor:pointer; background:var(--badge-blue-bg,#e0f2fe); color:var(--badge-blue-text,#0369a1); border:1px solid #bae6fd; padding:3px 8px; border-radius:12px; font-size:0.75rem; font-weight:600; margin:2px;">0101AU261001</button>
+              <button type="button" class="btn-enroll-chip" data-enroll="0101CS261001" style="cursor:pointer; background:var(--badge-blue-bg,#e0f2fe); color:var(--badge-blue-text,#0369a1); border:1px solid #bae6fd; padding:3px 8px; border-radius:12px; font-size:0.75rem; font-weight:600; margin:2px;">0101CS261001</button>
+              <button type="button" class="btn-enroll-chip" data-enroll="0101IT261001" style="cursor:pointer; background:var(--badge-blue-bg,#e0f2fe); color:var(--badge-blue-text,#0369a1); border:1px solid #bae6fd; padding:3px 8px; border-radius:12px; font-size:0.75rem; font-weight:600; margin:2px;">0101IT261001</button>
+              <button type="button" class="btn-enroll-chip" data-enroll="0101AU261001" style="cursor:pointer; background:var(--badge-blue-bg,#e0f2fe); color:var(--badge-blue-text,#0369a1); border:1px solid #bae6fd; padding:3px 8px; border-radius:12px; font-size:0.75rem; font-weight:600; margin:2px;">0101AU261001</button>
             </span>
           </div>
 
@@ -508,19 +345,15 @@
             <button id="btn-verify-step1" class="btn btn-primary">Continue →</button>
           </div>
 
-          <div
-            style="font-size:0.75rem; color:var(--text-secondary); text-align:center; margin-top:2rem; padding-top:1rem; border-top:1px solid var(--border-light);">
+          <div style="font-size:0.75rem; color:var(--text-secondary); text-align:center; margin-top:2rem; padding-top:1rem; border-top:1px solid var(--border-light);">
             🔒 Your enrollment number is checked against the encrypted campus roster only to verify campus access.
           </div>
         </div>
 
         <!-- Step 2: Student Record Confirmation -->
         <div id="verify-step-2" class="verify-step">
-          <div
-            style="display:inline-flex; align-items:center; gap:0.4rem; color:var(--badge-green-text); font-weight:700; font-size:0.85rem; margin-bottom:0.75rem;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
+          <div style="display:inline-flex; align-items:center; gap:0.4rem; color:var(--badge-green-text); font-weight:700; font-size:0.85rem; margin-bottom:0.75rem;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
             Student record found
           </div>
           <h3 style="font-size:1.35rem; font-family:var(--font-display); margin-bottom:0.3rem;">Is this you?</h3>
@@ -567,9 +400,7 @@
           <div class="form-group">
             <label class="form-label" for="verify-phone-input">Phone Number</label>
             <input type="tel" id="verify-phone-input" placeholder="+91 98765 43210" value="+91 98765 43210">
-            <div id="verify-step3-error"
-              style="display:none; color:#b91c1c; font-size:0.85rem; margin-top:0.5rem; padding:0.5rem 0.75rem; background:#fef2f2; border-radius:6px; border:1px solid #fecaca;">
-            </div>
+            <div id="verify-step3-error" style="display:none; color:#b91c1c; font-size:0.85rem; margin-top:0.5rem; padding:0.5rem 0.75rem; background:#fef2f2; border-radius:6px; border:1px solid #fecaca;"></div>
           </div>
 
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
@@ -581,14 +412,11 @@
 
           <div id="otp-entry-box" style="display:none;">
             <!-- Sandbox / Real OTP Info Box -->
-            <div id="otp-info-banner"
-              style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:0.75rem 1rem; margin-bottom:1.25rem; font-size:0.85rem; color:#166534; display:flex; justify-content:space-between; align-items:center;">
+            <div id="otp-info-banner" style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:0.75rem 1rem; margin-bottom:1.25rem; font-size:0.85rem; color:#166534; display:flex; justify-content:space-between; align-items:center;">
               <div>
-                <span>📱 <strong>Test Verification Code:</strong> <code id="otp-code-display"
-                    style="font-size:1.05rem; font-weight:700; color:#15803d; letter-spacing:2px; background:#dcfce7; padding:2px 6px; border-radius:4px;">123456</code></span>
+                <span>📱 <strong>Test Verification Code:</strong> <code id="otp-code-display" style="font-size:1.05rem; font-weight:700; color:#15803d; letter-spacing:2px; background:#dcfce7; padding:2px 6px; border-radius:4px;">123456</code></span>
               </div>
-              <button type="button" id="btn-auto-fill-otp" class="btn btn-sm btn-secondary"
-                style="font-size:0.75rem; padding:3px 8px; cursor:pointer;">
+              <button type="button" id="btn-auto-fill-otp" class="btn btn-sm btn-secondary" style="font-size:0.75rem; padding:3px 8px; cursor:pointer;">
                 ⚡ Fill 123456
               </button>
             </div>
@@ -602,9 +430,7 @@
               <input type="text" maxlength="1" class="otp-digit" inputmode="numeric">
               <input type="text" maxlength="1" class="otp-digit" inputmode="numeric">
             </div>
-            <div id="verify-otp-error"
-              style="display:none; color:#b91c1c; font-size:0.85rem; margin-top:0.5rem; margin-bottom:0.75rem; text-align:center; padding:0.4rem 0.6rem; background:#fef2f2; border-radius:6px; border:1px solid #fecaca;">
-            </div>
+            <div id="verify-otp-error" style="display:none; color:#b91c1c; font-size:0.85rem; margin-top:0.5rem; margin-bottom:0.75rem; text-align:center; padding:0.4rem 0.6rem; background:#fef2f2; border-radius:6px; border:1px solid #fecaca;"></div>
             <div style="text-align:center; font-size:0.8rem; color:var(--text-secondary); margin-bottom:1.5rem;">
               Sandbox active for this project · Use code <strong>123456</strong>
             </div>
@@ -620,8 +446,7 @@
 
         <!-- Success Celebration -->
         <div id="verify-step-success" class="verify-step" style="text-align:center; padding:1.5rem 0;">
-          <div
-            style="width:64px; height:64px; border-radius:50%; background:var(--badge-green-bg); color:var(--badge-green-text); display:flex; align-items:center; justify-content:center; margin:0 auto 1.25rem; font-size:1.8rem;">
+          <div style="width:64px; height:64px; border-radius:50%; background:var(--badge-green-bg); color:var(--badge-green-text); display:flex; align-items:center; justify-content:center; margin:0 auto 1.25rem; font-size:1.8rem;">
             ✓
           </div>
           <h3 style="font-size:1.75rem; font-family:var(--font-display); margin-bottom:0.4rem;">You're verified.</h3>
@@ -629,8 +454,7 @@
             Welcome to RGPV Unofficial, <strong id="verify-success-name">Rahul</strong>.
           </p>
 
-          <div
-            style="background:var(--warm-ivory); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1rem; max-width:320px; margin:0 auto 2rem;">
+          <div style="background:var(--warm-ivory); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1rem; max-width:320px; margin:0 auto 2rem;">
             <div id="verify-success-program" style="font-weight:700; margin-bottom:0.25rem;">B.Tech CSE · 2026–30</div>
             <span class="badge-verified">✓ Campus Verified</span>
           </div>
@@ -672,13 +496,9 @@
         <!-- Global Search Bar with Multi-Pillar Live Dropdown -->
         <div class="global-search-wrapper">
           <div class="global-search-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
           </div>
-          <input type="text" class="global-search-input"
-            placeholder="Search products, resources, clubs, opportunities... (e.g. 'Python', 'DBMS', 'Hackathon')">
+          <input type="text" class="global-search-input" placeholder="Search products, resources, clubs, opportunities... (e.g. 'Python', 'DBMS', 'Hackathon')">
           <div class="search-dropdown-results"></div>
         </div>
 
@@ -686,11 +506,7 @@
         <div class="quick-access-grid">
           <div class="quick-card" onclick="window.navigateTo('marketplace')">
             <div class="quick-card-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="9" cy="21" r="1"></circle>
-                <circle cx="20" cy="21" r="1"></circle>
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-              </svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
             </div>
             <h3 class="quick-card-title">Marketplace</h3>
             <span class="quick-card-sub">Buy · Sell</span>
@@ -698,13 +514,7 @@
 
           <div class="quick-card" onclick="window.navigateTo('marketplace'); window.setMarketFilterType('exchange');">
             <div class="quick-card-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="16 3 21 3 21 8"></polyline>
-                <line x1="4" y1="20" x2="21" y2="3"></line>
-                <polyline points="21 16 21 21 16 21"></polyline>
-                <line x1="15" y1="15" x2="21" y2="21"></line>
-                <line x1="4" y1="4" x2="9" y2="9"></line>
-              </svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
             </div>
             <h3 class="quick-card-title">Exchange</h3>
             <span class="quick-card-sub">Trade with students</span>
@@ -712,10 +522,7 @@
 
           <div class="quick-card" onclick="window.navigateTo('resources')">
             <div class="quick-card-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-              </svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
             </div>
             <h3 class="quick-card-title">Resources</h3>
             <span class="quick-card-sub">Learn · Share</span>
@@ -723,11 +530,7 @@
 
           <div class="quick-card" onclick="window.navigateTo('opportunities')">
             <div class="quick-card-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polygon
-                  points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
-                </polygon>
-              </svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
             </div>
             <h3 class="quick-card-title">Opportunities</h3>
             <span class="quick-card-sub">Discover · Participate</span>
@@ -803,13 +606,11 @@
   <section id="view-marketplace" class="view-section">
     <div class="container">
       <div class="marketplace-header">
-        <div
-          style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
           <div>
             <span class="editorial-label">Campus Peer Marketplace</span>
             <h1 class="font-serif" style="font-size:2.4rem;">Marketplace</h1>
-            <p style="color:var(--text-secondary); font-size:1rem;">Buy, sell and exchange essentials directly with
-              verified students.</p>
+            <p style="color:var(--text-secondary); font-size:1rem;">Buy, sell and exchange essentials directly with verified students.</p>
           </div>
           <button class="btn btn-primary" onclick="window.openCreateListingModal()">
             + Create Listing
@@ -820,13 +621,10 @@
         <div class="marketplace-controls-bar">
           <!-- Listing Type Tabs -->
           <div class="listing-type-tabs" id="marketplace-type-tabs">
-            <button class="tab-btn active" data-type="all" onclick="window.setMarketFilterType('all')">All
-              Listings</button>
+            <button class="tab-btn active" data-type="all" onclick="window.setMarketFilterType('all')">All Listings</button>
             <button class="tab-btn" data-type="sell" onclick="window.setMarketFilterType('sell')">For Sale</button>
-            <button class="tab-btn" data-type="exchange" onclick="window.setMarketFilterType('exchange')">🔄 Exchange
-              Only</button>
-            <button class="tab-btn" data-type="free" onclick="window.setMarketFilterType('free')">🎁 Free
-              Giveaway</button>
+            <button class="tab-btn" data-type="exchange" onclick="window.setMarketFilterType('exchange')">🔄 Exchange Only</button>
+            <button class="tab-btn" data-type="free" onclick="window.setMarketFilterType('free')">🎁 Free Giveaway</button>
           </div>
 
           <!-- Category Chips Horizontal Scroll -->
@@ -845,8 +643,7 @@
           <!-- Filter & Sort Row -->
           <div class="filter-sort-row">
             <div class="filter-group">
-              <input type="text" id="market-search-input" placeholder="Search books, calculators, lamps..."
-                style="width:240px; padding:0.55rem 0.85rem; font-size:0.88rem;">
+              <input type="text" id="market-search-input" placeholder="Search books, calculators, lamps..." style="width:240px; padding:0.55rem 0.85rem; font-size:0.88rem;">
 
               <select id="market-condition-select" style="padding:0.55rem 0.85rem; font-size:0.88rem;">
                 <option value="all">Any Condition</option>
@@ -890,13 +687,11 @@
   <section id="view-resources" class="view-section">
     <div class="container">
       <div class="marketplace-header">
-        <div
-          style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
           <div>
             <span class="editorial-label">Peer Academic Repository</span>
             <h1 class="font-serif" style="font-size:2.4rem;">Academic Resources</h1>
-            <p style="color:var(--text-secondary); font-size:1rem;">Verified lecture notes, past exam papers, and
-              formula cheat sheets.</p>
+            <p style="color:var(--text-secondary); font-size:1rem;">Verified lecture notes, past exam papers, and formula cheat sheets.</p>
           </div>
           <button class="btn btn-primary" onclick="window.openUploadResourceModal()">
             + Upload Resource
@@ -904,11 +699,9 @@
         </div>
 
         <!-- Academic Filter Bar -->
-        <div class="filter-sort-row"
-          style="margin-bottom:2rem; background:var(--pure-white); padding:1rem; border:1px solid var(--border-color); border-radius:var(--radius-lg);">
+        <div class="filter-sort-row" style="margin-bottom:2rem; background:var(--pure-white); padding:1rem; border:1px solid var(--border-color); border-radius:var(--radius-lg);">
           <div class="filter-group">
-            <input type="text" id="resource-search-input" placeholder="Search subjects, notes, PYQs..."
-              style="width:260px; padding:0.55rem 0.85rem; font-size:0.88rem;">
+            <input type="text" id="resource-search-input" placeholder="Search subjects, notes, PYQs..." style="width:260px; padding:0.55rem 0.85rem; font-size:0.88rem;">
 
             <select id="resource-branch-select" style="padding:0.55rem 0.85rem; font-size:0.88rem;">
               <option value="all">All Branches</option>
@@ -958,24 +751,19 @@
         <div style="margin-bottom:1.5rem;">
           <span class="editorial-label">Campus Opportunities</span>
           <h1 class="font-serif" style="font-size:2.4rem;">Opportunities & Clubs</h1>
-          <p style="color:var(--text-secondary); font-size:1rem;">Everything happening across your campus, aggregated in
-            one place.</p>
+          <p style="color:var(--text-secondary); font-size:1rem;">Everything happening across your campus, aggregated in one place.</p>
         </div>
 
         <!-- Tabs -->
-        <div
-          style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; border-bottom:1px solid var(--border-color); padding-bottom:1rem; margin-bottom:2rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; border-bottom:1px solid var(--border-color); padding-bottom:1rem; margin-bottom:2rem;">
           <div class="listing-type-tabs" id="opp-tabs" style="border-bottom:none; padding-bottom:0;">
-            <button class="tab-btn active" data-opp-tab="discover" onclick="window.setOppTab('discover')">Discover
-              Feed</button>
+            <button class="tab-btn active" data-opp-tab="discover" onclick="window.setOppTab('discover')">Discover Feed</button>
             <button class="tab-btn" data-opp-tab="clubs" onclick="window.setOppTab('clubs')">Club Directory</button>
-            <button class="tab-btn" data-opp-tab="saved" onclick="window.setOppTab('saved')">Saved
-              Opportunities</button>
+            <button class="tab-btn" data-opp-tab="saved" onclick="window.setOppTab('saved')">Saved Opportunities</button>
           </div>
 
           <div class="filter-group">
-            <input type="text" id="opp-search-input" placeholder="Search events, clubs..."
-              style="width:200px; padding:0.45rem 0.8rem; font-size:0.85rem;">
+            <input type="text" id="opp-search-input" placeholder="Search events, clubs..." style="width:200px; padding:0.45rem 0.8rem; font-size:0.85rem;">
             <select id="opp-category-filter" style="padding:0.45rem 0.8rem; font-size:0.85rem;">
               <option value="all">All Categories</option>
               <option value="Hackathons">Hackathons</option>
@@ -1003,13 +791,8 @@
   <section id="view-profile" class="view-section">
     <div class="container">
       <div style="padding: 1.75rem 0 1rem;">
-        <button class="back-nav-btn" onclick="window.goBack()" style="margin-bottom:1rem;"
-          title="Go back to previous page">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-            stroke-linecap="round" stroke-linejoin="round">
-            <line x1="19" y1="12" x2="5" y2="12"></line>
-            <polyline points="12 19 5 12 12 5"></polyline>
-          </svg>
+        <button class="back-nav-btn" onclick="window.goBack()" style="margin-bottom:1rem;" title="Go back to previous page">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
           <span>Back</span>
         </button>
         <!-- Profile Header -->
@@ -1053,12 +836,9 @@
 
         <!-- Profile Tabs -->
         <div class="listing-type-tabs" id="profile-tabs-nav" style="margin-bottom:1.5rem;">
-          <button class="tab-btn active" data-prof-tab="listings" onclick="window.setProfileTab('listings')">My
-            Listings</button>
-          <button class="tab-btn" data-prof-tab="exchanges" onclick="window.setProfileTab('exchanges')">My
-            Exchanges</button>
-          <button class="tab-btn" data-prof-tab="resources" onclick="window.setProfileTab('resources')">My
-            Resources</button>
+          <button class="tab-btn active" data-prof-tab="listings" onclick="window.setProfileTab('listings')">My Listings</button>
+          <button class="tab-btn" data-prof-tab="exchanges" onclick="window.setProfileTab('exchanges')">My Exchanges</button>
+          <button class="tab-btn" data-prof-tab="resources" onclick="window.setProfileTab('resources')">My Resources</button>
           <button class="tab-btn" data-prof-tab="saved" onclick="window.setProfileTab('saved')">Saved Items</button>
           <button class="tab-btn" data-prof-tab="clubs" onclick="window.setProfileTab('clubs')">Followed Clubs</button>
         </div>
@@ -1076,27 +856,19 @@
   <section id="view-chat" class="view-section">
     <div class="container-narrow">
       <div style="padding: 1.75rem 0 1rem;">
-        <button class="back-nav-btn" onclick="window.goBack()" style="margin-bottom:1rem;"
-          title="Go back to previous page">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-            stroke-linecap="round" stroke-linejoin="round">
-            <line x1="19" y1="12" x2="5" y2="12"></line>
-            <polyline points="12 19 5 12 12 5"></polyline>
-          </svg>
+        <button class="back-nav-btn" onclick="window.goBack()" style="margin-bottom:1rem;" title="Go back to previous page">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
           <span>Back to Marketplace</span>
         </button>
         <div class="chat-window-card">
           <!-- Pinned Listing Header -->
           <div class="chat-pinned-listing-bar">
             <div style="display:flex; align-items:center; gap:0.9rem;">
-              <img id="chat-pinned-img" src=""
-                style="width:46px; height:46px; border-radius:6px; object-fit:cover; border:1px solid var(--border-color);">
+              <img id="chat-pinned-img" src="" style="width:46px; height:46px; border-radius:6px; object-fit:cover; border:1px solid var(--border-color);">
               <div>
-                <div id="chat-pinned-title" style="font-weight:700; font-size:0.95rem; line-height:1.2;">Scientific
-                  Calculator</div>
+                <div id="chat-pinned-title" style="font-weight:700; font-size:0.95rem; line-height:1.2;">Scientific Calculator</div>
                 <div style="font-size:0.8rem; color:var(--text-secondary);">
-                  <strong id="chat-pinned-price" style="color:var(--primary-crimson);">₹700</strong> · Meetup: <span
-                    id="chat-pinned-meetup">Central Library</span>
+                  <strong id="chat-pinned-price" style="color:var(--primary-crimson);">₹700</strong> · Meetup: <span id="chat-pinned-meetup">Central Library</span>
                 </div>
               </div>
             </div>
@@ -1106,30 +878,21 @@
                 <span id="chat-partner-name" style="font-weight:700; font-size:0.95rem;">Shubham Verma</span>
                 <span class="badge-verified">✓</span>
               </div>
-              <div id="chat-partner-program"
-                style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:0.25rem;">B.Tech CSE · 2025–29
-              </div>
-              <div
-                style="font-size:0.75rem; color:var(--text-secondary); display:flex; gap:0.6rem; justify-content:flex-end;">
-                <a href="#" onclick="window.openReportModal('user', 'user-shubham', 'Shubham Verma'); return false;"
-                  style="color:var(--text-secondary); text-decoration:underline;">Report</a>
+              <div id="chat-partner-program" style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:0.25rem;">B.Tech CSE · 2025–29</div>
+              <div style="font-size:0.75rem; color:var(--text-secondary); display:flex; gap:0.6rem; justify-content:flex-end;">
+                <a href="#" onclick="window.openReportModal('user', 'user-shubham', 'Shubham Verma'); return false;" style="color:var(--text-secondary); text-decoration:underline;">Report</a>
                 <span>·</span>
-                <a href="#" onclick="window.blockChatPartner(); return false;"
-                  style="color:var(--text-secondary); text-decoration:underline;">Block User</a>
+                <a href="#" onclick="window.blockChatPartner(); return false;" style="color:var(--text-secondary); text-decoration:underline;">Block User</a>
               </div>
             </div>
           </div>
 
           <!-- Transaction Quick Actions Bar -->
           <div class="chat-quick-actions-bar">
-            <button class="btn btn-secondary btn-sm" onclick="window.chatQuickAction('make-offer')">💰 Make
-              Offer</button>
-            <button class="btn btn-secondary btn-sm" onclick="window.chatQuickAction('propose-exchange')">🔄 Propose
-              Exchange</button>
-            <button class="btn btn-secondary btn-sm" onclick="window.chatQuickAction('arrange-meetup')">📍 Arrange
-              Meetup</button>
-            <button class="btn btn-secondary btn-sm" onclick="window.chatQuickAction('mark-complete')">✓ Mark
-              Complete</button>
+            <button class="btn btn-secondary btn-sm" onclick="window.chatQuickAction('make-offer')">💰 Make Offer</button>
+            <button class="btn btn-secondary btn-sm" onclick="window.chatQuickAction('propose-exchange')">🔄 Propose Exchange</button>
+            <button class="btn btn-secondary btn-sm" onclick="window.chatQuickAction('arrange-meetup')">📍 Arrange Meetup</button>
+            <button class="btn btn-secondary btn-sm" onclick="window.chatQuickAction('mark-complete')">✓ Mark Complete</button>
           </div>
 
           <!-- Messages Scroll Area -->
@@ -1139,8 +902,7 @@
 
           <!-- Chat Input Bar -->
           <div class="chat-input-bar">
-            <input type="text" id="chat-msg-input" placeholder="Type a message or discuss meetup time..."
-              style="flex:1;">
+            <input type="text" id="chat-msg-input" placeholder="Type a message or discuss meetup time..." style="flex:1;">
             <button id="btn-send-chat-msg" class="btn btn-primary">
               Send →
             </button>
@@ -1162,32 +924,27 @@
         <button class="btn-ghost" onclick="window.closeModal('modal-product-detail')">✕</button>
       </div>
       <div class="modal-body">
-        <img id="modal-prod-image" src="" alt="Product"
-          style="width:100%; height:280px; object-fit:cover; border-radius:var(--radius-md); margin-bottom:1.25rem;">
-
+        <img id="modal-prod-image" src="" alt="Product" style="width:100%; height:280px; object-fit:cover; border-radius:var(--radius-md); margin-bottom:1.25rem;">
+        
         <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:0.75rem;">
           <h3 id="modal-prod-title" class="font-serif" style="font-size:1.6rem; line-height:1.2;"></h3>
           <span id="modal-prod-price" style="font-size:1.6rem; font-weight:800; color:var(--primary-crimson);"></span>
         </div>
 
-        <div
-          style="display:flex; gap:1rem; font-size:0.85rem; color:var(--text-secondary); margin-bottom:1.25rem; border-bottom:1px solid var(--border-light); padding-bottom:1rem;">
+        <div style="display:flex; gap:1rem; font-size:0.85rem; color:var(--text-secondary); margin-bottom:1.25rem; border-bottom:1px solid var(--border-light); padding-bottom:1rem;">
           <span>Condition: <strong id="modal-prod-condition"></strong></span>
           <span>·</span>
           <span>📍 Suggested Meetup: <strong id="modal-prod-location"></strong></span>
         </div>
 
-        <div id="modal-prod-exchange-wish"
-          style="display:none; background:var(--warm-ivory); border-left:3px solid var(--primary-crimson); padding:0.75rem 1rem; border-radius:0 8px 8px 0; margin-bottom:1.25rem; font-size:0.88rem;">
+        <div id="modal-prod-exchange-wish" style="display:none; background:var(--warm-ivory); border-left:3px solid var(--primary-crimson); padding:0.75rem 1rem; border-radius:0 8px 8px 0; margin-bottom:1.25rem; font-size:0.88rem;">
           <strong>Seller's Exchange Wish:</strong> <span id="modal-prod-wish-text"></span>
         </div>
 
-        <p id="modal-prod-desc"
-          style="font-size:0.92rem; color:var(--obsidian); line-height:1.6; margin-bottom:1.5rem;"></p>
+        <p id="modal-prod-desc" style="font-size:0.92rem; color:var(--obsidian); line-height:1.6; margin-bottom:1.5rem;"></p>
 
         <!-- Seller Card -->
-        <div
-          style="background:var(--soft-bg); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1rem; display:flex; justify-content:space-between; align-items:center;">
+        <div style="background:var(--soft-bg); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1rem; display:flex; justify-content:space-between; align-items:center;">
           <div>
             <div style="display:flex; align-items:center; gap:0.4rem; font-weight:700;">
               <span id="modal-seller-name"></span>
@@ -1199,8 +956,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-ghost btn-sm" id="btn-modal-report" onclick="window.openReportListing();">🚩
-          Report</button>
+        <button class="btn btn-ghost btn-sm" id="btn-modal-report" onclick="window.openReportListing();">🚩 Report</button>
         <button class="btn btn-secondary" id="btn-modal-offer">💰 Make Offer</button>
         <button class="btn btn-secondary" id="btn-modal-exchange">🔄 Propose Exchange</button>
         <button class="btn btn-primary" id="btn-modal-chat">💬 Chat with Seller</button>
@@ -1217,37 +973,26 @@
       </div>
       <div class="modal-body">
         <p style="font-size:0.88rem; color:var(--text-secondary); margin-bottom:1rem;">
-          Select an item from your profile to trade for the seller's product. If values differ, cash adjustments will
-          balance the deal.
+          Select an item from your profile to trade for the seller's product. If values differ, cash adjustments will balance the deal.
         </p>
 
         <!-- Interactive Barter Layout -->
         <div class="exchange-barter-box">
           <!-- Target Product -->
           <div class="exchange-item-side">
-            <span
-              style="font-size:0.72rem; color:var(--text-secondary); text-transform:uppercase; font-weight:700;">Their
-              Item</span>
+            <span style="font-size:0.72rem; color:var(--text-secondary); text-transform:uppercase; font-weight:700;">Their Item</span>
             <img id="exch-target-img" src="" style="width:100%; height:90px; object-fit:cover; border-radius:6px;">
             <div id="exch-target-title" style="font-weight:700; font-size:0.9rem;"></div>
             <div id="exch-target-price" style="color:var(--primary-crimson); font-weight:700; font-size:0.95rem;"></div>
           </div>
 
           <div class="exchange-swap-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="16 3 21 3 21 8"></polyline>
-              <line x1="4" y1="20" x2="21" y2="3"></line>
-              <polyline points="21 16 21 21 16 21"></polyline>
-              <line x1="15" y1="15" x2="21" y2="21"></line>
-              <line x1="4" y1="4" x2="9" y2="9"></line>
-            </svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
           </div>
 
           <!-- Your Product Preview -->
           <div class="exchange-item-side">
-            <span
-              style="font-size:0.72rem; color:var(--text-secondary); text-transform:uppercase; font-weight:700;">Your
-              Offered Item</span>
+            <span style="font-size:0.72rem; color:var(--text-secondary); text-transform:uppercase; font-weight:700;">Your Offered Item</span>
             <img id="exch-my-preview-img" src="" style="width:100%; height:90px; object-fit:cover; border-radius:6px;">
             <div id="exch-my-preview-title" style="font-weight:700; font-size:0.9rem;"></div>
             <div style="color:var(--primary-crimson); font-weight:700; font-size:0.95rem;">Your Offer</div>
@@ -1259,15 +1004,13 @@
           <select id="exch-my-item-select"></select>
         </div>
 
-        <div id="exch-cash-adjustment"
-          style="background:var(--warm-ivory); border:1px solid var(--border-color); padding:0.75rem 1rem; border-radius:var(--radius-md); font-size:0.85rem; margin-bottom:1rem;">
+        <div id="exch-cash-adjustment" style="background:var(--warm-ivory); border:1px solid var(--border-color); padding:0.75rem 1rem; border-radius:var(--radius-md); font-size:0.85rem; margin-bottom:1rem;">
           <!-- Calculated dynamically -->
         </div>
 
         <div class="form-group">
           <label class="form-label" for="exch-note-input">Personal message / Proposed meetup time</label>
-          <textarea id="exch-note-input" rows="2"
-            placeholder="e.g. Can meet near Central Library after 3 PM."></textarea>
+          <textarea id="exch-note-input" rows="2" placeholder="e.g. Can meet near Central Library after 3 PM."></textarea>
         </div>
       </div>
       <div class="modal-footer">
@@ -1285,8 +1028,7 @@
         <button class="btn-ghost" onclick="window.closeModal('modal-make-offer')">✕</button>
       </div>
       <div class="modal-body">
-        <div
-          style="background:var(--soft-bg); padding:0.9rem 1.25rem; border-radius:var(--radius-md); margin-bottom:1.25rem; display:flex; justify-content:space-between; align-items:center;">
+        <div style="background:var(--soft-bg); padding:0.9rem 1.25rem; border-radius:var(--radius-md); margin-bottom:1.25rem; display:flex; justify-content:space-between; align-items:center;">
           <div>
             <div id="offer-target-title" style="font-weight:600; font-size:0.95rem;"></div>
             <div style="font-size:0.8rem; color:var(--text-secondary);">Campus Meetup Handover</div>
@@ -1343,22 +1085,16 @@
         <div class="form-group" style="margin-bottom:1.25rem;">
           <label class="form-label" style="display:flex; justify-content:space-between; align-items:center;">
             <span>Item Photo & Image</span>
-            <span style="font-size:0.75rem; color:var(--text-secondary); font-weight:normal;">JPG, PNG, WebP (max
-              5MB)</span>
+            <span style="font-size:0.75rem; color:var(--text-secondary); font-weight:normal;">JPG, PNG, WebP (max 5MB)</span>
           </label>
-
+          
           <!-- Dropzone / Upload Area -->
           <div id="listing-dropzone" class="image-upload-dropzone">
             <input type="file" id="create-listing-file-input" accept="image/*" style="display:none;">
-
-            <div id="dropzone-prompt"
-              style="display:flex; flex-direction:column; align-items:center; gap:0.4rem; padding:0.5rem 0;">
+            
+            <div id="dropzone-prompt" style="display:flex; flex-direction:column; align-items:center; gap:0.4rem; padding:0.5rem 0;">
               <div class="dropzone-prompt-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                  <circle cx="12" cy="13" r="4"></circle>
-                </svg>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
               </div>
               <div style="font-size:0.9rem; font-weight:600; color:var(--text-primary);">
                 Click to upload photo or drag & drop here
@@ -1371,19 +1107,14 @@
             <!-- Image Preview Box -->
             <div id="listing-image-preview-container" style="display:none; position:relative;">
               <div style="position:relative; display:inline-block; max-width:100%;">
-                <img id="listing-image-preview" src="" alt="Listing Preview"
-                  style="max-height:190px; width:auto; max-width:100%; object-fit:cover; border-radius:var(--radius-md); border:1px solid var(--border-color); display:block; margin:0 auto; box-shadow:var(--shadow-sm);">
-                <span class="badge-verified"
-                  style="position:absolute; top:8px; left:8px; background:rgba(255,255,255,0.95); box-shadow:var(--shadow-sm);">✓
-                  Photo Selected</span>
+                <img id="listing-image-preview" src="" alt="Listing Preview" style="max-height:190px; width:auto; max-width:100%; object-fit:cover; border-radius:var(--radius-md); border:1px solid var(--border-color); display:block; margin:0 auto; box-shadow:var(--shadow-sm);">
+                <span class="badge-verified" style="position:absolute; top:8px; left:8px; background:rgba(255,255,255,0.95); box-shadow:var(--shadow-sm);">✓ Photo Selected</span>
               </div>
               <div style="display:flex; justify-content:center; gap:0.6rem; margin-top:0.75rem;">
-                <button type="button" id="btn-change-listing-img" class="btn btn-sm btn-secondary"
-                  style="font-size:0.75rem; padding:4px 10px;">
+                <button type="button" id="btn-change-listing-img" class="btn btn-sm btn-secondary" style="font-size:0.75rem; padding:4px 10px;">
                   🔄 Change Photo
                 </button>
-                <button type="button" id="btn-remove-listing-img" class="btn btn-sm btn-ghost"
-                  style="font-size:0.75rem; color:#b91c1c; padding:4px 10px;">
+                <button type="button" id="btn-remove-listing-img" class="btn btn-sm btn-ghost" style="font-size:0.75rem; color:#b91c1c; padding:4px 10px;">
                   ✕ Remove
                 </button>
               </div>
@@ -1392,36 +1123,20 @@
 
           <!-- Quick Campus Category Presets -->
           <div style="margin-top:0.75rem;">
-            <div
-              style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:0.4rem; display:flex; justify-content:space-between; align-items:center;">
+            <div style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:0.4rem; display:flex; justify-content:space-between; align-items:center;">
               <span>Or choose a standard campus category photo:</span>
-              <button type="button" id="btn-toggle-url-input"
-                style="background:none; border:none; color:var(--primary-crimson); font-size:0.75rem; cursor:pointer; text-decoration:underline;">Paste
-                Photo URL</button>
+              <button type="button" id="btn-toggle-url-input" style="background:none; border:none; color:var(--primary-crimson); font-size:0.75rem; cursor:pointer; text-decoration:underline;">Paste Photo URL</button>
             </div>
             <div style="display:flex; gap:0.4rem; flex-wrap:wrap;" id="preset-image-chips">
-              <button type="button" class="btn-img-preset"
-                data-img="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80">📚
-                Textbook</button>
-              <button type="button" class="btn-img-preset"
-                data-img="https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?w=600&auto=format&fit=crop&q=80">🧮
-                Calculator</button>
-              <button type="button" class="btn-img-preset"
-                data-img="https://images.unsplash.com/photo-1581291518655-9523c932edcf?w=600&auto=format&fit=crop&q=80">📐
-                Drafter / Lab</button>
-              <button type="button" class="btn-img-preset"
-                data-img="https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=600&auto=format&fit=crop&q=80">🚲
-                Campus Cycle</button>
-              <button type="button" class="btn-img-preset"
-                data-img="https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?w=600&auto=format&fit=crop&q=80">🪑
-                Hostel Item</button>
-              <button type="button" class="btn-img-preset"
-                data-img="https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=600&auto=format&fit=crop&q=80">💻
-                Electronics</button>
+              <button type="button" class="btn-img-preset" data-img="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80">📚 Textbook</button>
+              <button type="button" class="btn-img-preset" data-img="https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?w=600&auto=format&fit=crop&q=80">🧮 Calculator</button>
+              <button type="button" class="btn-img-preset" data-img="https://images.unsplash.com/photo-1581291518655-9523c932edcf?w=600&auto=format&fit=crop&q=80">📐 Drafter / Lab</button>
+              <button type="button" class="btn-img-preset" data-img="https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=600&auto=format&fit=crop&q=80">🚲 Campus Cycle</button>
+              <button type="button" class="btn-img-preset" data-img="https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?w=600&auto=format&fit=crop&q=80">🪑 Hostel Item</button>
+              <button type="button" class="btn-img-preset" data-img="https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=600&auto=format&fit=crop&q=80">💻 Electronics</button>
             </div>
             <div id="custom-url-input-container" style="display:none; margin-top:0.5rem;">
-              <input type="url" id="create-listing-image-url" placeholder="Paste image link (https://...)"
-                style="font-size:0.85rem; padding:0.45rem 0.75rem;">
+              <input type="url" id="create-listing-image-url" placeholder="Paste image link (https://...)" style="font-size:0.85rem; padding:0.45rem 0.75rem;">
             </div>
           </div>
         </div>
@@ -1458,8 +1173,7 @@
 
         <div class="form-group" id="create-wish-field" style="display:none;">
           <label class="form-label" for="create-listing-wish">What are you looking for in exchange?</label>
-          <input type="text" id="create-listing-wish"
-            placeholder="e.g. Looking for Data Structures or Discrete Math book">
+          <input type="text" id="create-listing-wish" placeholder="e.g. Looking for Data Structures or Discrete Math book">
         </div>
 
         <div class="form-group">
@@ -1476,8 +1190,7 @@
 
         <div class="form-group">
           <label class="form-label" for="create-listing-desc">Item Description</label>
-          <textarea id="create-listing-desc" rows="3"
-            placeholder="Condition, semester used, included accessories..."></textarea>
+          <textarea id="create-listing-desc" rows="3" placeholder="Condition, semester used, included accessories..."></textarea>
         </div>
       </div>
       <div class="modal-footer">
@@ -1545,8 +1258,7 @@
 
         <div class="form-group">
           <label class="form-label" for="upload-res-desc">Description & Highlights</label>
-          <textarea id="upload-res-desc" rows="2"
-            placeholder="Mention specific topics, high-scoring exam questions..."></textarea>
+          <textarea id="upload-res-desc" rows="2" placeholder="Mention specific topics, high-scoring exam questions..."></textarea>
         </div>
       </div>
       <div class="modal-footer">
@@ -1570,8 +1282,7 @@
         <div id="res-viewer-meta" style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:1rem;"></div>
 
         <!-- Simulated Document Viewer Canvas -->
-        <div
-          style="background:var(--warm-ivory); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:2rem; text-align:center; min-height:220px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.75rem;">
+        <div style="background:var(--warm-ivory); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:2rem; text-align:center; min-height:220px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.75rem;">
           <div style="font-size:2.5rem; color:var(--primary-crimson);">📄</div>
           <div id="res-viewer-pages" style="font-weight:700; font-size:1.1rem;"></div>
           <p id="res-viewer-desc" style="font-size:0.88rem; color:var(--text-secondary); max-width:480px;"></p>
@@ -1599,19 +1310,14 @@
       </div>
       <div class="modal-body">
         <h4 style="font-size:0.95rem; font-weight:700; margin-bottom:0.4rem;">About Organization</h4>
-        <p id="modal-club-about"
-          style="font-size:0.9rem; color:var(--text-secondary); line-height:1.5; margin-bottom:1.5rem;"></p>
+        <p id="modal-club-about" style="font-size:0.9rem; color:var(--text-secondary); line-height:1.5; margin-bottom:1.5rem;"></p>
 
         <h4 style="font-size:0.95rem; font-weight:700; margin-bottom:0.75rem;">Official Connect Channels</h4>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
-          <a id="link-club-web" target="_blank" class="btn btn-secondary btn-sm" style="justify-content:flex-start;">🌐
-            Official Website</a>
-          <a id="link-club-insta" target="_blank" class="btn btn-secondary btn-sm"
-            style="justify-content:flex-start;">📸 Instagram Page</a>
-          <a id="link-club-wa" target="_blank" class="btn btn-secondary btn-sm" style="justify-content:flex-start;">💬
-            WhatsApp Announcements</a>
-          <a id="link-club-reg" target="_blank" class="btn btn-primary btn-sm" style="justify-content:flex-start;">🚀
-            Recruitment Portal</a>
+          <a id="link-club-web" target="_blank" class="btn btn-secondary btn-sm" style="justify-content:flex-start;">🌐 Official Website</a>
+          <a id="link-club-insta" target="_blank" class="btn btn-secondary btn-sm" style="justify-content:flex-start;">📸 Instagram Page</a>
+          <a id="link-club-wa" target="_blank" class="btn btn-secondary btn-sm" style="justify-content:flex-start;">💬 WhatsApp Announcements</a>
+          <a id="link-club-reg" target="_blank" class="btn btn-primary btn-sm" style="justify-content:flex-start;">🚀 Recruitment Portal</a>
         </div>
       </div>
     </div>
@@ -1642,15 +1348,12 @@
       </div>
       <div class="modal-body">
         <p style="font-size:0.88rem; color:var(--text-secondary); margin-bottom:1.25rem;">
-          Help keep RGPV Unofficial safe, scam-free, and trustworthy. Reports are reviewed by verified campus
-          moderators.
+          Help keep RGPV Unofficial safe, scam-free, and trustworthy. Reports are reviewed by verified campus moderators.
         </p>
 
         <div class="form-group">
           <label class="form-label">Reported Item / Entity</label>
-          <div id="report-target-label"
-            style="font-weight:600; font-size:0.92rem; background:var(--soft-bg); padding:0.6rem 0.9rem; border-radius:var(--radius-sm); border:1px solid var(--border-color);">
-          </div>
+          <div id="report-target-label" style="font-weight:600; font-size:0.92rem; background:var(--soft-bg); padding:0.6rem 0.9rem; border-radius:var(--radius-sm); border:1px solid var(--border-color);"></div>
         </div>
 
         <div class="form-group">
@@ -1667,8 +1370,7 @@
 
         <div class="form-group">
           <label class="form-label" for="report-desc-input">Details / Evidence</label>
-          <textarea id="report-desc-input" rows="3"
-            placeholder="Provide any details that will assist campus verification..."></textarea>
+          <textarea id="report-desc-input" rows="3" placeholder="Provide any details that will assist campus verification..."></textarea>
         </div>
       </div>
       <div class="modal-footer">
@@ -1686,16 +1388,14 @@
       <div class="footer-grid">
         <div class="footer-brand">
           <h4 class="font-serif">RGPV UNOFFICIAL</h4>
-          <p>An independent, student-driven digital campus ecosystem uniting marketplace, barter exchange, peer
-            academics, and opportunities.</p>
+          <p>An independent, student-driven digital campus ecosystem uniting marketplace, barter exchange, peer academics, and opportunities.</p>
         </div>
 
         <div class="footer-col">
           <h5>Platform Pillars</h5>
           <ul>
             <li><a href="#" onclick="window.navigateTo('marketplace')">Marketplace</a></li>
-            <li><a href="#" onclick="window.navigateTo('marketplace'); window.setMarketFilterType('exchange');">Barter
-                Exchange</a></li>
+            <li><a href="#" onclick="window.navigateTo('marketplace'); window.setMarketFilterType('exchange');">Barter Exchange</a></li>
             <li><a href="#" onclick="window.navigateTo('resources')">Academic Repository</a></li>
             <li><a href="#" onclick="window.navigateTo('opportunities')">Opportunities & Clubs</a></li>
           </ul>
@@ -1714,15 +1414,9 @@
         <div class="footer-col">
           <h5>Trust & Safety</h5>
           <ul>
-            <li><a href="#"
-                onclick="alert('Campus handovers should always take place at public campus locations such as the Central Library or Cafeteria.');">Campus
-                Meetup Points</a></li>
-            <li><a href="#"
-                onclick="alert('Access is restricted to verified RGPV students through university enrollment validation.');">Enrollment
-                Verification</a></li>
-            <li><a href="#"
-                onclick="alert('Peer-to-peer barter allows trading items of equal utility without cash constraints.');">Exchange
-                Guidelines</a></li>
+            <li><a href="#" onclick="alert('Campus handovers should always take place at public campus locations such as the Central Library or Cafeteria.');">Campus Meetup Points</a></li>
+            <li><a href="#" onclick="alert('Access is restricted to verified RGPV students through university enrollment validation.');">Enrollment Verification</a></li>
+            <li><a href="#" onclick="alert('Peer-to-peer barter allows trading items of equal utility without cash constraints.');">Exchange Guidelines</a></li>
           </ul>
         </div>
       </div>
@@ -1743,40 +1437,23 @@
   <nav class="mobile-bottom-nav">
     <ul class="mobile-nav-grid">
       <li class="mobile-nav-link active" data-route="home">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-          <polyline points="9 22 9 12 15 12 15 22"></polyline>
-        </svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
         <span>Home</span>
       </li>
       <li class="mobile-nav-link" data-route="marketplace">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="9" cy="21" r="1"></circle>
-          <circle cx="20" cy="21" r="1"></circle>
-          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-        </svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
         <span>Market</span>
       </li>
       <li class="mobile-nav-link" data-route="resources">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-        </svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
         <span>Resources</span>
       </li>
       <li class="mobile-nav-link" data-route="opportunities">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polygon
-            points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
-          </polygon>
-        </svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
         <span>Opps</span>
       </li>
       <li class="mobile-nav-link" data-route="profile">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-          <circle cx="12" cy="7" r="4"></circle>
-        </svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
         <span>Profile</span>
       </li>
     </ul>
@@ -1784,15 +1461,11 @@
 
   <!-- Campus Roster, Supabase Client & Real Auth Layer -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/roster.js?v=4"></script>
-  <script src="js/supabase.js?v=4"></script>
+  <script src="js/roster.js"></script>
+  <script src="js/supabase.js"></script>
 
-  <!-- Application Core & Interactive 3D/Search/Cursor Modules -->
-  <script src="js/store.js?v=4"></script>
-  <script src="js/app.js?v=4"></script>
-  <script src="js/three-scene.js?v=4"></script>
-  <script src="js/cursor.js?v=4"></script>
-  <script src="js/search-palette.js?v=4"></script>
+  <!-- Application Scripts -->
+  <script src="js/store.js"></script>
+  <script src="js/app.js"></script>
 </body>
-
 </html>
