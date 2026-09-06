@@ -881,135 +881,13 @@ input:focus, select:focus, textarea:focus {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   padding: 1.5rem;
-  margin: 1.25rem 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-}
-
-/* Digital Student ID Card Elements */
-.student-id-card-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1.5px solid var(--border-color);
-  margin-bottom: 1rem;
-}
-
-.student-id-badge-crest {
-  width: 38px;
-  height: 38px;
-  background: var(--obsidian);
-  color: var(--pure-white);
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 0.95rem;
-  letter-spacing: 1px;
-  flex-shrink: 0;
-}
-
-.student-id-badge-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.student-id-uni {
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: var(--obsidian);
-  text-transform: uppercase;
-  line-height: 1.2;
-}
-
-.student-id-sub {
-  font-size: 0.65rem;
-  font-weight: 600;
-  color: var(--primary-crimson);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.student-id-highlight-box {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  background: var(--pure-white);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 1rem 1.15rem;
-  margin-bottom: 1rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
-}
-
-.student-id-avatar {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: var(--primary-crimson);
-  color: var(--pure-white);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.25rem;
-  font-weight: 800;
-  flex-shrink: 0;
-  box-shadow: 0 2px 6px rgba(185, 28, 28, 0.25);
-}
-
-.student-id-primary-details {
-  flex: 1;
-  min-width: 0;
-}
-
-.student-id-label-tag {
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  margin-bottom: 0.15rem;
-}
-
-.student-id-number {
-  font-family: var(--font-mono, monospace);
-  font-size: 1.25rem;
-  font-weight: 800;
-  letter-spacing: 1px;
-  color: var(--obsidian);
-  line-height: 1.2;
-  word-break: break-all;
-}
-
-.student-id-name {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--text-secondary);
-  margin-top: 0.15rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.roster-details-grid {
-  display: flex;
-  flex-direction: column;
-  background: var(--pure-white);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 0.5rem 1rem;
+  margin: 1.5rem 0;
 }
 
 .roster-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.25rem 0.5rem;
-  padding: 0.55rem 0;
+  padding: 0.45rem 0;
   border-bottom: 1px dashed var(--border-color);
   font-size: 0.9rem;
 }
@@ -1020,17 +898,11 @@ input:focus, select:focus, textarea:focus {
 
 .roster-label {
   color: var(--text-secondary);
-  font-size: 0.85rem;
-  font-weight: 500;
-  flex-shrink: 0;
 }
 
 .roster-val {
   font-weight: 600;
   color: var(--obsidian);
-  word-break: break-word;
-  text-align: right;
-  max-width: 100%;
 }
 
 .otp-inputs {
@@ -2056,57 +1928,6 @@ input:focus, select:focus, textarea:focus {
   body {
     padding-bottom: 60px;
   }
-
-  /* Mobile Verification Flow Optimizations */
-  .verify-container {
-    margin: 1.25rem auto 3.5rem;
-    padding: 1.35rem 1rem;
-    border-radius: var(--radius-md);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-  }
-
-  .container-narrow {
-    padding: 0 0.85rem;
-  }
-
-  /* Hide bottom bar when on verification view so buttons & student ID are never occluded */
-  body.on-verify-view .mobile-bottom-nav,
-  #view-verify.active ~ .mobile-bottom-nav,
-  body:has(#view-verify.active) .mobile-bottom-nav {
-    display: none !important;
-  }
-
-  .verified-roster-card {
-    padding: 1.15rem 0.85rem;
-  }
-
-  .student-id-highlight-box {
-    padding: 0.85rem;
-    gap: 0.75rem;
-  }
-
-  .student-id-avatar {
-    width: 44px;
-    height: 44px;
-    font-size: 1.1rem;
-  }
-
-  .student-id-number {
-    font-size: 1.15rem;
-  }
-
-  .roster-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.15rem;
-    padding: 0.5rem 0;
-  }
-
-  .roster-val {
-    text-align: left;
-    font-size: 0.92rem;
-  }
-
   .hero-headline {
     font-size: 2.4rem;
   }

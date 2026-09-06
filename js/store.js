@@ -331,12 +331,8 @@ class CampusStore {
   // CAMPUS VERIFICATION (SERVER-CHECKED)
   // =========================================================================
   async lookupStudentAsync(enrollment) {
-    const clean = (enrollment || '')
-      .toString()
-      .toUpperCase()
-      .replace(/[\s\-_.\/,]/g, '')
-      .trim();
-    if (!clean || clean.length < 6) return { found: false, error: 'Please enter a valid enrollment number (e.g. 0101CS261001).' };
+    const clean = (enrollment || '').trim().toUpperCase();
+    if (!clean) return { found: false, error: 'Empty enrollment number' };
 
     // 1. Check verified campus roster (all 955 students)
     if (window.CAMPUS_ROSTER && window.CAMPUS_ROSTER[clean]) {
@@ -345,7 +341,6 @@ class CampusStore {
         found: true,
         student: {
           enrollment_no: clean,
-          student_id: clean,
           name,
           full_name: name,
           program: program || 'B.Tech',
@@ -365,7 +360,6 @@ class CampusStore {
         found: true,
         student: {
           enrollment_no: clean,
-          student_id: clean,
           name: s.name,
           full_name: s.name,
           program: s.program,
@@ -387,7 +381,6 @@ class CampusStore {
       });
       const data = await res.json();
       if (res.ok && data.success && data.student) {
-        if (!data.student.student_id) data.student.student_id = clean;
         return { found: true, student: data.student };
       }
     } catch (e) {

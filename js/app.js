@@ -92,18 +92,6 @@ document.addEventListener('DOMContentLoaded', () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // Toggle mobile bottom nav: hide on verify view so buttons & student ID card are never blocked
-    const mobileNav = document.querySelector('.mobile-bottom-nav');
-    if (mobileNav) {
-      if (route === 'verify') {
-        mobileNav.style.display = 'none';
-        document.body.classList.add('on-verify-view');
-      } else {
-        mobileNav.style.display = '';
-        document.body.classList.remove('on-verify-view');
-      }
-    }
-
     // View specific initialization
     if (route === 'home') renderHome();
     if (route === 'marketplace') renderMarketplace();
@@ -363,9 +351,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const enrollInput = document.getElementById('verify-enrollment-input');
     if (enrollInput) {
       enrollInput.value = '';
-      if (window.innerWidth > 768) {
-        enrollInput.focus();
-      }
+      enrollInput.focus();
     }
   }
 
@@ -379,20 +365,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (progressEl) {
       progressEl.textContent = `0${step} / 03`;
     }
-
-    // Smooth scroll to container top so mobile users immediately see the card
-    const verifyContainer = document.querySelector('.verify-container') || document.getElementById('view-verify');
-    if (verifyContainer) {
-      verifyContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
   }
   window.goToVerifyStep = goToVerifyStep;
 
   // Clickable test enrollment chips
   document.querySelectorAll('.btn-enroll-chip').forEach(chip => {
-    const handleFill = () => {
+    chip.addEventListener('click', () => {
       const enroll = chip.getAttribute('data-enroll');
       const input = document.getElementById('verify-enrollment-input');
       if (input && enroll) {
@@ -400,18 +378,12 @@ document.addEventListener('DOMContentLoaded', () => {
         clearVerifyErrors();
         input.focus();
       }
-    };
-    chip.addEventListener('click', handleFill);
-    chip.addEventListener('touchend', (e) => {
-      e.preventDefault();
-      handleFill();
-    }, { passive: false });
+    });
   });
 
   // Handle Step 1 Check Enrollment
   const btnEnrollContinue = document.getElementById('btn-verify-step1');
   const enrollInput = document.getElementById('verify-enrollment-input');
-  const enrollForm = document.getElementById('verify-enrollment-form');
 
   if (enrollInput) {
     enrollInput.addEventListener('input', () => {
@@ -426,23 +398,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  if (enrollForm) {
-    enrollForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      if (btnEnrollContinue) btnEnrollContinue.click();
-    });
-  }
-
   if (btnEnrollContinue) {
     btnEnrollContinue.addEventListener('click', async () => {
       const input = document.getElementById('verify-enrollment-input');
-      const rawVal = (input ? input.value : '') || '';
-      const val = rawVal.toString().toUpperCase().replace(/[\s\-_.\/,]/g, '').trim();
+      const val = (input.value || '').trim().toUpperCase();
 
       clearVerifyErrors();
 
-      if (!val || val.length < 6) {
-        showVerifyError('verify-step1-error', 'Please enter your official RGPV Student ID / Enrollment Number (e.g. 0101CS261001).');
+      if (!val) {
+        showVerifyError('verify-step1-error', 'Please enter your RGPV Enrollment Number (e.g. 0101CS261001).');
         if (input) input.focus();
         return;
       }
@@ -452,12 +416,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
       try {
         let lookup = null;
-        // 1. Query Supabase / local roster
+        // 1. Query real Supabase valid_enrollments table / RPC
         if (window.SupaAuth) {
           lookup = await window.SupaAuth.checkEnrollment(val);
         }
 
-        // 2. Fallback to Store roster if Supabase is initializing or offline
+        // 2. Fallback to Store roster if Supabase is initializing
         if (!lookup || !lookup.found) {
           const storeLookup = await window.Store.lookupStudentAsync(val);
           if (storeLookup && storeLookup.found) {
@@ -466,7 +430,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (!lookup || !lookup.found) {
-          showVerifyError('verify-step1-error', lookup?.error || 'Student ID / Enrollment number not found in official campus roster. Please try one of the quick test chips below.');
+          showVerifyError('verify-step1-error', lookup?.error || 'Enrollment number not found in official campus roster. Please try one of the test enrollments below.');
           return;
         }
 
@@ -474,33 +438,15 @@ document.addEventListener('DOMContentLoaded', () => {
         verifyStepData.student = lookup.student;
 
         // Populate Step 2 confirmation card
-        const studentName = lookup.student.full_name || lookup.student.name || 'Verified Student';
-        const studentId = lookup.student.enrollment_no || lookup.student.student_id || val;
-        const initials = studentName.split(' ').filter(Boolean).map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'ST';
-
-        const nameEl = document.getElementById('roster-name');
-        if (nameEl) nameEl.textContent = studentName;
-
-        const progEl = document.getElementById('roster-program');
-        if (progEl) progEl.textContent = lookup.student.program || 'B.Tech';
-
-        const branchEl = document.getElementById('roster-branch');
-        if (branchEl) branchEl.textContent = lookup.student.branch || 'Engineering';
-
-        const batchEl = document.getElementById('roster-batch');
-        if (batchEl) batchEl.textContent = lookup.student.batch || '2026';
-
-        // Prominent unmasked Student ID display
-        const studentIdEl = document.getElementById('roster-student-id');
-        if (studentIdEl) studentIdEl.textContent = studentId;
-
-        // Masked enrollment for backwards compatibility with tests / scripts
+        const studentName = lookup.student.full_name || lookup.student.name;
+        document.getElementById('roster-name').textContent = studentName;
+        document.getElementById('roster-program').textContent = lookup.student.program || 'B.Tech';
+        document.getElementById('roster-branch').textContent = lookup.student.branch;
+        document.getElementById('roster-batch').textContent = lookup.student.batch;
+        
+        // Masked enrollment
         const masked = lookup.student.maskedEnrollment || (val.length >= 6 ? val.substring(0, val.length - 4) + '****' : val);
-        const maskedEl = document.getElementById('roster-masked-enrollment');
-        if (maskedEl) maskedEl.textContent = masked;
-
-        const avatarEl = document.getElementById('roster-avatar');
-        if (avatarEl) avatarEl.textContent = initials;
+        document.getElementById('roster-masked-enrollment').textContent = masked;
 
         goToVerifyStep(2);
       } catch (err) {

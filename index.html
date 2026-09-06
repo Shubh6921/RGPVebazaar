@@ -319,107 +319,73 @@
           <h2 class="font-serif" style="font-size: 1.85rem; margin-top: 0.25rem;">Student Verification</h2>
         </div>
 
-        <!-- Step 1: Enrollment Number / Student ID -->
+        <!-- Step 1: Enrollment Number -->
         <div id="verify-step-1" class="verify-step active">
           <h3 style="font-size:1.25rem; font-family:var(--font-display); margin-bottom:0.4rem;">Welcome to your campus.</h3>
           <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:1.5rem;">
-            Let's verify that you're part of the RGPV community. Enter your official university Student ID / Enrollment number.
+            Let's verify that you're part of the RGPV community. Enter your official university enrollment number.
           </p>
 
-          <form id="verify-enrollment-form" onsubmit="return false;" style="margin:0; padding:0;">
-            <div class="form-group">
-              <label class="form-label" for="verify-enrollment-input">RGPV Student ID / Enrollment Number</label>
-              <input type="text" 
-                     id="verify-enrollment-input" 
-                     name="enrollment"
-                     placeholder="e.g. 0101CS261001" 
-                     autocapitalize="characters" 
-                     autocorrect="off" 
-                     autocomplete="off" 
-                     spellcheck="false" 
-                     inputmode="text"
-                     style="text-transform: uppercase; font-family: var(--font-mono, monospace); font-weight: 600; letter-spacing: 0.5px;">
-              <div id="verify-step1-error" style="display:none; color:#b91c1c; font-size:0.85rem; margin-top:0.5rem; padding:0.5rem 0.75rem; background:#fef2f2; border-radius:6px; border:1px solid #fecaca;"></div>
-              <span class="form-help" style="margin-top:0.75rem; display:block;">
-                Quick test rosters (tap to fill):
-                <div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:4px;">
-                  <button type="button" class="btn-enroll-chip" data-enroll="0101CS261001" style="cursor:pointer; background:var(--badge-blue-bg,#e0f2fe); color:var(--badge-blue-text,#0369a1); border:1px solid #bae6fd; padding:4px 10px; border-radius:12px; font-size:0.75rem; font-weight:600; touch-action:manipulation;">0101CS261001</button>
-                  <button type="button" class="btn-enroll-chip" data-enroll="0101IT261001" style="cursor:pointer; background:var(--badge-blue-bg,#e0f2fe); color:var(--badge-blue-text,#0369a1); border:1px solid #bae6fd; padding:4px 10px; border-radius:12px; font-size:0.75rem; font-weight:600; touch-action:manipulation;">0101IT261001</button>
-                  <button type="button" class="btn-enroll-chip" data-enroll="0101AU261001" style="cursor:pointer; background:var(--badge-blue-bg,#e0f2fe); color:var(--badge-blue-text,#0369a1); border:1px solid #bae6fd; padding:4px 10px; border-radius:12px; font-size:0.75rem; font-weight:600; touch-action:manipulation;">0101AU261001</button>
-                </div>
-              </span>
-            </div>
+          <div class="form-group">
+            <label class="form-label" for="verify-enrollment-input">RGPV Enrollment Number</label>
+            <input type="text" id="verify-enrollment-input" placeholder="e.g. 0101CS261001" style="text-transform: uppercase;">
+            <div id="verify-step1-error" style="display:none; color:#b91c1c; font-size:0.85rem; margin-top:0.5rem; padding:0.5rem 0.75rem; background:#fef2f2; border-radius:6px; border:1px solid #fecaca;"></div>
+            <span class="form-help" style="margin-top:0.5rem; display:block;">
+              Quick test rosters (click to fill):
+              <button type="button" class="btn-enroll-chip" data-enroll="0101CS261001" style="cursor:pointer; background:var(--badge-blue-bg,#e0f2fe); color:var(--badge-blue-text,#0369a1); border:1px solid #bae6fd; padding:3px 8px; border-radius:12px; font-size:0.75rem; font-weight:600; margin:2px;">0101CS261001</button>
+              <button type="button" class="btn-enroll-chip" data-enroll="0101IT261001" style="cursor:pointer; background:var(--badge-blue-bg,#e0f2fe); color:var(--badge-blue-text,#0369a1); border:1px solid #bae6fd; padding:3px 8px; border-radius:12px; font-size:0.75rem; font-weight:600; margin:2px;">0101IT261001</button>
+              <button type="button" class="btn-enroll-chip" data-enroll="0101AU261001" style="cursor:pointer; background:var(--badge-blue-bg,#e0f2fe); color:var(--badge-blue-text,#0369a1); border:1px solid #bae6fd; padding:3px 8px; border-radius:12px; font-size:0.75rem; font-weight:600; margin:2px;">0101AU261001</button>
+            </span>
+          </div>
 
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1.5rem; gap:0.5rem; flex-wrap:wrap;">
-              <button type="button" class="btn btn-ghost" onclick="window.goBack()">
-                ← Back to Campus
-              </button>
-              <button type="submit" id="btn-verify-step1" class="btn btn-primary">Continue →</button>
-            </div>
-          </form>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1.5rem;">
+            <button class="btn btn-ghost" onclick="window.goBack()">
+              ← Back to Campus
+            </button>
+            <button id="btn-verify-step1" class="btn btn-primary">Continue →</button>
+          </div>
 
           <div style="font-size:0.75rem; color:var(--text-secondary); text-align:center; margin-top:2rem; padding-top:1rem; border-top:1px solid var(--border-light);">
-            🔒 Your student ID is checked against the encrypted campus roster only to verify campus access.
+            🔒 Your enrollment number is checked against the encrypted campus roster only to verify campus access.
           </div>
         </div>
 
-        <!-- Step 2: Student Record Confirmation (Digital Campus ID Card) -->
+        <!-- Step 2: Student Record Confirmation -->
         <div id="verify-step-2" class="verify-step">
           <div style="display:inline-flex; align-items:center; gap:0.4rem; color:var(--badge-green-text); font-weight:700; font-size:0.85rem; margin-bottom:0.75rem;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            Student Record Found
+            Student record found
           </div>
           <h3 style="font-size:1.35rem; font-family:var(--font-display); margin-bottom:0.3rem;">Is this you?</h3>
-          <p style="font-size:0.88rem; color:var(--text-secondary); margin-bottom:1.25rem;">
+          <p style="font-size:0.88rem; color:var(--text-secondary);">
             We retrieved your enrolled profile from the verified RGPV student directory.
           </p>
 
           <div class="verified-roster-card">
-            <!-- Student ID Card Badge Header -->
-            <div class="student-id-card-header">
-              <div class="student-id-badge-crest">RGPV</div>
-              <div class="student-id-badge-info">
-                <span class="student-id-uni">RAJIV GANDHI PROUDYOGIKI VISHWAVIDYALAYA</span>
-                <span class="student-id-sub">OFFICIAL CAMPUS STUDENT IDENTITY</span>
-              </div>
+            <div class="roster-row">
+              <span class="roster-label">Full Name</span>
+              <span class="roster-val" id="roster-name">Rahul Sharma</span>
             </div>
-
-            <!-- Prominent Student ID Highlight Box -->
-            <div class="student-id-highlight-box">
-              <div class="student-id-avatar" id="roster-avatar">RS</div>
-              <div class="student-id-primary-details">
-                <div class="student-id-label-tag">VERIFIED STUDENT ID</div>
-                <div class="student-id-number" id="roster-student-id">0101CS261001</div>
-                <div class="student-id-name" id="roster-name">Rahul Sharma</div>
-              </div>
+            <div class="roster-row">
+              <span class="roster-label">Program</span>
+              <span class="roster-val" id="roster-program">B.Tech</span>
             </div>
-
-            <!-- Student Metadata Rows -->
-            <div class="roster-details-grid">
-              <div class="roster-row">
-                <span class="roster-label">Program</span>
-                <span class="roster-val" id="roster-program">B.Tech</span>
-              </div>
-              <div class="roster-row">
-                <span class="roster-label">Branch</span>
-                <span class="roster-val" id="roster-branch">Computer Science & Engineering</span>
-              </div>
-              <div class="roster-row">
-                <span class="roster-label">Academic Batch</span>
-                <span class="roster-val" id="roster-batch">2026–30</span>
-              </div>
-              <div class="roster-row">
-                <span class="roster-label">Campus Status</span>
-                <span class="roster-val" style="color:var(--badge-green-text); font-weight:700;">✓ Active Student</span>
-              </div>
+            <div class="roster-row">
+              <span class="roster-label">Branch</span>
+              <span class="roster-val" id="roster-branch">Computer Science & Engineering</span>
             </div>
-
-            <!-- Masked enrollment kept for backwards compatibility with tests / scripts -->
-            <span id="roster-masked-enrollment" style="display:none;">0101CS26****</span>
+            <div class="roster-row">
+              <span class="roster-label">Academic Batch</span>
+              <span class="roster-val" id="roster-batch">2026–30</span>
+            </div>
+            <div class="roster-row">
+              <span class="roster-label">Enrollment ID</span>
+              <span class="roster-val" id="roster-masked-enrollment">0101CS26****</span>
+            </div>
           </div>
 
-          <div style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; margin-top:1.5rem; flex-wrap:wrap;">
-            <button class="btn btn-ghost" onclick="window.goToVerifyStep(1)">← Back (Change ID)</button>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1.5rem;">
+            <button class="btn btn-ghost" onclick="window.goToVerifyStep(1)">← Back (Change Number)</button>
             <button id="btn-verify-confirm-student" class="btn btn-primary">Yes, that's me →</button>
           </div>
         </div>
@@ -841,8 +807,8 @@
               <div style="color:var(--text-secondary); font-size:0.95rem; margin-bottom:0.4rem;" id="prof-program">
                 B.Tech CSE · Batch 2026–30
               </div>
-              <div style="font-size:0.82rem; color:var(--text-secondary); display:flex; flex-wrap:wrap; gap:0.5rem 1rem;">
-                <span>Student ID: <strong id="prof-enrollment">0101CS261001</strong></span>
+              <div style="font-size:0.82rem; color:var(--text-secondary); display:flex; gap:1rem;">
+                <span>Enrollment: <strong id="prof-enrollment">0101CS261001</strong></span>
                 <span>Phone: <strong id="prof-phone">+91 98765 43210</strong></span>
               </div>
             </div>
@@ -1493,9 +1459,9 @@
     </ul>
   </nav>
 
-  <!-- Campus Roster (Instant Local Verification), Supabase Client & Real Auth Layer -->
-  <script src="js/roster.js"></script>
+  <!-- Campus Roster, Supabase Client & Real Auth Layer -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/roster.js"></script>
   <script src="js/supabase.js"></script>
 
   <!-- Application Scripts -->

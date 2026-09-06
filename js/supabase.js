@@ -46,50 +46,20 @@ window.SupaAuth = {
    * Step 1: Query public.valid_enrollments in Supabase Postgres
    */
   async checkEnrollment(enrollmentNo) {
-    const norm = (enrollmentNo || '')
-      .toString()
-      .toUpperCase()
-      .replace(/[\s\-_.\/,]/g, '')
-      .trim();
+    const norm = (enrollmentNo || '').trim().toUpperCase();
 
     if (!norm || norm.length < 6) {
       return { found: false, error: 'Please enter a valid enrollment number (e.g. 0101CS261001).' };
     }
 
-    const maskedEnrollment = norm.length >= 6 ? norm.substring(0, norm.length - 4) + '****' : norm;
-
-    // 1. Check local campus roster first if already loaded (instant 0ms response, immune to mobile latency)
-    if (window.CAMPUS_ROSTER && window.CAMPUS_ROSTER[norm]) {
-      const [name, branch, batch, program] = window.CAMPUS_ROSTER[norm];
-      return {
-        found: true,
-        student: {
-          enrollment_no: norm,
-          student_id: norm,
-          full_name: name,
-          name: name,
-          branch: branch,
-          batch: batch,
-          program: program || 'B.Tech',
-          maskedEnrollment
-        }
-      };
-    }
-
-    // 2. Direct native fetch to Supabase PostgreSQL REST API with mobile timeout
+    // 1. Direct native fetch to Supabase PostgreSQL REST API (zero CDN dependency)
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3500);
-
       const resp = await fetch(`${SUPABASE_CONFIG.url}/rest/v1/valid_enrollments?enrollment_no=eq.${encodeURIComponent(norm)}&select=*`, {
         headers: {
           'apikey': SUPABASE_CONFIG.anonKey,
           'Authorization': `Bearer ${SUPABASE_CONFIG.anonKey}`
-        },
-        signal: controller.signal
+        }
       });
-      clearTimeout(timeoutId);
-
       if (resp.ok) {
         const rows = await resp.json();
         if (rows && rows.length > 0) {
@@ -98,19 +68,33 @@ window.SupaAuth = {
             found: true,
             student: {
               enrollment_no: s.enrollment_no,
-              student_id: s.enrollment_no,
               full_name: s.full_name,
               name: s.full_name,
               branch: s.branch,
               batch: s.batch,
-              program: s.program || 'B.Tech',
-              maskedEnrollment
+              program: s.program || 'B.Tech'
             }
           };
         }
       }
     } catch (fetchErr) {
-      console.warn('Supabase fetch note, trying local fallback:', fetchErr.message || fetchErr);
+      console.warn('Direct REST query error, checking local roster:', fetchErr);
+    }
+
+    // 2. Check local campus roster (all 955 students)
+    if (window.CAMPUS_ROSTER && window.CAMPUS_ROSTER[norm]) {
+      const [name, branch, batch, program] = window.CAMPUS_ROSTER[norm];
+      return {
+        found: true,
+        student: {
+          enrollment_no: norm,
+          full_name: name,
+          name: name,
+          branch: branch,
+          batch: batch,
+          program: program || 'B.Tech'
+        }
+      };
     }
 
     // 3. Client SDK fallback if initialized
@@ -128,13 +112,11 @@ window.SupaAuth = {
             found: true,
             student: {
               enrollment_no: data.enrollment_no,
-              student_id: data.enrollment_no,
               full_name: data.full_name,
               name: data.full_name,
               branch: data.branch,
               batch: data.batch,
-              program: 'B.Tech',
-              maskedEnrollment
+              program: 'B.Tech'
             }
           };
         }
@@ -145,13 +127,11 @@ window.SupaAuth = {
             found: true,
             student: {
               enrollment_no: rpcData.student.enrollment_no,
-              student_id: rpcData.student.enrollment_no,
               full_name: rpcData.student.full_name,
               name: rpcData.student.full_name,
               branch: rpcData.student.branch,
               batch: rpcData.student.batch,
-              program: 'B.Tech',
-              maskedEnrollment
+              program: 'B.Tech'
             }
           };
         }
