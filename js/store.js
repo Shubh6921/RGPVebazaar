@@ -321,8 +321,8 @@ class CampusStore {
           user_id: event.userId,
           metadata
         })
-      }).catch(() => {});
-    } catch (e) {}
+      }).catch(() => { });
+    } catch (e) { }
 
     this.saveState();
   }
@@ -334,7 +334,45 @@ class CampusStore {
     const clean = (enrollment || '').trim().toUpperCase();
     if (!clean) return { found: false, error: 'Empty enrollment number' };
 
-    // Primary: Call protected server endpoint
+    // 1. Check verified campus roster (all 955 students)
+    if (window.CAMPUS_ROSTER && window.CAMPUS_ROSTER[clean]) {
+      const [name, branch, batch, program] = window.CAMPUS_ROSTER[clean];
+      return {
+        found: true,
+        student: {
+          enrollment_no: clean,
+          name,
+          full_name: name,
+          program: program || 'B.Tech',
+          branch,
+          branchCode: clean.length >= 6 ? clean.substring(4, 6).toUpperCase() : 'ENG',
+          batch,
+          maskedEnrollment: clean.substring(0, clean.length - 4) + '****',
+          phoneHint: '+91 98*** ****0'
+        }
+      };
+    }
+
+    // 2. Check protected in-memory table
+    if (STUDENT_REGISTRY[clean]) {
+      const s = STUDENT_REGISTRY[clean];
+      return {
+        found: true,
+        student: {
+          enrollment_no: clean,
+          name: s.name,
+          full_name: s.name,
+          program: s.program,
+          branch: s.branch,
+          branchCode: s.branchCode,
+          batch: s.batch,
+          maskedEnrollment: clean.substring(0, clean.length - 4) + '****',
+          phoneHint: '+91 98*** 43210'
+        }
+      };
+    }
+
+    // 3. Try local server endpoint if running
     try {
       const res = await fetch('/api/verify-enrollment', {
         method: 'POST',
@@ -347,39 +385,6 @@ class CampusStore {
       }
     } catch (e) {
       console.warn('Server endpoint unavailable, checking fallback:', e);
-    }
-
-    // Fallback: Check protected in-memory table
-    if (STUDENT_REGISTRY[clean]) {
-      const s = STUDENT_REGISTRY[clean];
-      return {
-        found: true,
-        student: {
-          name: s.name,
-          program: s.program,
-          branch: s.branch,
-          branchCode: s.branchCode,
-          batch: s.batch,
-          maskedEnrollment: clean.substring(0, clean.length - 4) + '****',
-          phoneHint: '+91 98*** 43210'
-        }
-      };
-    }
-
-    if (/^0101[A-Z]{2}\d{6}$/i.test(clean)) {
-      const bCode = clean.substring(4, 6).toUpperCase();
-      return {
-        found: true,
-        student: {
-          name: 'Verified Student (' + bCode + ')',
-          program: 'B.Tech',
-          branch: 'Engineering',
-          branchCode: bCode,
-          batch: '2026–30',
-          maskedEnrollment: clean.substring(0, clean.length - 4) + '****',
-          phoneHint: '+91 98*** ****0'
-        }
-      };
     }
 
     return { found: false, error: 'Enrollment record not found in official campus roster.' };
@@ -843,8 +848,8 @@ class CampusStore {
           reason: report.reason,
           description: report.description
         })
-      }).catch(() => {});
-    } catch (e) {}
+      }).catch(() => { });
+    } catch (e) { }
 
     this.saveState();
     return { success: true, reportId: report.id };
@@ -867,8 +872,8 @@ class CampusStore {
             blocker_id: actingUser.id,
             blocked_user_id: targetUserId
           })
-        }).catch(() => {});
-      } catch (e) {}
+        }).catch(() => { });
+      } catch (e) { }
 
       this.saveState();
     }

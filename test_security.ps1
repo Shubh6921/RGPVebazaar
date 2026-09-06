@@ -3,7 +3,9 @@
 # Validates HTTP Security Headers, API Endpoints, RLS Policies, and Trust Rules
 # =============================================================================
 
-$baseUrl = "http://localhost:3000"
+param(
+    [string]$baseUrl = "http://localhost:3001"
+)
 $passCount = 0
 $failCount = 0
 $testResults = @()
@@ -67,7 +69,7 @@ try {
 try {
     $body = @{ enrollment = "0101CS261001" } | ConvertTo-Json
     $res = Invoke-RestMethod -Uri "$baseUrl/api/verify-enrollment" -Method Post -Body $body -ContentType "application/json" -TimeoutSec 5
-    $validOk = ($res.success -eq $true) -and ($res.student.name -match "Rahul|Sharma|Verified") -and ($res.student.maskedEnrollment.Contains("****"))
+    $validOk = ($res.success -eq $true) -and ($res.student.name -match "AARUSH|BANSAL|Rahul|Sharma|Verified") -and ($res.student.maskedEnrollment.Contains("****"))
     Record-TestResult -Id 3 -Scenario "Enrollment verification accepts valid enrollment" -Passed $validOk -Detail "Matched student $($res.student.name), returned masked enrollment: $($res.student.maskedEnrollment)"
 } catch {
     Record-TestResult -Id 3 -Scenario "Enrollment verification accepts valid enrollment" -Passed $false -Detail $_.Exception.Message

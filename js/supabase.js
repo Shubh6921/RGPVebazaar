@@ -46,28 +46,82 @@ window.SupaAuth = {
    * Step 1: Query public.valid_enrollments in Supabase Postgres
    */
   async checkEnrollment(enrollmentNo) {
-    const client = getClient();
     const norm = (enrollmentNo || '').trim().toUpperCase();
 
     if (!norm || norm.length < 6) {
       return { found: false, error: 'Please enter a valid enrollment number (e.g. 0101CS261001).' };
     }
 
-    if (!client) {
-      return { found: false, error: 'Database connection initializing. Please try again in a moment.' };
+    // 1. Direct native fetch to Supabase PostgreSQL REST API (zero CDN dependency)
+    try {
+      const resp = await fetch(`${SUPABASE_CONFIG.url}/rest/v1/valid_enrollments?enrollment_no=eq.${encodeURIComponent(norm)}&select=*`, {
+        headers: {
+          'apikey': SUPABASE_CONFIG.anonKey,
+          'Authorization': `Bearer ${SUPABASE_CONFIG.anonKey}`
+        }
+      });
+      if (resp.ok) {
+        const rows = await resp.json();
+        if (rows && rows.length > 0) {
+          const s = rows[0];
+          return {
+            found: true,
+            student: {
+              enrollment_no: s.enrollment_no,
+              full_name: s.full_name,
+              name: s.full_name,
+              branch: s.branch,
+              batch: s.batch,
+              program: s.program || 'B.Tech'
+            }
+          };
+        }
+      }
+    } catch (fetchErr) {
+      console.warn('Direct REST query error, checking local roster:', fetchErr);
     }
 
-    try {
-      // 1. Direct query on valid_enrollments table
-      const { data, error } = await client
-        .from('valid_enrollments')
-        .select('enrollment_no, full_name, branch, batch')
-        .eq('enrollment_no', norm)
-        .maybeSingle();
+    // 2. Check local campus roster (all 955 students)
+    if (window.CAMPUS_ROSTER && window.CAMPUS_ROSTER[norm]) {
+      const [name, branch, batch, program] = window.CAMPUS_ROSTER[norm];
+      return {
+        found: true,
+        student: {
+          enrollment_no: norm,
+          full_name: name,
+          name: name,
+          branch: branch,
+          batch: batch,
+          program: program || 'B.Tech'
+        }
+      };
+    }
 
-      if (error) {
-        console.warn('Direct query error, falling back to check_enrollment RPC:', error.message);
-        const { data: rpcData, error: rpcErr } = await client.rpc('check_enrollment', { p_enrollment: norm });
+    // 3. Client SDK fallback if initialized
+    const client = getClient();
+    if (client) {
+      try {
+        const { data } = await client
+          .from('valid_enrollments')
+          .select('enrollment_no, full_name, branch, batch')
+          .eq('enrollment_no', norm)
+          .maybeSingle();
+
+        if (data) {
+          return {
+            found: true,
+            student: {
+              enrollment_no: data.enrollment_no,
+              full_name: data.full_name,
+              name: data.full_name,
+              branch: data.branch,
+              batch: data.batch,
+              program: 'B.Tech'
+            }
+          };
+        }
+
+        const { data: rpcData } = await client.rpc('check_enrollment', { p_enrollment: norm });
         if (rpcData && rpcData.found) {
           return {
             found: true,
@@ -81,47 +135,15 @@ window.SupaAuth = {
             }
           };
         }
-        return { found: false, error: rpcErr?.message || 'Enrollment number not found in official campus roster.' };
+      } catch (sdkErr) {
+        console.warn('SDK checkEnrollment fallback error:', sdkErr);
       }
-
-      if (data) {
-        return {
-          found: true,
-          student: {
-            enrollment_no: data.enrollment_no,
-            full_name: data.full_name,
-            name: data.full_name,
-            branch: data.branch,
-            batch: data.batch,
-            program: 'B.Tech'
-          }
-        };
-      }
-
-      // Try RPC fallback if direct table returned null
-      const { data: rpcData } = await client.rpc('check_enrollment', { p_enrollment: norm });
-      if (rpcData && rpcData.found) {
-        return {
-          found: true,
-          student: {
-            enrollment_no: rpcData.student.enrollment_no,
-            full_name: rpcData.student.full_name,
-            name: rpcData.student.full_name,
-            branch: rpcData.student.branch,
-            batch: rpcData.student.batch,
-            program: 'B.Tech'
-          }
-        };
-      }
-
-      return {
-        found: false,
-        error: 'Enrollment record not found in official campus roster. Please try 0101CS261001, 0101IT261001, or 0101AU261001.'
-      };
-    } catch (err) {
-      console.error('Enrollment check exception:', err);
-      return { found: false, error: err.message || 'Unable to connect to campus roster database.' };
     }
+
+    return {
+      found: false,
+      error: 'Enrollment record not found in official campus roster. Please check your enrollment number.'
+    };
   },
 
   /**

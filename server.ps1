@@ -49,6 +49,37 @@ $ServerStudentRegistry = @{
     "0101ME261055" = @{ name = "Sneha Gupta"; program = "B.Tech"; branch = "Mechanical Engineering"; branchCode = "ME"; batch = "2026-30"; semester = 3; phoneHint = "+91 96*** 67890" }
 }
 
+# Load complete campus roster (955 students) if CSV file is present
+$csvCandidates = @(
+    "c:\Users\91709\Desktop\valid_enrollments.csv",
+    "$Root\scripts\sample_roster.csv",
+    "C:\Users\91709\.gemini\antigravity-ide\brain\71c271a4-394f-452d-ad4d-a289d8b0b9ce\.user_uploaded\media_1788694439053.csv"
+)
+foreach ($csvPath in $csvCandidates) {
+    if (Test-Path $csvPath) {
+        try {
+            $importedRows = Import-Csv -Path $csvPath -ErrorAction SilentlyContinue
+            if ($importedRows) {
+                foreach ($row in $importedRows) {
+                    if ($row.enrollment_no) {
+                        $eKey = $row.enrollment_no.Trim().ToUpper()
+                        $bCode = if ($eKey.Length -ge 6) { $eKey.Substring(4, 2) } else { "ENG" }
+                        $ServerStudentRegistry[$eKey] = @{
+                            name = $row.full_name.Trim()
+                            program = if ($row.program) { $row.program.Trim() } else { "B.Tech" }
+                            branch = $row.branch.Trim()
+                            branchCode = $bCode
+                            batch = if ($row.batch_year) { $row.batch_year.Trim() } else { "2026" }
+                            phoneHint = "+91 98*** ****0"
+                        }
+                    }
+                }
+                break
+            }
+        } catch {}
+    }
+}
+
 # Registered Enrollment Accounts (Enforce 1 enrollment = 1 account)
 $RegisteredEnrollments = [System.Collections.Generic.HashSet[string]]::new()
 $RegisteredEnrollments.Add("0101CS261001") | Out-Null
@@ -176,25 +207,6 @@ while ($listener.IsListening) {
                         batch = $student.batch
                         maskedEnrollment = $masked
                         phoneHint = $student.phoneHint
-                    }
-                }
-                continue
-            }
-
-            # Valid RGPV Pattern Match Fallback
-            if ($enrollment -match "^0101[A-Z]{2}\d{6}$") {
-                $bCode = $enrollment.Substring(4, 2)
-                $masked = $enrollment.Substring(0, $enrollment.Length - 4) + "****"
-                Send-JsonResponse $response 200 @{
-                    success = $true
-                    student = @{
-                        name = "Verified Student ($bCode)"
-                        program = "B.Tech"
-                        branch = "Engineering"
-                        branchCode = $bCode
-                        batch = "2026-30"
-                        maskedEnrollment = $masked
-                        phoneHint = "+91 98*** ****0"
                     }
                 }
                 continue
