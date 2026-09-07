@@ -1108,7 +1108,7 @@
           <div class="empty-state-icon" style="font-size:2.6rem; margin-bottom:0.6rem;">⚠️</div>
           <h3 class="empty-state-title" style="margin-bottom:0.4rem;">Unable to load marketplace.</h3>
           <p class="empty-state-sub" style="margin-bottom:1.25rem;">Could not connect to the campus listings database. Please check your network and retry.</p>
-          <button class="btn btn-primary" onclick="window.renderMarketplace()">Retry</button>
+          <button class="btn btn-primary" id="btn-retry-marketplace" onclick="window.handleRetryMarketplace(this)">Retry Connection</button>
         </div>
       `;
       return;
@@ -1174,6 +1174,15 @@
     }).join('');
   }
   window.renderMarketplace = renderMarketplace;
+
+  window.handleRetryMarketplace = async (btn) => {
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Retrying...';
+    }
+    marketplaceLoadError = null;
+    await renderMarketplace(false);
+  };
 
   function setMarketFilterType(type) {
     marketFilterType = type;

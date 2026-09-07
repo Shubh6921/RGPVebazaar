@@ -1,28 +1,38 @@
 /**
- * RGPV UNOFFICIAL — Supabase Client & Real Auth / Verification Layer
+ * RGPVEBAZAAR — Supabase Client & Real Auth / Verification Layer
  * Handles:
  *  1. RGPV Valid Enrollment Roster lookup from PostgreSQL
  *  2. Supabase Phone Auth OTP dispatch and verification
  *  3. Profile linking, session persistence, and logout
  */
+(function () {
+  'use strict';
 
-const SUPABASE_CONFIG = {
-  url: 'https://jjcmiubasrvubfrkystv.supabase.co',
-  anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpqY21pdWJhc3J2dWJmcmt5c3R2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2OTE2MDUsImV4cCI6MjEwNDI2NzYwNX0.-c1fu54MGqlvgSInqdfBDRaYS824SqZ07_oeTPfZooY'
-};
+  const SUPABASE_CONFIG = {
+    url: 'https://jjcmiubasrvubfrkystv.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpqY21pdWJhc3J2dWJmcmt5c3R2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2OTE2MDUsImV4cCI6MjEwNDI2NzYwNX0.-c1fu54MGqlvgSInqdfBDRaYS824SqZ07_oeTPfZooY'
+  };
 
-// Initialize client once SDK loads
-let supabase = null;
-if (window.supabase && typeof window.supabase.createClient === 'function') {
-  supabase = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
-}
-
-function getClient() {
-  if (!supabase && window.supabase && typeof window.supabase.createClient === 'function') {
-    supabase = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+  // Initialize client once SDK loads
+  let _supabaseClient = null;
+  if (window.supabase && typeof window.supabase.createClient === 'function') {
+    try {
+      _supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+    } catch (e) {
+      console.warn('Supabase createClient init error:', e);
+    }
   }
-  return supabase;
-}
+
+  function getClient() {
+    if (!_supabaseClient && window.supabase && typeof window.supabase.createClient === 'function') {
+      try {
+        _supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+      } catch (e) {
+        console.warn('Supabase getClient init error:', e);
+      }
+    }
+    return _supabaseClient;
+  }
 
 // Normalizes phone string to E.164 (+91 for India default)
 function normalizePhone(input) {
@@ -39,8 +49,47 @@ function normalizePhone(input) {
   return cleaned;
 }
 
-window.SupaAuth = {
-  getClient,
+  function formatMarketplaceRows(rows) {
+    return (rows || []).map(row => {
+      const s = row.seller || {};
+      const sName = s.full_name || 'Verified Student';
+      const prog = s.program || 'B.Tech';
+      const br = s.branch || 'Engineering';
+      const bt = s.batch || '2026';
+      return {
+        id: row.id,
+        seller_id: row.seller_id,
+        title: row.title,
+        description: row.description,
+        price: parseFloat(row.price) || 0,
+        condition: row.condition,
+        listingType: row.listing_type,
+        category: row.category,
+        exchangeWish: row.exchange_wish || '',
+        meetupLocation: row.location,
+        location: row.location,
+        images: row.images && row.images.length > 0 ? row.images : ['https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=600&auto=format&fit=crop&q=80'],
+        status: row.status,
+        created_at: row.created_at,
+        updated_at: row.updated_at,
+        seller: {
+          id: s.id || row.seller_id,
+          name: sName,
+          program: `${prog} ${br} · ${bt}`,
+          branch: br,
+          batch: bt,
+          rating: parseFloat(s.rating) || 5.0,
+          transactions: parseInt(s.transactions_count, 10) || 0,
+          is_verified: s.is_verified !== false,
+          isVerified: s.is_verified !== false
+        }
+      };
+    });
+  }
+
+  window.SupaAuth = {
+    getClient,
+    formatMarketplaceRows,
 
   /**
    * Step 1: Query public.valid_enrollments in Supabase Postgres
@@ -481,112 +530,118 @@ window.SupaAuth = {
    */
   async fetchMarketplaceListings(filters = {}) {
     const client = getClient();
-    if (!client) return { success: false, error: 'Database service not available.', data: [] };
 
-    try {
-      let query = client
-        .from('listings')
-        .select(`
-          id,
-          seller_id,
-          title,
-          description,
-          price,
-          category,
-          condition,
-          listing_type,
-          location,
-          exchange_wish,
-          images,
-          status,
-          created_at,
-          updated_at,
-          seller:profiles!seller_id (
+    // 1. Try Supabase JS SDK client if available
+    if (client) {
+      try {
+        let query = client
+          .from('listings')
+          .select(`
             id,
-            enrollment_no,
-            full_name,
-            branch,
-            batch,
-            program,
-            rating,
-            transactions_count,
-            is_verified
-          )
-        `)
-        .eq('status', 'active');
+            seller_id,
+            title,
+            description,
+            price,
+            category,
+            condition,
+            listing_type,
+            location,
+            exchange_wish,
+            images,
+            status,
+            created_at,
+            updated_at,
+            seller:profiles!seller_id (
+              id,
+              enrollment_no,
+              full_name,
+              branch,
+              batch,
+              program,
+              rating,
+              transactions_count,
+              is_verified
+            )
+          `)
+          .eq('status', 'active');
+
+        if (filters.category && filters.category !== 'all') {
+          query = query.ilike('category', filters.category);
+        }
+        if (filters.condition && filters.condition !== 'all') {
+          query = query.ilike('condition', `%${filters.condition}%`);
+        }
+        if (filters.listingType && filters.listingType !== 'all') {
+          query = query.eq('listing_type', filters.listingType);
+        }
+        if (filters.location && filters.location !== 'all') {
+          query = query.ilike('location', `%${filters.location}%`);
+        }
+        if (filters.search && filters.search.trim()) {
+          const s = filters.search.trim();
+          query = query.or(`title.ilike.%${s}%,description.ilike.%${s}%,category.ilike.%${s}%`);
+        }
+
+        if (filters.sort === 'price-low') {
+          query = query.order('price', { ascending: true });
+        } else if (filters.sort === 'price-high') {
+          query = query.order('price', { ascending: false });
+        } else {
+          query = query.order('created_at', { ascending: false });
+        }
+
+        const { data, error } = await query;
+        if (!error && Array.isArray(data)) {
+          return { success: true, data: formatMarketplaceRows(data) };
+        }
+        console.warn('SDK fetchMarketplaceListings notice, trying direct REST query:', error);
+      } catch (sdkErr) {
+        console.warn('SDK fetchMarketplaceListings exception, trying direct REST query:', sdkErr);
+      }
+    }
+
+    // 2. Direct REST API fallback (Native HTTP fetch with zero external CDN dependency)
+    try {
+      let restUrl = `${SUPABASE_CONFIG.url}/rest/v1/listings?select=id,seller_id,title,description,price,category,condition,listing_type,location,exchange_wish,images,status,created_at,updated_at,seller:profiles!seller_id(id,enrollment_no,full_name,branch,batch,program,rating,transactions_count,is_verified)&status=eq.active`;
 
       if (filters.category && filters.category !== 'all') {
-        query = query.ilike('category', filters.category);
+        restUrl += `&category=ilike.${encodeURIComponent(filters.category)}`;
       }
       if (filters.condition && filters.condition !== 'all') {
-        query = query.ilike('condition', `%${filters.condition}%`);
+        restUrl += `&condition=ilike.*${encodeURIComponent(filters.condition)}*`;
       }
       if (filters.listingType && filters.listingType !== 'all') {
-        query = query.eq('listing_type', filters.listingType);
+        restUrl += `&listing_type=eq.${encodeURIComponent(filters.listingType)}`;
       }
       if (filters.location && filters.location !== 'all') {
-        query = query.ilike('location', `%${filters.location}%`);
+        restUrl += `&location=ilike.*${encodeURIComponent(filters.location)}*`;
       }
-      if (filters.search && filters.search.trim()) {
-        const s = filters.search.trim();
-        query = query.or(`title.ilike.%${s}%,description.ilike.%${s}%,category.ilike.%${s}%`);
-      }
-
       if (filters.sort === 'price-low') {
-        query = query.order('price', { ascending: true });
+        restUrl += '&order=price.asc';
       } else if (filters.sort === 'price-high') {
-        query = query.order('price', { ascending: false });
+        restUrl += '&order=price.desc';
       } else {
-        query = query.order('created_at', { ascending: false });
+        restUrl += '&order=created_at.desc';
       }
 
-      const { data, error } = await query;
-      if (error) {
-        console.error('fetchMarketplaceListings error:', error);
-        return { success: false, error: error.message, data: [] };
-      }
-
-      const formatted = (data || []).map(row => {
-        const s = row.seller || {};
-        const sName = s.full_name || 'Verified Student';
-        const prog = s.program || 'B.Tech';
-        const br = s.branch || 'Engineering';
-        const bt = s.batch || '2026';
-        return {
-          id: row.id,
-          seller_id: row.seller_id,
-          title: row.title,
-          description: row.description,
-          price: parseFloat(row.price) || 0,
-          condition: row.condition,
-          listingType: row.listing_type,
-          category: row.category,
-          exchangeWish: row.exchange_wish || '',
-          meetupLocation: row.location,
-          location: row.location,
-          images: row.images && row.images.length > 0 ? row.images : ['https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=600&auto=format&fit=crop&q=80'],
-          status: row.status,
-          created_at: row.created_at,
-          updated_at: row.updated_at,
-          seller: {
-            id: s.id || row.seller_id,
-            name: sName,
-            program: `${prog} ${br} · ${bt}`,
-            branch: br,
-            batch: bt,
-            rating: parseFloat(s.rating) || 5.0,
-            transactions: parseInt(s.transactions_count, 10) || 0,
-            is_verified: s.is_verified !== false,
-            isVerified: s.is_verified !== false
-          }
-        };
+      const resp = await fetch(restUrl, {
+        headers: {
+          'apikey': SUPABASE_CONFIG.anonKey,
+          'Authorization': `Bearer ${SUPABASE_CONFIG.anonKey}`
+        }
       });
 
-      return { success: true, data: formatted };
-    } catch (err) {
-      console.error('fetchMarketplaceListings exception:', err);
-      return { success: false, error: err.message, data: [] };
+      if (resp.ok) {
+        const rows = await resp.json();
+        return { success: true, data: formatMarketplaceRows(rows) };
+      }
+      const errText = await resp.text();
+      console.warn('REST fetchMarketplaceListings failed:', resp.status, errText);
+    } catch (restErr) {
+      console.error('REST fetchMarketplaceListings exception:', restErr);
     }
+
+    return { success: false, error: 'Could not connect to the campus listings database. Please check your network and retry.', data: [] };
   },
 
   /**
@@ -845,4 +900,5 @@ window.SupaAuth = {
       .subscribe();
   }
 };
+})();
 

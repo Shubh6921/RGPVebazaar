@@ -464,11 +464,18 @@ class CampusStore {
       const res = await window.SupaAuth.fetchMarketplaceListings(filters);
       if (res && res.success) {
         this.state.listings = res.data || [];
+        this.saveState();
         return res;
+      }
+      if (this.state.listings && this.state.listings.length > 0) {
+        return { success: true, data: this.state.listings, error: null, cached: true };
       }
       return res;
     }
-    return { success: false, error: 'Supabase client not available.', data: [] };
+    if (this.state.listings && this.state.listings.length > 0) {
+      return { success: true, data: this.state.listings, error: null, cached: true };
+    }
+    return { success: false, error: 'Database service not available.', data: [] };
   }
 
   async loadMyListings() {
