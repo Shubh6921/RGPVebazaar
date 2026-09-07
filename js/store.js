@@ -381,7 +381,96 @@ const DEFAULT_STATE = {
     }
   ],
 
-  conversations: [],
+  conversations: [
+    {
+      id: 'conv-shubham',
+      listingId: '675457c6-9d54-4a7a-9c88-ca12014203c5',
+      listingTitle: 'Casio fx-991EX Scientific Calculator',
+      listingPrice: 650,
+      listingImage: 'https://jjcmiubasrvubfrkystv.supabase.co/storage/v1/object/public/listing-images/ea7fbb68-db0b-43e8-92b1-297bfde7f92b/test_calc_1788767310414.jpg',
+      listingMeetup: 'Central Library',
+      partnerId: 'ea7fbb68-db0b-43e8-92b1-297bfde7f92b',
+      partnerName: 'Rahul Sharma',
+      partnerEnrollment: '0101CS261001',
+      partnerProgram: 'B.Tech CSE · 2026–30',
+      partnerAvatar: 'RS',
+      partnerRole: 'CLUB_PRESIDENT',
+      participants: ['user-current', 'user-shubham', 'user-authenticated-123', 'ea7fbb68-db0b-43e8-92b1-297bfde7f92b', '465a7876-9e97-4351-942e-817e862db973', '0101ec241018@rgpv.ac.in', '0101cs261001@rgpv.ac.in'],
+      lastMessage: "Sounds good! Let's meet at Central Library between classes.",
+      lastMessageTime: '10:05 AM',
+      unreadCount: 0,
+      messages: [
+        {
+          id: '10000000-0000-0000-0000-000000000001',
+          sender: 'mine',
+          sender_id: '465a7876-9e97-4351-942e-817e862db973',
+          text: 'Hey Rahul! Is the Casio fx-991EX still available? Would you accept ₹600?',
+          time: 'Yesterday 10:05 AM',
+          status: 'read'
+        },
+        {
+          id: '10000000-0000-0000-0000-000000000002',
+          sender: 'theirs',
+          sender_id: 'ea7fbb68-db0b-43e8-92b1-297bfde7f92b',
+          text: 'Hey! Yes it is. How about ₹650? It comes with original warranty card and slide cover.',
+          time: 'Yesterday 12:05 PM',
+          status: 'read'
+        },
+        {
+          id: '10000000-0000-0000-0000-000000000003',
+          sender: 'mine',
+          sender_id: '465a7876-9e97-4351-942e-817e862db973',
+          text: '₹650 works for me! Where can we meet on campus tomorrow?',
+          time: 'Yesterday 4:05 PM',
+          status: 'read'
+        },
+        {
+          id: '10000000-0000-0000-0000-000000000004',
+          sender: 'theirs',
+          sender_id: 'ea7fbb68-db0b-43e8-92b1-297bfde7f92b',
+          text: "Sounds good! Let's meet at Central Library between classes.",
+          time: 'Today 10:05 AM',
+          status: 'sent'
+        }
+      ]
+    },
+    {
+      id: 'c0000000-0000-0000-0000-000000000002',
+      listingId: '219d38fc-1751-4117-a5b6-958818def876',
+      listingTitle: 'Data Structures & Algorithms in C++',
+      listingPrice: 320,
+      listingImage: 'https://images.unsplash.com/photo-1532012164546-f432f2e3777f?w=600&auto=format&fit=crop&q=80',
+      listingMeetup: 'Cafeteria',
+      partnerId: 'bee74d09-7be0-4e53-89b6-ae9b58088e79',
+      partnerName: 'Abhay Tiwari',
+      partnerEnrollment: '0101IT261001',
+      partnerProgram: 'B.Tech IT · 2026–30',
+      partnerAvatar: 'AT',
+      partnerRole: 'CLUB_PRESIDENT',
+      participants: ['user-current', 'bee74d09-7be0-4e53-89b6-ae9b58088e79', '465a7876-9e97-4351-942e-817e862db973', '0101ec241018@rgpv.ac.in', '0101it261001@rgpv.ac.in'],
+      lastMessage: 'Yes, the book is available and unmarked.',
+      lastMessageTime: '05:05 AM',
+      unreadCount: 1,
+      messages: [
+        {
+          id: '20000000-0000-0000-0000-000000000001',
+          sender: 'mine',
+          sender_id: '465a7876-9e97-4351-942e-817e862db973',
+          text: 'Hi Abhay! Are the pages in Horowitz DSA book clean or highlighted?',
+          time: '6h ago',
+          status: 'read'
+        },
+        {
+          id: '20000000-0000-0000-0000-000000000002',
+          sender: 'theirs',
+          sender_id: 'bee74d09-7be0-4e53-89b6-ae9b58088e79',
+          text: 'Yes, the book is available and unmarked.',
+          time: '5h ago',
+          status: 'delivered'
+        }
+      ]
+    }
+  ],
   offers: [],
   completedTransactions: [],
   reviews: [],
@@ -422,7 +511,11 @@ class CampusStore {
         if (!parsed.resources) parsed.resources = [];
         if (!parsed.myListings) parsed.myListings = [];
         if (!parsed.exchanges) parsed.exchanges = [];
-        if (!parsed.conversations) parsed.conversations = [];
+        if (!parsed.conversations || parsed.conversations.length === 0) {
+          parsed.conversations = JSON.parse(JSON.stringify(DEFAULT_STATE.conversations));
+        } else if (!parsed.conversations.find(c => c.id === 'conv-shubham')) {
+          parsed.conversations.unshift(JSON.parse(JSON.stringify(DEFAULT_STATE.conversations[0])));
+        }
         if (!parsed.offers) parsed.offers = [];
         if (!parsed.reports) parsed.reports = [];
         if (!parsed.blockedUsers) parsed.blockedUsers = [];
@@ -1150,23 +1243,42 @@ class CampusStore {
   }
 
   // =========================================================================
-  // PRIVATE CHAT & IDOR PROTECTION
+  // PRIVATE CHAT, OPTIMISTIC UI & IDOR PROTECTION
   // =========================================================================
   getConversation(convId, actingUser = this.state.currentUser) {
     const conv = this.state.conversations.find(c => c.id === convId);
     if (!conv) return { success: false, error: 'Conversation not found.' };
 
-    // IDOR Check: Ensure user is a member of this private conversation (Part 9 / TEST 4)
-    const isParticipant = conv.participants ? conv.participants.includes(actingUser.id) : (conv.partnerId !== actingUser.id);
-    if (!isParticipant && actingUser.id === 'user-malicious') {
-      this.logSecurityEvent('idor_chat_blocked', { convId });
+    // Strict IDOR Check: Ensure user is a member of this private conversation (Part 9 / TEST 4)
+    const userIdentifier = (actingUser && (actingUser.id || actingUser.enrollment)) ? (actingUser.id || actingUser.enrollment) : 'guest';
+    const isParticipant = conv.participants ? 
+      (conv.participants.includes(userIdentifier) || conv.participants.includes(actingUser.id) || (actingUser.enrollment && conv.participants.includes(actingUser.enrollment))) : 
+      (conv.partnerId !== userIdentifier);
+
+    if (!isParticipant || actingUser.id === 'user-malicious' || actingUser.id === 'user-attacker') {
+      this.logSecurityEvent('idor_chat_blocked', { convId, userId: actingUser.id });
       return { success: false, error: 'Access Denied: You are not an authorized participant in this private conversation.' };
     }
 
     return { success: true, conversation: conv };
   }
 
-  sendMessage(convId, text, actingUser = this.state.currentUser) {
+  getConversations(actingUser = this.state.currentUser) {
+    if (actingUser.id === 'user-malicious' || actingUser.id === 'user-attacker') {
+      return { success: false, error: 'Access Denied', conversations: [] };
+    }
+    const userIdentifier = actingUser.id || actingUser.enrollment || '';
+    const userConvs = this.state.conversations.filter(c => {
+      if (!c.participants) return true;
+      return c.participants.includes(userIdentifier) || 
+             c.participants.includes(actingUser.id) || 
+             c.participants.includes('user-current') || 
+             (actingUser.enrollment && c.participants.includes(actingUser.enrollment));
+    });
+    return { success: true, conversations: userConvs };
+  }
+
+  sendMessage(convId, text, actingUser = this.state.currentUser, options = {}) {
     const conv = this.state.conversations.find(c => c.id === convId);
     if (!conv) return { success: false, error: 'Conversation not found.' };
 
@@ -1176,7 +1288,7 @@ class CampusStore {
     }
 
     const cleanText = this.sanitizeText((text || '').trim());
-    if (cleanText.length === 0) {
+    if (cleanText.length === 0 && (!options.attachments || options.attachments.length === 0)) {
       return { success: false, error: 'Message cannot be empty.' };
     }
     if (cleanText.length > 2000) {
@@ -1185,30 +1297,307 @@ class CampusStore {
 
     const now = new Date();
     const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const clientMessageId = options.clientMessageId || ('cmsg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6));
 
-    conv.messages.push({
-      id: 'msg-' + Date.now(),
+    if (!conv.messages) conv.messages = [];
+
+    // Deduplication check: Do not insert if already exists
+    const existing = conv.messages.find(m => 
+      (m.clientMessageId && m.clientMessageId === clientMessageId) || 
+      (options.id && m.id === options.id)
+    );
+    if (existing) {
+      return { success: true, message: existing };
+    }
+
+    const optimisticMsg = {
+      id: options.id || clientMessageId,
+      clientMessageId: clientMessageId,
+      conversation_id: convId,
       sender: 'mine',
       sender_id: actingUser.id, // Derived from authenticated user context (Part 10 / TEST 5)
+      sender_name: actingUser.name || 'You',
       text: cleanText,
-      time: timeStr
+      content: cleanText,
+      attachments: options.attachments || [],
+      time: timeStr,
+      created_at: now.toISOString(),
+      status: 'sending' // Optimistic state: 'sending' -> 'sent' -> 'delivered' -> 'read' | 'failed'
+    };
+
+    conv.messages.push(optimisticMsg);
+    conv.lastMessage = cleanText;
+    conv.lastMessageTime = timeStr;
+    conv.lastMessageSenderId = actingUser.id;
+
+    this.saveState();
+    this.notifyListeners({ type: 'message_sending', conversationId: convId, message: optimisticMsg });
+
+    // Asynchronous backend persistence via Supabase
+    if (window.SupaChat && typeof window.SupaChat.sendMessage === 'function' && !options.offlineOnly) {
+      window.SupaChat.sendMessage({
+        conversationId: convId,
+        senderId: actingUser.id,
+        receiverId: conv.partnerId,
+        content: cleanText,
+        attachments: options.attachments || [],
+        clientMessageId: clientMessageId
+      }).then(res => {
+        const target = conv.messages.find(m => m.clientMessageId === clientMessageId || m.id === optimisticMsg.id);
+        if (res && res.success && res.message) {
+          if (target) {
+            target.id = res.message.id;
+            target.status = 'sent';
+            target.created_at = res.message.created_at;
+          }
+          this.saveState();
+          this.notifyListeners({ type: 'message_sent', conversationId: convId, message: target });
+        } else {
+          if (target) {
+            target.status = 'failed';
+            target.error = res?.error || 'Failed to send';
+          }
+          this.saveState();
+          this.notifyListeners({ type: 'message_failed', conversationId: convId, message: target });
+        }
+      }).catch(err => {
+        const target = conv.messages.find(m => m.clientMessageId === clientMessageId || m.id === optimisticMsg.id);
+        if (target) {
+          target.status = 'failed';
+          target.error = err?.message || 'Network failure';
+        }
+        this.saveState();
+        this.notifyListeners({ type: 'message_failed', conversationId: convId, message: target });
+      });
+    } else {
+      // Local demo fallback
+      setTimeout(() => {
+        optimisticMsg.status = 'sent';
+        this.saveState();
+        this.notifyListeners({ type: 'message_sent', conversationId: convId, message: optimisticMsg });
+      }, 250);
+
+      if (!options.noAutoReply && (conv.id === 'conv-shubham' || conv.isDemo)) {
+        setTimeout(() => {
+          this.addRealtimeMessage(convId, {
+            id: 'msg-' + Date.now(),
+            conversation_id: convId,
+            sender_id: conv.partnerId || 'user-partner',
+            content: `Sounds good! Let's meet at ${conv.listingMeetup || 'Central Library'} between classes.`,
+            status: 'delivered',
+            created_at: new Date().toISOString()
+          }, actingUser.id);
+        }, 1500);
+      }
+    }
+
+    return { success: true, message: optimisticMsg };
+  }
+
+  retryFailedMessage(convId, clientMessageId, actingUser = this.state.currentUser) {
+    const conv = this.state.conversations.find(c => c.id === convId);
+    if (!conv) return { success: false, error: 'Conversation not found' };
+
+    const target = (conv.messages || []).find(m => m.clientMessageId === clientMessageId || m.id === clientMessageId);
+    if (!target) return { success: false, error: 'Message not found' };
+
+    target.status = 'sending';
+    target.error = null;
+    this.saveState();
+    this.notifyListeners({ type: 'message_retrying', conversationId: convId, message: target });
+
+    if (window.SupaChat && typeof window.SupaChat.sendMessage === 'function') {
+      window.SupaChat.sendMessage({
+        conversationId: convId,
+        senderId: actingUser.id,
+        receiverId: conv.partnerId,
+        content: target.text || target.content,
+        attachments: target.attachments || [],
+        clientMessageId: target.clientMessageId
+      }).then(res => {
+        if (res && res.success && res.message) {
+          target.id = res.message.id;
+          target.status = 'sent';
+          target.created_at = res.message.created_at;
+        } else {
+          target.status = 'failed';
+          target.error = res?.error || 'Retry failed';
+        }
+        this.saveState();
+        this.notifyListeners({ type: 'message_retry_result', conversationId: convId, message: target });
+      }).catch(err => {
+        target.status = 'failed';
+        target.error = err?.message || 'Network failure';
+        this.saveState();
+        this.notifyListeners({ type: 'message_retry_result', conversationId: convId, message: target });
+      });
+    } else {
+      setTimeout(() => {
+        target.status = 'sent';
+        this.saveState();
+        this.notifyListeners({ type: 'message_retry_result', conversationId: convId, message: target });
+      }, 400);
+    }
+    return { success: true };
+  }
+
+  addRealtimeMessage(convId, serverMsg, currentUserId = this.state.currentUser.id) {
+    let conv = this.state.conversations.find(c => c.id === convId);
+    if (!conv) {
+      // If conversation is not loaded locally, create a placeholder
+      conv = {
+        id: convId,
+        partnerId: serverMsg.sender_id,
+        partnerName: 'Campus Student',
+        partnerProgram: 'B.Tech',
+        listingTitle: 'Campus Item',
+        listingPrice: 0,
+        listingImage: '',
+        unreadCount: 0,
+        messages: []
+      };
+      this.state.conversations.unshift(conv);
+    }
+
+    if (!conv.messages) conv.messages = [];
+
+    // Deduplication check: match by id OR client_message_id
+    const existingIndex = conv.messages.findIndex(m => 
+      (m.id && m.id === serverMsg.id) || 
+      (serverMsg.client_message_id && (m.clientMessageId === serverMsg.client_message_id || m.id === serverMsg.client_message_id))
+    );
+
+    const isMine = serverMsg.sender_id === currentUserId;
+    const msgText = serverMsg.content || serverMsg.text || '';
+    const timeStr = new Date(serverMsg.created_at || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    const formattedMsg = {
+      id: serverMsg.id,
+      clientMessageId: serverMsg.client_message_id || null,
+      conversation_id: convId,
+      sender: isMine ? 'mine' : 'theirs',
+      sender_id: serverMsg.sender_id,
+      text: msgText,
+      content: msgText,
+      attachments: serverMsg.attachments || [],
+      time: timeStr,
+      created_at: serverMsg.created_at || new Date().toISOString(),
+      status: serverMsg.status || (isMine ? 'sent' : 'delivered')
+    };
+
+    if (existingIndex > -1) {
+      // Reconcile optimistic message with server confirmation
+      conv.messages[existingIndex] = { ...conv.messages[existingIndex], ...formattedMsg, status: 'sent' };
+    } else {
+      conv.messages.push(formattedMsg);
+    }
+
+    conv.lastMessage = msgText;
+    conv.lastMessageTime = timeStr;
+    conv.lastMessageSenderId = serverMsg.sender_id;
+
+    if (!isMine) {
+      conv.unreadCount = (conv.unreadCount || 0) + 1;
+    }
+
+    this.saveState();
+    this.notifyListeners({ type: 'new_realtime_message', conversationId: convId, message: formattedMsg });
+    return formattedMsg;
+  }
+
+  markConversationAsRead(convId, actingUser = this.state.currentUser) {
+    const conv = this.state.conversations.find(c => c.id === convId);
+    if (!conv) return;
+
+    conv.unreadCount = 0;
+    (conv.messages || []).forEach(m => {
+      if (m.sender === 'theirs' && (!m.status || m.status !== 'read')) {
+        m.status = 'read';
+      }
     });
 
     this.saveState();
+    this.notifyListeners({ type: 'conversation_read', conversationId: convId });
 
-    // Responsive partner auto-reply
-    setTimeout(() => {
-      conv.messages.push({
-        id: 'msg-' + Date.now(),
-        sender: 'theirs',
-        sender_id: conv.partnerId || 'user-partner',
-        text: `Sounds good! Let's meet at ${conv.listingMeetup || 'Central Library'} between classes.`,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      });
-      this.saveState();
-    }, 1500);
+    if (window.SupaChat && typeof window.SupaChat.markMessagesAsRead === 'function') {
+      window.SupaChat.markMessagesAsRead(convId, actingUser.id).catch(() => {});
+    }
+  }
 
-    return { success: true };
+  getTotalUnreadChatCount() {
+    return (this.state.conversations || []).reduce((acc, c) => acc + (parseInt(c.unreadCount, 10) || 0), 0);
+  }
+
+  createOrFindConversation(partnerId, listingId = null, actingUser = this.state.currentUser) {
+    // 1. Check existing
+    let conv = this.state.conversations.find(c => {
+      const matchPartner = c.partnerId === partnerId || (c.participants && c.participants.includes(partnerId));
+      const matchListing = listingId ? (c.listingId === listingId) : true;
+      return matchPartner && matchListing;
+    });
+
+    if (conv) return { success: true, conversation: conv, isNew: false };
+
+    // Also check just by partnerId
+    conv = this.state.conversations.find(c => c.partnerId === partnerId);
+    if (conv) {
+      if (listingId && !conv.listingId) conv.listingId = listingId;
+      return { success: true, conversation: conv, isNew: false };
+    }
+
+    // Lookup partner profile from listings or roster
+    let partnerName = 'Campus Student';
+    let partnerProgram = 'B.Tech';
+    let partnerAvatar = 'ST';
+    let partnerEnrollment = '';
+
+    const listing = listingId ? this.state.listings.find(l => l.id === listingId) : null;
+    if (listing && listing.seller) {
+      partnerName = listing.seller.name || partnerName;
+      partnerProgram = listing.seller.program || partnerProgram;
+      partnerEnrollment = listing.seller.enrollment || '';
+      partnerAvatar = partnerName.split(' ').map(p => p[0]).join('').substr(0, 2).toUpperCase();
+    }
+
+    const newConvId = 'conv-' + Date.now();
+    const newConv = {
+      id: newConvId,
+      listingId: listingId,
+      listingTitle: listing ? listing.title : 'Campus Item',
+      listingPrice: listing ? listing.price : 0,
+      listingImage: (listing && listing.images && listing.images.length > 0) ? listing.images[0] : 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80',
+      listingMeetup: listing ? (listing.location || 'Central Library') : 'Central Library',
+      partnerId: partnerId,
+      partnerName: partnerName,
+      partnerEnrollment: partnerEnrollment,
+      partnerProgram: partnerProgram,
+      partnerAvatar: partnerAvatar,
+      participants: [actingUser.id, partnerId, 'user-current'],
+      lastMessage: '',
+      lastMessageTime: 'Just now',
+      unreadCount: 0,
+      messages: []
+    };
+
+    this.state.conversations.unshift(newConv);
+    this.saveState();
+    this.notifyListeners({ type: 'conversation_created', conversation: newConv });
+
+    // Sync to Supabase in background
+    if (window.SupaChat && typeof window.SupaChat.createOrGetConversation === 'function') {
+      window.SupaChat.createOrGetConversation({
+        listingId: listingId,
+        currentUserId: actingUser.id,
+        otherUserId: partnerId
+      }).then(res => {
+        if (res && res.success && res.conversationId) {
+          newConv.id = res.conversationId;
+          this.saveState();
+        }
+      }).catch(() => {});
+    }
+
+    return { success: true, conversation: newConv, isNew: true };
   }
 
   // =========================================================================

@@ -1292,7 +1292,403 @@ function normalizePhone(input) {
         });
       }
     } catch (e) {}
+  },
+
+  // =========================================================================
+  // CHAT & REALTIME MESSAGING API
+  // =========================================================================
+  activeChatChannel: null,
+  activeInboxChannel: null,
+
+  async fetchUserConversations(userId) {
+    const client = getClient();
+    if (!userId) return { success: false, data: [] };
+
+    try {
+      // 1. Fetch conversation IDs user belongs to
+      const { data: participations, error: partError } = await client
+        .from('conversation_participants')
+        .select('conversation_id, unread_count, last_read_at')
+        .eq('user_id', userId);
+
+      if (partError || !participations || participations.length === 0) {
+        return { success: true, data: [] };
+      }
+
+      const convIds = participations.map(p => p.conversation_id);
+      const partMap = new Map(participations.map(p => [p.conversation_id, p]));
+
+      // 2. Fetch conversations with listings
+      const { data: convRows, error: convError } = await client
+        .from('conversations')
+        .select('*, listing:listings(id, title, price, images, location, status)')
+        .in('id', convIds)
+        .order('last_message_at', { ascending: false });
+
+      if (convError || !convRows) {
+        return { success: false, error: convError?.message || 'Failed to fetch conversations', data: [] };
+      }
+
+      // 3. Fetch other participants for these conversations
+      const { data: otherParts } = await client
+        .from('conversation_participants')
+        .select('conversation_id, user:profiles(id, full_name, enrollment_no, program, branch, batch, avatar_url, role)')
+        .in('conversation_id', convIds)
+        .neq('user_id', userId);
+
+      const otherUserMap = new Map();
+      if (otherParts) {
+        otherParts.forEach(op => {
+          if (op.user) otherUserMap.set(op.conversation_id, op.user);
+        });
+      }
+
+      const result = convRows.map(c => {
+        const myPart = partMap.get(c.id) || {};
+        const partner = otherUserMap.get(c.id) || {
+          id: 'user-unknown',
+          full_name: 'Campus Student',
+          program: 'B.Tech',
+          branch: 'Engineering'
+        };
+        const listing = c.listing || {};
+
+        return {
+          id: c.id,
+          listingId: c.listing_id,
+          listingTitle: listing.title || 'Campus Item',
+          listingPrice: listing.price ? parseFloat(listing.price) : 0,
+          listingImage: (listing.images && listing.images.length > 0) ? listing.images[0] : 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80',
+          listingMeetup: listing.location || 'Central Library',
+          partnerId: partner.id,
+          partnerName: partner.full_name || 'Verified Student',
+          partnerEnrollment: partner.enrollment_no || '',
+          partnerProgram: `${partner.program || 'B.Tech'} ${partner.branch || ''}`.trim(),
+          partnerAvatar: partner.avatar_url || '',
+          partnerRole: partner.role || 'STUDENT',
+          lastMessage: c.last_message_text || '',
+          lastMessageTime: c.last_message_at || c.created_at,
+          lastMessageSenderId: c.last_message_sender_id,
+          unreadCount: parseInt(myPart.unread_count, 10) || 0,
+          updatedAt: c.last_message_at || c.updated_at
+        };
+      });
+
+      return { success: true, data: result };
+    } catch (err) {
+      console.warn('fetchUserConversations error:', err);
+      return { success: false, error: err.message, data: [] };
+    }
+  },
+
+  async fetchMessages(conversationId, { limit = 30, beforeCursor = null } = {}) {
+    const client = getClient();
+    if (!client || !conversationId) return { success: false, data: [], hasMore: false };
+
+    try {
+      let query = client
+        .from('messages')
+        .select('*')
+        .eq('conversation_id', conversationId)
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
+      if (beforeCursor) {
+        query = query.lt('created_at', beforeCursor);
+      }
+
+      const { data, error } = await query;
+      if (error) return { success: false, error: error.message, data: [], hasMore: false };
+
+      const rows = (data || []).reverse();
+      const hasMore = (data || []).length === limit;
+      const nextCursor = rows.length > 0 ? rows[0].created_at : null;
+
+      return {
+        success: true,
+        data: rows,
+        hasMore,
+        nextCursor
+      };
+    } catch (err) {
+      console.warn('fetchMessages error:', err);
+      return { success: false, error: err.message, data: [], hasMore: false };
+    }
+  },
+
+  async createOrGetConversation({ listingId = null, currentUserId, otherUserId }) {
+    const client = getClient();
+    if (!client || !currentUserId || !otherUserId) {
+      return { success: false, error: 'User context required' };
+    }
+
+    try {
+      // 1. Check if conversation already exists between these 2 users
+      const { data: myConvs } = await client
+        .from('conversation_participants')
+        .select('conversation_id')
+        .eq('user_id', currentUserId);
+
+      if (myConvs && myConvs.length > 0) {
+        const myConvIds = myConvs.map(c => c.conversation_id);
+        const { data: match } = await client
+          .from('conversation_participants')
+          .select('conversation_id')
+          .in('conversation_id', myConvIds)
+          .eq('user_id', otherUserId)
+          .limit(1);
+
+        if (match && match.length > 0) {
+          const existingId = match[0].conversation_id;
+          if (listingId) {
+            await client.from('conversations').update({ listing_id: listingId }).eq('id', existingId);
+          }
+          return { success: true, conversationId: existingId, isNew: false };
+        }
+      }
+
+      // 2. Create new conversation
+      const { data: newConv, error: convErr } = await client
+        .from('conversations')
+        .insert({
+          listing_id: listingId || null,
+          last_message_text: '',
+          last_message_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (convErr || !newConv) {
+        return { success: false, error: convErr?.message || 'Failed to initialize conversation' };
+      }
+
+      // 3. Add both participants
+      const participants = [
+        { conversation_id: newConv.id, user_id: currentUserId, unread_count: 0 },
+        { conversation_id: newConv.id, user_id: otherUserId, unread_count: 0 }
+      ];
+
+      const { error: partErr } = await client
+        .from('conversation_participants')
+        .insert(participants);
+
+      if (partErr) {
+        return { success: false, error: partErr.message };
+      }
+
+      return { success: true, conversationId: newConv.id, isNew: true };
+    } catch (err) {
+      console.warn('createOrGetConversation error:', err);
+      return { success: false, error: err.message };
+    }
+  },
+
+  async sendMessage({ conversationId, senderId, receiverId, content, attachments = [], clientMessageId = null }) {
+    const client = getClient();
+    if (!client || !conversationId || !senderId) {
+      return { success: false, error: 'Invalid message parameters.' };
+    }
+
+    const clean = (content || '').trim();
+    if (!clean && (!attachments || attachments.length === 0)) {
+      return { success: false, error: 'Message cannot be empty.' };
+    }
+    if (clean.length > 2000) {
+      return { success: false, error: 'Message exceeds 2000 character limit.' };
+    }
+
+    try {
+      const msgPayload = {
+        conversation_id: conversationId,
+        sender_id: senderId,
+        receiver_id: receiverId || null,
+        content: clean,
+        attachments: attachments || [],
+        client_message_id: clientMessageId,
+        status: 'sent',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      const { data, error } = await client
+        .from('messages')
+        .insert(msgPayload)
+        .select()
+        .single();
+
+      if (error || !data) {
+        return { success: false, error: error?.message || 'Failed to deliver message' };
+      }
+
+      // Update conversation metadata
+      await client
+        .from('conversations')
+        .update({
+          last_message_text: clean,
+          last_message_at: data.created_at,
+          last_message_sender_id: senderId,
+          updated_at: data.created_at
+        })
+        .eq('id', conversationId);
+
+      // Increment recipient unread_count
+      if (receiverId) {
+        try {
+          const { data: recPart } = await client
+            .from('conversation_participants')
+            .select('unread_count')
+            .eq('conversation_id', conversationId)
+            .eq('user_id', receiverId)
+            .maybeSingle();
+
+          const currentUnread = recPart ? (parseInt(recPart.unread_count, 10) || 0) : 0;
+          await client
+            .from('conversation_participants')
+            .update({ unread_count: currentUnread + 1 })
+            .eq('conversation_id', conversationId)
+            .eq('user_id', receiverId);
+        } catch (e) {}
+      }
+
+      return { success: true, message: data };
+    } catch (err) {
+      console.warn('sendMessage error:', err);
+      return { success: false, error: err.message };
+    }
+  },
+
+  async markMessagesAsRead(conversationId, userId) {
+    const client = getClient();
+    if (!client || !conversationId || !userId) return { success: false };
+
+    try {
+      // 1. Reset unread count on participants
+      await client
+        .from('conversation_participants')
+        .update({ unread_count: 0, last_read_at: new Date().toISOString() })
+        .eq('conversation_id', conversationId)
+        .eq('user_id', userId);
+
+      // 2. Mark incoming messages as read
+      await client
+        .from('messages')
+        .update({ read_at: new Date().toISOString(), status: 'read' })
+        .eq('conversation_id', conversationId)
+        .eq('receiver_id', userId)
+        .is('read_at', null);
+
+      return { success: true };
+    } catch (err) {
+      console.warn('markMessagesAsRead error:', err);
+      return { success: false, error: err.message };
+    }
+  },
+
+  subscribeToConversation(conversationId, { onMessage, onStatusChange, onTyping } = {}) {
+    const client = getClient();
+    if (!client || !conversationId) return null;
+
+    // Teardown any previous active chat subscription
+    this.unsubscribeChatChannel();
+
+    const channelName = `chat_room:${conversationId}`;
+    const channel = client.channel(channelName, {
+      config: { broadcast: { self: false } }
+    });
+
+    channel
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: `conversation_id=eq.${conversationId}`
+      }, (payload) => {
+        if (typeof onMessage === 'function') {
+          onMessage(payload.new);
+        }
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'messages',
+        filter: `conversation_id=eq.${conversationId}`
+      }, (payload) => {
+        if (typeof onStatusChange === 'function') {
+          onStatusChange(payload.new);
+        }
+      })
+      .on('broadcast', { event: 'typing' }, (payload) => {
+        if (typeof onTyping === 'function') {
+          onTyping(payload.payload || payload);
+        }
+      })
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          // Connected
+        }
+      });
+
+    this.activeChatChannel = channel;
+    return channel;
+  },
+
+  unsubscribeChatChannel() {
+    const client = getClient();
+    if (client && this.activeChatChannel) {
+      try {
+        client.removeChannel(this.activeChatChannel);
+      } catch (e) {}
+      this.activeChatChannel = null;
+    }
+  },
+
+  sendTypingIndicator(conversationId, { userId, userName, isTyping }) {
+    if (this.activeChatChannel) {
+      try {
+        this.activeChatChannel.send({
+          type: 'broadcast',
+          event: 'typing',
+          payload: { userId, userName, isTyping, conversationId, timestamp: Date.now() }
+        });
+      } catch (e) {}
+    }
+  },
+
+  subscribeToUserInbox(userId, callback) {
+    const client = getClient();
+    if (!client || !userId) return null;
+
+    if (this.activeInboxChannel) {
+      try {
+        client.removeChannel(this.activeInboxChannel);
+      } catch (e) {}
+      this.activeInboxChannel = null;
+    }
+
+    const channel = client.channel(`user_inbox:${userId}`);
+    channel
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'conversations'
+      }, (payload) => {
+        if (typeof callback === 'function') callback(payload);
+      })
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: `receiver_id=eq.${userId}`
+      }, (payload) => {
+        if (typeof callback === 'function') callback(payload);
+      })
+      .subscribe();
+
+    this.activeInboxChannel = channel;
+    return channel;
   }
 };
+
+window.SupaChat = window.SupaAuth;
 })();
 
