@@ -1,5 +1,5 @@
 /**
- * RGPV UNOFFICIAL — Central Data Store & State Management
+ * RGPVEBAZAAR — Central Data Store & State Management
  * Unites: Marketplace, Exchange, Academic Resources, Opportunities & Clubs
  * Includes: Stage 9 Security, Trust, Authorization & RLS Emulation Layer
  */
@@ -65,20 +65,20 @@ const STUDENT_REGISTRY = {
 // Initial Seed Data
 const DEFAULT_STATE = {
   currentUser: {
-    id: 'user-current',
-    isVerified: true,
-    enrollment: '0101CS261001',
-    name: 'Rahul Sharma',
-    program: 'B.Tech',
-    branch: 'Computer Science & Engineering',
-    branchCode: 'CSE',
-    batch: '2026–30',
-    semester: 3,
-    phone: '+91 98765 43210',
-    avatar: 'RS',
-    rating: 4.8,
+    id: 'user-guest',
+    isVerified: false,
+    enrollment: '',
+    name: 'Campus Guest',
+    program: 'Campus Visitor',
+    branch: 'RGPV',
+    branchCode: 'RGPV',
+    batch: '2026',
+    semester: 1,
+    phone: '',
+    avatar: 'CG',
+    rating: 5.0,
     transactions: 0,
-    verificationBadge: 'Campus Verified',
+    verificationBadge: 'Unverified Guest',
     followedClubs: ['coding-club', 'gdsc-rgpv', 'ecell-rgpv'],
     savedListings: [],
     savedResources: [],
@@ -431,7 +431,7 @@ class CampusStore {
     this.addNotification({
       icon: '✓',
       title: 'Enrollment Verified',
-      desc: `Welcome to RGPV Unofficial, ${fullName}. Verified as ${branchCode}.`
+      desc: `Welcome to RGPVebazaar, ${fullName}. Verified as ${branchCode}.`
     });
     this.saveState();
   }
@@ -457,12 +457,36 @@ class CampusStore {
   }
 
   // =========================================================================
-  // MARKETPLACE LISTINGS & IDOR GUARDS
+  // MARKETPLACE LISTINGS & BACKEND SYNC (Supabase PostgreSQL Source of Truth)
   // =========================================================================
-  addListing(listing, actingUser = this.state.currentUser) {
+  async loadMarketplaceListings(filters = {}) {
+    if (window.SupaAuth && typeof window.SupaAuth.fetchMarketplaceListings === 'function') {
+      const res = await window.SupaAuth.fetchMarketplaceListings(filters);
+      if (res && res.success) {
+        this.state.listings = res.data || [];
+        return res;
+      }
+      return res;
+    }
+    return { success: false, error: 'Supabase client not available.', data: [] };
+  }
+
+  async loadMyListings() {
+    if (window.SupaAuth && typeof window.SupaAuth.fetchMyListings === 'function') {
+      const res = await window.SupaAuth.fetchMyListings();
+      if (res && res.success) {
+        this.state.myListings = res.data || [];
+        return res;
+      }
+      return res;
+    }
+    return { success: false, error: 'Supabase client not available.', data: [] };
+  }
+
+  async addListing(listing, actingUser = this.state.currentUser) {
     if (!actingUser || !actingUser.isVerified) {
       this.logSecurityEvent('unauthorized_listing_attempt');
-      return { success: false, error: 'Authorization error: Only verified students can create listings.' };
+      return { success: false, error: 'Campus verification required. Only verified students can create listings.' };
     }
 
     if (!this.checkRateLimit('create_listing', 5, 60000)) {
@@ -479,12 +503,14 @@ class CampusStore {
     if (title.length < 3) {
       return { success: false, error: 'Title must be at least 3 characters long.' };
     }
+    if (listingType === 'sell' && price <= 0) {
+      return { success: false, error: 'Please specify a valid price for items listed for sale.' };
+    }
+    if (listingType === 'exchange' && (!listing.exchangeWish || listing.exchangeWish.trim().length < 3)) {
+      return { success: false, error: 'Please specify what you are looking for in exchange.' };
+    }
 
-    const newListing = {
-      id: 'prod-' + Date.now(),
-      seller_id: actingUser.id,
-      postedDate: 'Just now',
-      status: 'available',
+    const payload = {
       title,
       description: description || 'Item available for campus handover.',
       price: listingType === 'free' ? 0 : price,
@@ -493,64 +519,84 @@ class CampusStore {
       category: listing.category || 'Other',
       exchangeWish: this.sanitizeText(listing.exchangeWish || ''),
       meetupLocation: this.sanitizeText(listing.meetupLocation || 'Central Library'),
-      images: listing.images || ['https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=600&auto=format&fit=crop&q=80'],
-      seller: {
-        id: actingUser.id,
-        name: actingUser.name,
-        enrollment: actingUser.enrollment,
-        program: `${actingUser.program} ${actingUser.branchCode}`,
-        batch: actingUser.batch,
-        rating: actingUser.rating,
-        transactions: actingUser.transactions,
-        isVerified: true
-      }
+      images: Array.isArray(listing.images) && listing.images.length > 0 ? listing.images : ['https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=600&auto=format&fit=crop&q=80']
     };
 
-    this.state.listings.unshift(newListing);
-    this.state.myListings.unshift(newListing);
-    this.logSecurityEvent('listing_created', { listing_id: newListing.id });
-    this.saveState();
-    return { success: true, listing: newListing };
+    if (window.SupaAuth && typeof window.SupaAuth.createListing === 'function') {
+      const res = await window.SupaAuth.createListing(payload);
+      if (res && res.success && res.listing) {
+        this.state.listings.unshift(res.listing);
+        this.state.myListings.unshift(res.listing);
+        this.logSecurityEvent('listing_created', { listing_id: res.listing.id });
+        return { success: true, listing: res.listing };
+      }
+      return { success: false, error: res?.error || 'Database insert failed. Please try again.' };
+    }
+
+    return { success: false, error: 'Database service unavailable.' };
   }
 
   // IDOR & Ownership Protection for Listing Edits
-  updateListing(id, updates, actingUser = this.state.currentUser) {
-    const listing = this.state.listings.find(l => l.id === id);
+  async updateListing(id, updates, actingUser = this.state.currentUser) {
+    const listing = this.state.listings.find(l => l.id === id) || this.state.myListings.find(l => l.id === id);
     if (!listing) return { success: false, error: 'Listing not found.' };
 
-    if (listing.seller_id !== actingUser.id && listing.seller.enrollment !== actingUser.enrollment) {
+    if (listing.seller_id !== actingUser.id && listing.seller?.id !== actingUser.id && listing.seller?.enrollment !== actingUser.enrollment) {
       this.logSecurityEvent('idor_attempt', { action: 'update_listing', target_id: id });
       return { success: false, error: 'Access Denied: You do not have permission to modify another student\'s listing.' };
     }
 
-    // Whitelisted updates only
+    if (updates.price !== undefined && window.SupaAuth && typeof window.SupaAuth.updateListingPrice === 'function') {
+      const res = await window.SupaAuth.updateListingPrice(id, updates.price);
+      if (!res.success) return { success: false, error: res.error || 'Failed to update price in database.' };
+    }
+
+    // Whitelisted updates
     const allowed = ['title', 'description', 'price', 'condition', 'meetupLocation', 'exchangeWish'];
     allowed.forEach(field => {
       if (updates[field] !== undefined) {
-        listing[field] = typeof updates[field] === 'string' ? this.sanitizeText(updates[field]) : updates[field];
+        const val = typeof updates[field] === 'string' ? this.sanitizeText(updates[field]) : updates[field];
+        listing[field] = val;
+        const inFeed = this.state.listings.find(l => l.id === id);
+        if (inFeed) inFeed[field] = val;
+        const inMy = this.state.myListings.find(l => l.id === id);
+        if (inMy) inMy[field] = val;
       }
     });
 
-    this.saveState();
     return { success: true, listing };
   }
 
-  // IDOR Protection for Listing Deletes
-  deleteListing(id, actingUser = this.state.currentUser) {
-    const index = this.state.listings.findIndex(l => l.id === id);
-    if (index === -1) return { success: false, error: 'Listing not found.' };
+  // Update listing status (e.g. active -> sold / removed)
+  async updateListingStatus(id, status, actingUser = this.state.currentUser) {
+    const listing = this.state.listings.find(l => l.id === id) || this.state.myListings.find(l => l.id === id);
+    if (!listing) return { success: false, error: 'Listing not found.' };
 
-    const listing = this.state.listings[index];
-    if (listing.seller_id !== actingUser.id && listing.seller.enrollment !== actingUser.enrollment) {
-      this.logSecurityEvent('idor_attempt', { action: 'delete_listing', target_id: id });
-      return { success: false, error: 'Access Denied: You cannot delete another student\'s listing.' };
+    if (listing.seller_id !== actingUser.id && listing.seller?.id !== actingUser.id && listing.seller?.enrollment !== actingUser.enrollment) {
+      this.logSecurityEvent('idor_attempt', { action: 'update_status', target_id: id });
+      return { success: false, error: 'Access Denied: You cannot modify another student\'s listing.' };
     }
 
-    this.state.listings.splice(index, 1);
-    this.state.myListings = this.state.myListings.filter(l => l.id !== id);
-    this.logSecurityEvent('listing_deleted', { listing_id: id });
-    this.saveState();
+    if (window.SupaAuth && typeof window.SupaAuth.updateListingStatus === 'function') {
+      const res = await window.SupaAuth.updateListingStatus(id, status);
+      if (!res.success) return { success: false, error: res.error || 'Failed to update listing status.' };
+    }
+
+    // Update state: sold / exchanged / removed items are removed from active discovery
+    if (status !== 'active') {
+      this.state.listings = this.state.listings.filter(l => l.id !== id);
+    }
+    const myItem = this.state.myListings.find(l => l.id === id);
+    if (myItem) {
+      myItem.status = status;
+    }
+
     return { success: true };
+  }
+
+  // IDOR Protection for Listing Deletes (Soft delete to status = 'removed')
+  async deleteListing(id, actingUser = this.state.currentUser) {
+    return this.updateListingStatus(id, 'removed', actingUser);
   }
 
   toggleFavoriteListing(id) {

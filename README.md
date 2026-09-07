@@ -1,6 +1,5 @@
-# Demo Project
-
-A web application project featuring frontend components, security testing scripts, and Supabase integration.
+# RGPVebazaar
+A premier, verified student marketplace and academic ecosystem for RGPV students. Buy, sell, and exchange essentials, access verified semester PYQs and notes, and explore campus opportunities safely.
 
 ## Project Structure
 

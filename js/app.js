@@ -1,8 +1,37 @@
 /**
- * RGPV UNOFFICIAL — Main Application Router, Controller & UI Renderer
+ * RGPVEBAZAAR — Main Application Router, Controller & UI Renderer
+ * Visual Direction: Luxury Modern Campus Commerce & Academic Ecosystem
  */
+(function () {
+  'use strict';
 
-document.addEventListener('DOMContentLoaded', () => {
+  // Hero Quick Search & Category Helper Handlers
+  window.handleHeroSearch = function() {
+    const input = document.getElementById('hero-quick-search-input');
+    const val = input ? input.value.trim() : '';
+    navigate('marketplace');
+    setTimeout(() => {
+      const marketInput = document.getElementById('market-search-input');
+      if (marketInput) {
+        marketInput.value = val;
+        marketInput.focus();
+        marketInput.dispatchEvent(new Event('input'));
+      }
+    }, 60);
+  };
+
+  window.quickSearchCategory = function(keyword) {
+    navigate('marketplace');
+    setTimeout(() => {
+      const marketInput = document.getElementById('market-search-input');
+      if (marketInput) {
+        marketInput.value = keyword;
+        marketInput.focus();
+        marketInput.dispatchEvent(new Event('input'));
+      }
+    }, 60);
+  };
+
   // SVG Icon Templates
   const ICONS = {
     check: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`,
@@ -666,7 +695,7 @@ document.addEventListener('DOMContentLoaded', () => {
           document.getElementById('verify-success-name').textContent = studentName;
           document.getElementById('verify-success-program').textContent = `${verifyStepData.student.program || 'B.Tech'} ${verifyStepData.student.branch} · ${verifyStepData.student.batch}`;
         }
-        showToast('Campus verification complete! Welcome to RGPV Unofficial.');
+        showToast('Campus verification complete! Welcome to RGPVebazaar.');
       } catch (err) {
         console.error('OTP verification error:', err);
         showVerifyError('verify-otp-error', err.message || 'Verification failed. Please try again.');
@@ -1029,52 +1058,93 @@ document.addEventListener('DOMContentLoaded', () => {
   // =========================================================================
   // MARKETPLACE CONTROLLER (/marketplace)
   // =========================================================================
-  function renderMarketplace() {
-    const list = window.Store.state.listings;
-    const userFavorites = window.Store.state.currentUser.savedListings || [];
+  let isMarketplaceLoading = false;
+  let marketplaceLoadError = null;
 
-    // Filter items
-    let filtered = list.filter(item => {
-      // Type
-      if (marketFilterType !== 'all' && item.listingType !== marketFilterType) return false;
-      // Category
-      if (marketCategory !== 'all' && item.category.toLowerCase() !== marketCategory.toLowerCase()) return false;
-      // Condition
-      if (marketCondition !== 'all' && !item.condition.toLowerCase().includes(marketCondition.toLowerCase())) return false;
-      // Location
-      if (marketLocation !== 'all' && !item.meetupLocation.toLowerCase().includes(marketLocation.toLowerCase())) return false;
-      // Search
-      if (marketSearch) {
-        const q = marketSearch.toLowerCase();
-        return item.title.toLowerCase().includes(q) || item.description.toLowerCase().includes(q);
-      }
-      return true;
-    });
-
-    // Sorting
-    if (marketSort === 'price-low') {
-      filtered.sort((a, b) => a.price - b.price);
-    } else if (marketSort === 'price-high') {
-      filtered.sort((a, b) => b.price - a.price);
-    }
-
+  async function renderMarketplace(skipFetch = false) {
     const grid = document.getElementById('market-products-grid');
     if (!grid) return;
 
-    if (filtered.length === 0) {
+    if (!skipFetch) {
+      isMarketplaceLoading = true;
+      marketplaceLoadError = null;
+
+      // Render Skeleton Cards while fetching
+      grid.innerHTML = Array(4).fill(0).map(() => `
+        <div class="product-card skeleton-card" style="opacity:0.6; pointer-events:none;">
+          <div class="product-image-box" style="background:var(--border-color); animation:pulse 1.5s infinite;"></div>
+          <div class="product-content">
+            <div style="height:18px; width:75%; background:var(--border-color); border-radius:4px; margin-bottom:0.5rem;"></div>
+            <div style="height:14px; width:45%; background:var(--border-color); border-radius:4px; margin-bottom:1rem;"></div>
+            <div style="height:12px; width:60%; background:var(--border-color); border-radius:4px;"></div>
+          </div>
+        </div>
+      `).join('');
+
+      try {
+        const res = await window.Store.loadMarketplaceListings({
+          category: marketCategory,
+          condition: marketCondition,
+          listingType: marketFilterType,
+          location: marketLocation,
+          search: marketSearch,
+          sort: marketSort
+        });
+
+        if (!res.success && res.error) {
+          marketplaceLoadError = res.error;
+        }
+      } catch (err) {
+        console.error('Failed to load marketplace listings:', err);
+        marketplaceLoadError = 'Unable to load marketplace.';
+      } finally {
+        isMarketplaceLoading = false;
+      }
+    }
+
+    if (marketplaceLoadError) {
       grid.innerHTML = `
-        <div class="empty-state-box" style="grid-column: 1 / -1;">
-          <div class="empty-state-icon">🛒</div>
-          <h3 class="empty-state-title">No listings match your filters</h3>
-          <p class="empty-state-sub">Be the first to list something your campus community might need, or adjust your active category and condition filters.</p>
-          <button class="btn btn-primary" onclick="window.openCreateListingModal()">+ Create Listing</button>
+        <div class="empty-state-box" style="grid-column: 1 / -1; text-align:center; padding:3.5rem 1.5rem;">
+          <div class="empty-state-icon" style="font-size:2.6rem; margin-bottom:0.6rem;">⚠️</div>
+          <h3 class="empty-state-title" style="margin-bottom:0.4rem;">Unable to load marketplace.</h3>
+          <p class="empty-state-sub" style="margin-bottom:1.25rem;">Could not connect to the campus listings database. Please check your network and retry.</p>
+          <button class="btn btn-primary" onclick="window.renderMarketplace()">Retry</button>
         </div>
       `;
       return;
     }
 
-    grid.innerHTML = filtered.map(item => {
+    const list = window.Store.state.listings || [];
+    const userFavorites = window.Store.state.currentUser.savedListings || [];
+
+    if (list.length === 0) {
+      const isFiltered = (marketFilterType !== 'all' || marketCategory !== 'all' || marketCondition !== 'all' || marketLocation !== 'all' || (marketSearch && marketSearch.trim()));
+      
+      if (isFiltered) {
+        grid.innerHTML = `
+          <div class="empty-state-box" style="grid-column: 1 / -1;">
+            <div class="empty-state-icon">🛒</div>
+            <h3 class="empty-state-title">No listings match your filters</h3>
+            <p class="empty-state-sub">Adjust your active category, condition, location or search query to find other student items.</p>
+            <button class="btn btn-secondary" onclick="window.resetMarketplaceFilters()">Clear Filters</button>
+          </div>
+        `;
+      } else {
+        grid.innerHTML = `
+          <div class="empty-state-box" style="grid-column: 1 / -1;">
+            <div class="empty-state-icon">🛒</div>
+            <h3 class="empty-state-title">Nothing has been listed yet.</h3>
+            <p class="empty-state-sub">Be the first student to sell something.</p>
+            <button class="btn btn-primary" onclick="window.openCreateListingModal()">+ Create Listing</button>
+          </div>
+        `;
+      }
+      return;
+    }
+
+    grid.innerHTML = list.map(item => {
       const isFav = userFavorites.includes(item.id);
+      const isVerified = item.seller && (item.seller.is_verified || item.seller.isVerified);
       return `
         <div class="product-card" onclick="window.openProductDetailModal('${item.id}')">
           <div class="product-image-box">
@@ -1094,8 +1164,8 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div class="product-card-footer">
               <div class="product-seller-info">
-                <span class="badge-verified">${ICONS.check} ${item.seller.name}</span>
-                <span class="product-location">${ICONS.mapPin} ${item.meetupLocation}</span>
+                ${isVerified ? `<span class="badge-verified">${ICONS.check} ${item.seller.name}</span>` : `<span style="font-size:0.75rem; color:var(--text-secondary);">${item.seller.name}</span>`}
+                <span class="product-location">${ICONS.mapPin} ${item.meetupLocation || item.location}</span>
               </div>
             </div>
           </div>
@@ -1103,6 +1173,7 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
     }).join('');
   }
+  window.renderMarketplace = renderMarketplace;
 
   function setMarketFilterType(type) {
     marketFilterType = type;
@@ -1114,17 +1185,109 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   window.setMarketFilterType = setMarketFilterType;
 
+  window.resetMarketplaceFilters = () => {
+    marketFilterType = 'all';
+    marketCategory = 'all';
+    marketCondition = 'all';
+    marketLocation = 'all';
+    marketSearch = '';
+    marketSort = 'newest';
+
+    const searchInput = document.getElementById('market-search-input');
+    if (searchInput) searchInput.value = '';
+
+    const condSelect = document.getElementById('market-condition-select');
+    if (condSelect) condSelect.value = 'all';
+
+    const locSelect = document.getElementById('market-location-select');
+    if (locSelect) locSelect.value = 'all';
+
+    const sortSelect = document.getElementById('market-sort-select');
+    if (sortSelect) sortSelect.value = 'newest';
+
+    document.querySelectorAll('#marketplace-type-tabs .tab-btn').forEach(b => {
+      b.classList.toggle('active', b.getAttribute('data-type') === 'all');
+    });
+
+    document.querySelectorAll('.category-chip').forEach(c => {
+      c.classList.toggle('active', c.getAttribute('data-cat') === 'all');
+    });
+
+    renderMarketplace();
+  };
+
   window.toggleFavorite = (id) => {
     window.Store.toggleFavoriteListing(id);
-    renderMarketplace();
+    renderMarketplace(true);
     showToast('Saved to your profile bookmarks.');
+  };
+
+  // =========================================================================
+  // MARKETPLACE OWNER ACTIONS (Edit Price, Mark Sold, Reactivate, Delete)
+  // =========================================================================
+  window.handleEditPrice = async (id, currentPrice) => {
+    const input = prompt('Enter updated price in ₹:', currentPrice !== undefined ? currentPrice : '');
+    if (input === null) return;
+    const newPrice = parseInt(input.trim(), 10);
+    if (isNaN(newPrice) || newPrice < 0) {
+      alert('Please enter a valid non-negative number for the price.');
+      return;
+    }
+    const res = await window.Store.updateListing(id, { price: newPrice });
+    if (res && res.success) {
+      showToast(`✓ Price updated to ₹${newPrice}.`);
+      if (currentRoute === 'marketplace') await renderMarketplace(false);
+      if (currentRoute === 'profile') renderProfile();
+      if (currentRoute === 'home') renderHome();
+    } else {
+      alert(res?.error || 'Failed to update price.');
+    }
+  };
+
+  window.handleMarkSold = async (id) => {
+    if (!confirm('Mark this listing as Sold? It will be archived and removed from the active marketplace feed.')) return;
+    const res = await window.Store.updateListingStatus(id, 'sold');
+    if (res && res.success) {
+      showToast('✓ Listing marked as sold.');
+      if (currentRoute === 'marketplace') await renderMarketplace(false);
+      if (currentRoute === 'profile') renderProfile();
+      if (currentRoute === 'home') renderHome();
+    } else {
+      alert(res?.error || 'Failed to update listing status.');
+    }
+  };
+
+  window.handleReactivateListing = async (id) => {
+    if (!confirm('Reactivate this listing back into the active marketplace feed?')) return;
+    const res = await window.Store.updateListingStatus(id, 'active');
+    if (res && res.success) {
+      showToast('✓ Listing reactivated in marketplace.');
+      if (currentRoute === 'marketplace') await renderMarketplace(false);
+      if (currentRoute === 'profile') renderProfile();
+      if (currentRoute === 'home') renderHome();
+    } else {
+      alert(res?.error || 'Failed to reactivate listing.');
+    }
+  };
+
+  window.handleDeleteListing = async (id) => {
+    if (!confirm('Are you sure you want to remove this listing? This cannot be undone.')) return;
+    const res = await window.Store.deleteListing(id);
+    if (res && res.success) {
+      showToast('✓ Listing removed.');
+      if (currentRoute === 'marketplace') await renderMarketplace(false);
+      if (currentRoute === 'profile') renderProfile();
+      if (currentRoute === 'home') renderHome();
+    } else {
+      alert(res?.error || 'Failed to delete listing.');
+    }
   };
 
   // =========================================================================
   // PRODUCT DETAIL MODAL & INTERACTIONS
   // =========================================================================
   window.openProductDetailModal = (id) => {
-    const item = window.Store.state.listings.find(l => l.id === id);
+    const item = (window.Store.state.listings || []).find(l => l.id === id) || (window.Store.state.myListings || []).find(l => l.id === id);
     if (!item) return;
 
     activeProductModalItem = item;
@@ -1135,6 +1298,12 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('modal-prod-price').textContent = item.price === 0 ? 'Free Giveaway' : '₹' + item.price;
     document.getElementById('modal-prod-condition').textContent = item.condition;
     document.getElementById('modal-prod-desc').textContent = item.description;
+    
+    const locEl = document.getElementById('modal-prod-location');
+    if (locEl) {
+      locEl.textContent = item.meetupLocation || item.location || 'Central Library';
+    }
+
     const prodImgEl = document.getElementById('modal-prod-image');
     if (prodImgEl) {
       prodImgEl.src = item.images && item.images[0] ? item.images[0] : 'https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=600&auto=format&fit=crop&q=80';
@@ -1143,12 +1312,21 @@ document.addEventListener('DOMContentLoaded', () => {
         this.src = 'https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=600&auto=format&fit=crop&q=80';
       };
     }
-    document.getElementById('modal-prod-badge').textContent = item.listingType.toUpperCase();
+    document.getElementById('modal-prod-badge').textContent = (item.listingType || 'SELL').toUpperCase();
 
-    // Seller Info
-    document.getElementById('modal-seller-name').textContent = item.seller.name;
-    document.getElementById('modal-seller-program').textContent = item.seller.program;
-    document.getElementById('modal-seller-rating').textContent = `${item.seller.rating} ★ (${item.seller.transactions} campus deals)`;
+    // Real Seller Info from Database
+    const s = item.seller || {};
+    document.getElementById('modal-seller-name').textContent = s.name || 'Verified Student';
+    document.getElementById('modal-seller-program').textContent = s.program || 'B.Tech';
+    document.getElementById('modal-seller-rating').textContent = `${s.rating || 5.0} ★ (${s.transactions || 0} campus deals)`;
+
+    // Campus Verified Badge - Shown ONLY when actually verified
+    const isSellerVerified = s.is_verified || s.isVerified;
+    const sellerBadgeContainer = document.getElementById('modal-seller-name')?.parentElement;
+    let vBadge = sellerBadgeContainer ? sellerBadgeContainer.querySelector('.badge-verified') : null;
+    if (vBadge) {
+      vBadge.style.display = isSellerVerified ? 'inline-flex' : 'none';
+    }
 
     // Wishlist for Exchange
     const wishBox = document.getElementById('modal-prod-exchange-wish');
@@ -1159,30 +1337,34 @@ document.addEventListener('DOMContentLoaded', () => {
       wishBox.style.display = 'none';
     }
 
-    // Action buttons
-    const actionChat = document.getElementById('btn-modal-chat');
-    const actionOffer = document.getElementById('btn-modal-offer');
-    const actionExchange = document.getElementById('btn-modal-exchange');
+    // Action buttons: If user is the seller, show Owner Actions
+    const currentUser = window.Store.state.currentUser;
+    const isOwner = currentUser && (
+      currentUser.id === item.seller_id || 
+      currentUser.id === s.id || 
+      (currentUser.enrollment && s.enrollment && currentUser.enrollment === s.enrollment)
+    );
 
-    if (actionChat) {
-      actionChat.onclick = () => {
-        closeModal('modal-product-detail');
-        navigate('chat', 'conv-shubham');
-      };
-    }
-
-    if (actionOffer) {
-      actionOffer.onclick = () => {
-        closeModal('modal-product-detail');
-        window.openMakeOfferModal(item);
-      };
-    }
-
-    if (actionExchange) {
-      actionExchange.onclick = () => {
-        closeModal('modal-product-detail');
-        window.openProposeExchangeModal(item);
-      };
+    const footer = modal.querySelector('.modal-footer');
+    if (footer) {
+      if (isOwner) {
+        footer.innerHTML = `
+          <button class="btn btn-ghost btn-sm" onclick="window.closeModal('modal-product-detail'); window.handleDeleteListing('${item.id}')" style="color:#b91c1c;">🗑️ Remove</button>
+          <button class="btn btn-secondary" onclick="window.closeModal('modal-product-detail'); window.handleEditPrice('${item.id}', ${item.price})">✏️ Edit Price</button>
+          ${item.status === 'active' ? `
+            <button class="btn btn-primary" onclick="window.closeModal('modal-product-detail'); window.handleMarkSold('${item.id}')">✓ Mark as Sold</button>
+          ` : `
+            <button class="btn btn-secondary" onclick="window.closeModal('modal-product-detail'); window.handleReactivateListing('${item.id}')">Reactivate</button>
+          `}
+        `;
+      } else {
+        footer.innerHTML = `
+          <button class="btn btn-ghost btn-sm" id="btn-modal-report" onclick="window.openReportListing();">🚩 Report</button>
+          <button class="btn btn-secondary" id="btn-modal-offer" onclick="window.closeModal('modal-product-detail'); window.openMakeOfferModal(window.activeProductModalItem);">💰 Make Offer</button>
+          <button class="btn btn-secondary" id="btn-modal-exchange" onclick="window.closeModal('modal-product-detail'); window.openProposeExchangeModal(window.activeProductModalItem);">🔄 Propose Exchange</button>
+          <button class="btn btn-primary" id="btn-modal-chat" onclick="window.closeModal('modal-product-detail'); navigate('chat', 'conv-shubham');">💬 Chat with Seller</button>
+        `;
+      }
     }
 
     modal.classList.add('active');
@@ -1302,6 +1484,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Selected custom image for new listing
   let selectedListingImage = null;
+  let selectedImageFile = null;
 
   function initCreateListingImageHandlers() {
     const dropzone = document.getElementById('listing-dropzone');
@@ -1327,6 +1510,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function clearImagePreview() {
       selectedListingImage = null;
+      selectedImageFile = null;
       if (fileInput) fileInput.value = '';
       if (previewImg) previewImg.src = '';
       if (promptBox) promptBox.style.display = 'flex';
@@ -1398,6 +1582,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
+      selectedImageFile = file;
       const reader = new FileReader();
       reader.onload = (ev) => {
         setImagePreview(ev.target.result);
@@ -1415,6 +1600,7 @@ document.addEventListener('DOMContentLoaded', () => {
         chip.classList.add('active');
         const imgUrl = chip.getAttribute('data-img');
         if (imgUrl) {
+          selectedImageFile = null;
           setImagePreview(imgUrl);
           if (customUrlInput) customUrlInput.value = '';
         }
@@ -1435,6 +1621,7 @@ document.addEventListener('DOMContentLoaded', () => {
       customUrlInput.addEventListener('input', () => {
         const val = customUrlInput.value.trim();
         if (val && (val.startsWith('http://') || val.startsWith('https://') || val.startsWith('data:image/'))) {
+          selectedImageFile = null;
           setImagePreview(val);
           presetChips.forEach(c => c.classList.remove('active'));
         }
@@ -1446,6 +1633,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Create Listing Modal
   window.openCreateListingModal = () => {
+    const user = window.Store.state.currentUser;
+    if (!user || !user.isVerified) {
+      if (confirm('Campus verification required.\n\nOnly verified students can publish listings on RGPVebazaar.\n\nWould you like to verify your campus account now?')) {
+        navigate('verify');
+      }
+      return;
+    }
+
     const modal = document.getElementById('modal-create-listing');
     if (!modal) return;
 
@@ -1475,7 +1670,19 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    document.getElementById('btn-publish-listing').onclick = () => {
+    const publishBtn = document.getElementById('btn-publish-listing');
+    publishBtn.disabled = false;
+    publishBtn.textContent = 'Publish Listing →';
+
+    publishBtn.onclick = async () => {
+      const activeUser = window.Store.state.currentUser;
+      if (!activeUser || !activeUser.isVerified) {
+        alert('Campus verification required. Only verified students can publish listings.');
+        closeModal('modal-create-listing');
+        navigate('verify');
+        return;
+      }
+
       const title = document.getElementById('create-listing-title').value.trim();
       const cat = document.getElementById('create-listing-category').value;
       const cond = document.getElementById('create-listing-condition').value;
@@ -1485,10 +1692,35 @@ document.addEventListener('DOMContentLoaded', () => {
       const wish = document.getElementById('create-listing-wish').value.trim();
       const loc = document.getElementById('create-listing-location').value;
 
-      if (!title) {
-        alert('Please provide a listing title.');
+      // 1. Validation (Frontend + Backend parity)
+      if (!title || title.length < 3) {
+        alert('Please provide a listing title (at least 3 characters).');
         return;
       }
+      if (title.length > 150) {
+        alert('Listing title must be under 150 characters.');
+        return;
+      }
+      if (!desc || desc.length < 10) {
+        alert('Please provide an item description (at least 10 characters).');
+        return;
+      }
+      if (desc.length > 3000) {
+        alert('Item description must be under 3000 characters.');
+        return;
+      }
+      if (type === 'sell' && (!price || price <= 0)) {
+        alert('Please enter a valid price in ₹ for items listed for sale.');
+        return;
+      }
+      if (type === 'exchange' && (!wish || wish.length < 3)) {
+        alert('Please specify what you are looking for in exchange (at least 3 characters).');
+        return;
+      }
+
+      // Prevent duplicate submissions: disable button
+      publishBtn.disabled = true;
+      publishBtn.textContent = 'Publishing...';
 
       // Default high quality image based on category
       const categoryImages = {
@@ -1502,28 +1734,57 @@ document.addEventListener('DOMContentLoaded', () => {
         'Other': 'https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=600&auto=format&fit=crop&q=80'
       };
 
-      const finalImage = selectedListingImage || categoryImages[cat] || categoryImages['Other'];
+      try {
+        // Step 4: Upload product images to backend storage
+        const sourceImage = selectedImageFile || selectedListingImage || categoryImages[cat] || categoryImages['Other'];
+        let backendImageUrl = null;
 
-      const result = window.Store.addListing({
-        title,
-        category: cat,
-        condition: cond,
-        listingType: type,
-        price,
-        description: desc || 'Item available for campus handover.',
-        exchangeWish: wish,
-        meetupLocation: loc,
-        images: [finalImage]
-      });
+        if (window.SupaAuth && typeof window.SupaAuth.uploadListingImage === 'function') {
+          const upRes = await window.SupaAuth.uploadListingImage(sourceImage, 'listing-' + Date.now());
+          if (!upRes || !upRes.success || !upRes.url) {
+            alert('Image upload failed. Please try again.');
+            publishBtn.disabled = false;
+            publishBtn.textContent = 'Publish Listing →';
+            return;
+          }
+          backendImageUrl = upRes.url;
+        } else {
+          backendImageUrl = selectedListingImage || categoryImages[cat] || categoryImages['Other'];
+        }
 
-      if (!result.success) {
-        alert(result.error || 'Failed to publish listing.');
-        return;
+        // Step 5: Create the listing record in the database
+        const result = await window.Store.addListing({
+          title,
+          category: cat,
+          condition: cond,
+          listingType: type,
+          price,
+          description: desc,
+          exchangeWish: wish,
+          meetupLocation: loc,
+          images: [backendImageUrl]
+        });
+
+        if (!result.success) {
+          alert(result.error || 'Failed to publish listing.');
+          publishBtn.disabled = false;
+          publishBtn.textContent = 'Publish Listing →';
+          return;
+        }
+
+        publishBtn.textContent = '✓ Listing Published';
+        closeModal('modal-create-listing');
+
+        // Step 8 & 9: Show success message and redirect/show the listing in Marketplace
+        showToast(`✓ Listing published: Your ${title} is now visible in the marketplace.`);
+        navigate('marketplace');
+        await renderMarketplace();
+      } catch (err) {
+        console.error('Publish listing error:', err);
+        alert('Failed to publish listing: ' + (err.message || 'Unknown error'));
+        publishBtn.disabled = false;
+        publishBtn.textContent = 'Publish Listing →';
       }
-
-      closeModal('modal-create-listing');
-      renderMarketplace();
-      showToast('Your listing has been published to campus marketplace!');
     };
 
     modal.classList.add('active');
@@ -2011,27 +2272,31 @@ document.addEventListener('DOMContentLoaded', () => {
   // =========================================================================
   let profileActiveTab = 'listings';
 
-  function renderProfile() {
+  async function renderProfile() {
     const user = window.Store.state.currentUser;
 
-    document.getElementById('prof-avatar').textContent = user.avatar || 'RS';
-    document.getElementById('prof-name').textContent = user.name;
-    document.getElementById('prof-program').textContent = `${user.program} ${user.branchCode} · ${user.batch}`;
-    document.getElementById('prof-phone').textContent = user.phone;
-    document.getElementById('prof-enrollment').textContent = user.enrollment;
-    document.getElementById('prof-deals-count').textContent = user.transactions;
-    document.getElementById('prof-rating').textContent = user.rating;
+    document.getElementById('prof-avatar').textContent = user.avatar || (user.name ? user.name.slice(0, 2).toUpperCase() : 'ST');
+    document.getElementById('prof-name').textContent = user.name || 'Campus Student';
+    document.getElementById('prof-program').textContent = `${user.program || 'B.Tech'} ${user.branchCode || ''} · ${user.batch || '2026'}`;
+    document.getElementById('prof-phone').textContent = user.phone || '—';
+    document.getElementById('prof-enrollment').textContent = user.enrollment || '—';
+    document.getElementById('prof-deals-count').textContent = user.transactions || 0;
+    document.getElementById('prof-rating').textContent = (user.rating || 5.0) + ' ★';
 
     const tabContainer = document.getElementById('profile-tab-content');
     if (!tabContainer) return;
 
     if (profileActiveTab === 'listings') {
-      const myItems = window.Store.state.myListings;
+      if (window.Store && typeof window.Store.loadMyListings === 'function') {
+        await window.Store.loadMyListings();
+      }
+      const myItems = window.Store.state.myListings || [];
+
       if (myItems.length === 0) {
         tabContainer.innerHTML = `
           <div class="empty-state-box">
             <div class="empty-state-icon">📦</div>
-            <h3 class="empty-state-title">No active listings</h3>
+            <h3 class="empty-state-title">No listings found</h3>
             <p class="empty-state-sub">List books, lab supplies or calculators you no longer need.</p>
             <button class="btn btn-primary" onclick="window.openCreateListingModal()">+ Create Listing</button>
           </div>
@@ -2039,27 +2304,45 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         tabContainer.innerHTML = `
           <div class="product-grid">
-            ${myItems.map(item => `
-              <div class="product-card">
-                <div class="product-image-box">
-                  <img src="${item.images[0]}" alt="${item.title}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=600&auto=format&fit=crop&q=80';">
-                  <span class="product-type-badge badge-${item.listingType}">${item.listingType}</span>
-                </div>
-                <div class="product-content">
-                  <div>
-                    <h4 class="product-title">${item.title}</h4>
-                    <div class="product-price-row">
-                      <span class="product-price">₹${item.price}</span>
-                      <span class="product-condition">· ${item.condition}</span>
+            ${myItems.map(item => {
+              const isSold = item.status === 'sold';
+              const isExchanged = item.status === 'exchanged';
+              const isActive = item.status === 'active';
+              return `
+                <div class="product-card">
+                  <div class="product-image-box">
+                    <img src="${item.images[0]}" alt="${item.title}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=600&auto=format&fit=crop&q=80';">
+                    <span class="product-type-badge badge-${item.listingType}">${item.listingType}</span>
+                    <span class="badge-tag" style="position:absolute; bottom:8px; left:8px; ${isSold ? 'background:#ef4444; color:white;' : isExchanged ? 'background:#8b5cf6; color:white;' : 'background:rgba(0,0,0,0.7); color:white;'}">
+                      ${item.status.toUpperCase()}
+                    </span>
+                  </div>
+                  <div class="product-content">
+                    <div>
+                      <h4 class="product-title">${item.title}</h4>
+                      <div class="product-price-row">
+                        <span class="product-price">${item.price === 0 ? 'Free' : '₹' + item.price}</span>
+                        <span class="product-condition">· ${item.condition}</span>
+                      </div>
+                    </div>
+                    <div style="margin-top:0.75rem; border-top:1px solid var(--border-light); padding-top:0.6rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.4rem;">
+                      <span class="${isActive ? 'badge-green' : isSold ? 'badge-tag' : 'badge-amber'}" style="${isSold ? 'background:#ef4444; color:white;' : ''}">
+                        ${isActive ? ICONS.check + ' Active' : item.status.toUpperCase()}
+                      </span>
+                      <div style="display:flex; gap:0.35rem;">
+                        ${isActive ? `
+                          <button class="btn btn-sm btn-ghost" onclick="window.handleEditPrice('${item.id}', ${item.price})" title="Edit Price">✏️ Edit</button>
+                          <button class="btn btn-sm btn-ghost" onclick="window.handleMarkSold('${item.id}')">Mark Sold</button>
+                        ` : `
+                          <button class="btn btn-sm btn-ghost" onclick="window.handleReactivateListing('${item.id}')">Reactivate</button>
+                        `}
+                        <button class="btn btn-sm btn-ghost" style="color:#b91c1c;" onclick="window.handleDeleteListing('${item.id}')" title="Delete Listing">🗑️</button>
+                      </div>
                     </div>
                   </div>
-                  <div style="margin-top:0.75rem; border-top:1px solid var(--border-light); padding-top:0.5rem; display:flex; justify-content:space-between; align-items:center;">
-                    <span class="badge-green">${ICONS.check} Active Listing</span>
-                    <button class="btn btn-sm btn-ghost" onclick="alert('Listing marked as sold!')">Mark Sold</button>
-                  </div>
                 </div>
-              </div>
-            `).join('')}
+              `;
+            }).join('')}
           </div>
         `;
       }
@@ -2305,10 +2588,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Set up marketplace filter inputs
   const marketSearchInput = document.getElementById('market-search-input');
+  let marketSearchDebounce = null;
   if (marketSearchInput) {
     marketSearchInput.addEventListener('input', (e) => {
       marketSearch = e.target.value;
-      renderMarketplace();
+      clearTimeout(marketSearchDebounce);
+      marketSearchDebounce = setTimeout(() => {
+        renderMarketplace();
+      }, 250);
     });
   }
 
@@ -2396,7 +2683,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Auto-restore Supabase session on app startup
+  // Auto-restore Supabase session on app startup & subscribe to Realtime marketplace updates
   async function initSupabaseSession() {
     if (window.SupaAuth) {
       try {
@@ -2418,39 +2705,64 @@ document.addEventListener('DOMContentLoaded', () => {
             }
           }
 
-          if (!fn || fn.startsWith('Verified Student')) {
-            console.warn('Session has unverified or generic student name, aborting restoration.');
-            return;
+          if (fn && !fn.startsWith('Verified Student')) {
+            const initials = fn.split(' ').filter(Boolean).map(w => w[0]).join('').substring(0, 2).toUpperCase() || 'ST';
+            const bCode = branch ? branch.split(' ').filter(Boolean).map(w => w[0]).join('') : 'ENG';
+
+            window.Store.state.currentUser = {
+              id: active.user.id || 'user-' + (active.profile.enrollment_no || '').toLowerCase(),
+              isVerified: true,
+              enrollment: active.profile.enrollment_no,
+              name: fn,
+              full_name: fn,
+              program: program,
+              branch: branch,
+              branchCode: bCode,
+              batch: batch,
+              phone: active.profile.phone || '+91 98765 43210',
+              avatar: initials,
+              rating: 5.0,
+              transactions: 0,
+              verificationBadge: 'Campus Verified',
+              followedClubs: window.Store.state.currentUser.followedClubs || ['coding-club', 'gdsc-rgpv'],
+              savedListings: [],
+              savedResources: [],
+              savedOpportunities: ['opp-1']
+            };
+            window.Store.saveState();
+            syncNavHeader();
           }
-
-          const initials = fn.split(' ').filter(Boolean).map(w => w[0]).join('').substring(0, 2).toUpperCase() || 'ST';
-          const bCode = branch ? branch.split(' ').filter(Boolean).map(w => w[0]).join('') : 'ENG';
-
-          window.Store.state.currentUser = {
-            id: active.user.id || 'user-' + (active.profile.enrollment_no || '').toLowerCase(),
-            isVerified: true,
-            enrollment: active.profile.enrollment_no,
-            name: fn,
-            full_name: fn,
-            program: program,
-            branch: branch,
-            branchCode: bCode,
-            batch: batch,
-            phone: active.profile.phone || '+91 98765 43210',
-            avatar: initials,
-            rating: 5.0,
-            transactions: 0,
-            verificationBadge: 'Campus Verified',
-            followedClubs: window.Store.state.currentUser.followedClubs || ['coding-club', 'gdsc-rgpv'],
-            savedListings: [],
-            savedResources: [],
-            savedOpportunities: ['opp-1']
-          };
-          window.Store.saveState();
-          syncNavHeader();
         }
       } catch (err) {
         console.warn('Could not auto-restore session:', err);
+      }
+
+      // Preload marketplace listings from Supabase
+      try {
+        await window.Store.loadMarketplaceListings();
+        if (currentRoute === 'landing') renderLanding();
+        if (currentRoute === 'home') renderHome();
+      } catch (loadErr) {
+        console.warn('Marketplace preload:', loadErr);
+      }
+
+      // Supabase Realtime subscription on public.listings
+      try {
+        window.SupaAuth.subscribeToListings((payload) => {
+          console.info('Realtime listing change event:', payload);
+          if (currentRoute === 'marketplace') {
+            renderMarketplace();
+          } else if (currentRoute === 'landing') {
+            window.Store.loadMarketplaceListings().then(() => renderLanding());
+          } else if (currentRoute === 'home') {
+            window.Store.loadMarketplaceListings().then(() => renderHome());
+          }
+          if (currentRoute === 'profile') {
+            renderProfile();
+          }
+        });
+      } catch (rtErr) {
+        console.warn('Realtime subscription not active:', rtErr);
       }
     }
   }

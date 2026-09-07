@@ -20,7 +20,7 @@ foreach ($prefix in $loopbackPrefixes) {
 
 try {
     $listener.Start()
-    Write-Host "RGPV Unofficial Secure Server running at http://localhost:$Port/ and http://127.0.0.1:$Port/"
+    Write-Host "RGPVebazaar Secure Server running at http://localhost:$Port/ and http://127.0.0.1:$Port/"
     Write-Host "Serving files and security APIs from $Root"
 } catch {
     Write-Error "Failed to start listener on port $($Port): $_"
