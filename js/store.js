@@ -67,6 +67,8 @@ const DEFAULT_STATE = {
   currentUser: {
     id: 'user-guest',
     isVerified: false,
+    role: 'STUDENT', // 'STUDENT' | 'CLUB_PRESIDENT' | 'SUPER_ADMIN'
+    assignedClubId: null,
     enrollment: '',
     name: 'Campus Guest',
     program: 'Campus Visitor',
@@ -79,7 +81,7 @@ const DEFAULT_STATE = {
     rating: 5.0,
     transactions: 0,
     verificationBadge: 'Unverified Guest',
-    followedClubs: ['coding-club', 'gdsc-rgpv', 'ecell-rgpv'],
+    followedClubs: ['coding-club', 'robotics-club', 'ecell-rgpv'],
     savedListings: [],
     savedResources: [],
     savedOpportunities: ['opp-1']
@@ -90,41 +92,7 @@ const DEFAULT_STATE = {
   exchanges: [],
   resources: [],
 
-  // Opportunities & Campus Events
-  opportunities: [
-    {
-      id: 'opp-1',
-      title: 'RGPV Smart Campus Hackathon 2026',
-      category: 'Hackathons',
-      organization: 'Coding Club & Tech Society',
-      orgLogo: '🚀',
-      date: '18–19 September 2026',
-      deadline: '3 days left',
-      location: 'Main Auditorium / Central Lab',
-      prize: '₹50,000 Cash Pool + Incubation',
-      eligibility: 'All RGPV campus students (Teams of 2–4)',
-      description: 'A 36-hour campus-wide hackathon focusing on AI solutions, smart energy monitoring, student utilities, and green campus technology.',
-      officialLink: 'https://unstop.com/hackathons/rgpv-smart-campus-2026',
-      isVerifiedOrg: true
-    },
-    {
-      id: 'opp-2',
-      title: 'E-Cell Campus Innovation Challenge',
-      category: 'Competitions',
-      organization: 'Entrepreneurship Cell (E-Cell)',
-      orgLogo: '💡',
-      date: '24 September 2026',
-      deadline: '5 days left',
-      location: 'Seminar Hall 2, Academic Block 1',
-      prize: '₹30,000 Seed Grant + Mentorship',
-      eligibility: 'Undergraduate & PG students with early-stage business ideas',
-      description: 'Pitch your startup idea to leading alumni angel investors and startup founders. Winning teams get seed capital and incubation support.',
-      officialLink: 'https://ecellrgpv.org/innovation-challenge-2026',
-      isVerifiedOrg: true
-    }
-  ],
-
-  // Clubs Directory
+  // Clubs Directory (Official 5 Campus Societies)
   clubs: [
     {
       id: 'coding-club',
@@ -132,33 +100,41 @@ const DEFAULT_STATE = {
       category: 'Technical',
       tagline: 'Build · Learn · Compete',
       members: 340,
+      followersCount: 128,
       logo: '💻',
-      about: 'The premier technical student organization at RGPV dedicated to competitive programming, open source development, and hackathons.',
-      upcomingCount: 3,
-      isVerified: true,
+      coverImage: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1200&auto=format&fit=crop&q=80',
+      about: 'The premier technical student organization at RGPV dedicated to competitive programming, open source development, web3, and hackathons.',
+      presidentId: 'ea7fbb68-db0b-43e8-92b1-297bfde7f92b',
+      presidentName: 'Rahul Sharma',
+      contactEmail: 'coding@rgpv.ac.in',
       socialLinks: {
         website: 'https://codingclubrgpv.in',
         instagram: 'https://instagram.com/codingclub_rgpv',
         whatsapp: 'https://chat.whatsapp.com/sample-rgpv-coding',
         registration: 'https://codingclubrgpv.in/join'
-      }
+      },
+      isActive: true
     },
     {
-      id: 'gdsc-rgpv',
-      name: 'Google Developer Student Club',
+      id: 'robotics-club',
+      name: 'Robotics & Automation Society',
       category: 'Technical',
-      tagline: 'Connect · Learn · Grow',
-      members: 410,
-      logo: '🌐',
-      about: 'University-based community group supported by Google Developers. We host workshops on Mobile, Cloud, AI/ML, and Web development.',
-      upcomingCount: 2,
-      isVerified: true,
+      tagline: 'Design · Automate · Innovate',
+      members: 215,
+      followersCount: 94,
+      logo: '🤖',
+      coverImage: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=1200&auto=format&fit=crop&q=80',
+      about: 'Hands-on engineering hub exploring embedded systems, IoT, drones, humanoid robotics, and autonomous systems for national competitions.',
+      presidentId: 'bee74d09-7be0-4e53-89b6-ae9b58088e79',
+      presidentName: 'Abhay Tiwari',
+      contactEmail: 'robotics@rgpv.ac.in',
       socialLinks: {
-        website: 'https://gdsc.community.dev/rgpv',
-        instagram: 'https://instagram.com/gdsc_rgpv',
-        whatsapp: 'https://chat.whatsapp.com/sample-gdsc',
-        registration: 'https://gdsc.community.dev/rgpv'
-      }
+        website: 'https://roboticsrgpv.org',
+        instagram: 'https://instagram.com/robotics_rgpv',
+        whatsapp: 'https://chat.whatsapp.com/sample-robotics',
+        registration: 'https://roboticsrgpv.org/join'
+      },
+      isActive: true
     },
     {
       id: 'ecell-rgpv',
@@ -166,40 +142,265 @@ const DEFAULT_STATE = {
       category: 'Entrepreneurship',
       tagline: 'Inspire · Ideate · Incubate',
       members: 220,
-      logo: '🚀',
+      followersCount: 110,
+      logo: '💡',
+      coverImage: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=1200&auto=format&fit=crop&q=80',
       about: 'Fostering entrepreneurial spirit across engineering branches through startup summits, investor pitch days, and seed incubation grants.',
-      upcomingCount: 2,
-      isVerified: true,
+      presidentId: null,
+      presidentName: null,
+      contactEmail: 'ecell@rgpv.ac.in',
       socialLinks: {
         website: 'https://ecellrgpv.org',
         instagram: 'https://instagram.com/ecell_rgpv',
         whatsapp: 'https://chat.whatsapp.com/sample-ecell',
         registration: 'https://ecellrgpv.org/join'
-      }
+      },
+      isActive: true
+    },
+    {
+      id: 'cultural-club',
+      name: 'Aakriti Cultural Society',
+      category: 'Cultural',
+      tagline: 'Art · Expression · Passion',
+      members: 310,
+      followersCount: 145,
+      logo: '🎭',
+      coverImage: 'https://images.unsplash.com/photo-1460723237483-7a6dc9d0b212?w=1200&auto=format&fit=crop&q=80',
+      about: 'Celebrating music, dance, dramatic arts, photography, and campus cultural festivals across all branches and batches.',
+      presidentId: null,
+      presidentName: null,
+      contactEmail: 'cultural@rgpv.ac.in',
+      socialLinks: {
+        website: 'https://aakritirgpv.org',
+        instagram: 'https://instagram.com/aakriti_rgpv'
+      },
+      isActive: true
+    },
+    {
+      id: 'sports-club',
+      name: 'RGPV Athletic & Sports Club',
+      category: 'Sports',
+      tagline: 'Strength · Unity · Victory',
+      members: 280,
+      followersCount: 88,
+      logo: '🏆',
+      coverImage: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=1200&auto=format&fit=crop&q=80',
+      about: 'Promoting physical fitness, inter-college tournaments, cricket, football, volleyball, badminton, and track athletics.',
+      presidentId: null,
+      presidentName: null,
+      contactEmail: 'sports@rgpv.ac.in',
+      socialLinks: {
+        website: 'https://sportsrgpv.org',
+        instagram: 'https://instagram.com/sports_rgpv'
+      },
+      isActive: true
     }
   ],
 
-  // Conversations (transaction-focused)
+  // Events Model
+  events: [
+    {
+      id: 'evt-1',
+      clubId: 'coding-club',
+      title: 'Algorun 2026: Annual Campus Coding Sprint',
+      description: 'A high-intensity 4-hour algorithmic problem solving competition featuring dynamic programming, graph algorithms, and system design challenges with campus recruitment fast-track.',
+      posterImage: 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?w=800&auto=format&fit=crop&q=80',
+      category: 'Coding Competition',
+      venue: 'Main CS Auditorium, Academic Block 2',
+      startDate: new Date(Date.now() + 5 * 86400000).toISOString(),
+      endDate: new Date(Date.now() + 5 * 86400000 + 4 * 3600000).toISOString(),
+      registrationDeadline: new Date(Date.now() + 4 * 86400000).toISOString(),
+      registrationUrl: 'https://codingclubrgpv.in/algorun-2026',
+      maxParticipants: 120,
+      registrationsCount: 48,
+      status: 'PUBLISHED', // 'DRAFT' | 'PENDING_APPROVAL' | 'PUBLISHED' | 'REJECTED' | 'CANCELLED' | 'COMPLETED'
+      rejectionReason: null,
+      createdBy: 'ea7fbb68-db0b-43e8-92b1-297bfde7f92b',
+      createdAt: new Date().toISOString()
+    },
+    {
+      id: 'evt-2',
+      clubId: 'robotics-club',
+      title: 'Autonomous Rover & Drone Expo',
+      description: 'Hands-on live showcase of multi-terrain autonomous search and rescue rovers and indoor micro-drones built by student engineering teams.',
+      posterImage: 'https://images.unsplash.com/photo-1508614589041-895b88991e3e?w=800&auto=format&fit=crop&q=80',
+      category: 'Workshop & Expo',
+      venue: 'Campus Quadrangle / Central Lawn',
+      startDate: new Date(Date.now() + 8 * 86400000).toISOString(),
+      endDate: new Date(Date.now() + 8 * 86400000 + 6 * 3600000).toISOString(),
+      registrationDeadline: new Date(Date.now() + 7 * 86400000).toISOString(),
+      registrationUrl: 'https://roboticsrgpv.org/rover-expo',
+      maxParticipants: 150,
+      registrationsCount: 0,
+      status: 'PENDING_APPROVAL',
+      rejectionReason: null,
+      createdBy: 'bee74d09-7be0-4e53-89b6-ae9b58088e79',
+      createdAt: new Date().toISOString()
+    },
+    {
+      id: 'evt-3',
+      clubId: 'ecell-rgpv',
+      title: 'Campus Venture Pitch 2026',
+      description: 'Pitch your startup prototypes directly to alumni venture investors and angel networks. Winning startups receive seed incubation grants.',
+      posterImage: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=800&auto=format&fit=crop&q=80',
+      category: 'Startup Pitch',
+      venue: 'Seminar Hall 1, Admin Block',
+      startDate: new Date(Date.now() + 12 * 86400000).toISOString(),
+      endDate: new Date(Date.now() + 12 * 86400000 + 5 * 3600000).toISOString(),
+      registrationDeadline: new Date(Date.now() + 10 * 86400000).toISOString(),
+      registrationUrl: 'https://ecellrgpv.org/pitch-2026',
+      maxParticipants: 80,
+      registrationsCount: 35,
+      status: 'PUBLISHED',
+      rejectionReason: null,
+      createdBy: 'admin',
+      createdAt: new Date().toISOString()
+    }
+  ],
+
+  // Opportunities
+  opportunities: [
+    {
+      id: 'opp-1',
+      title: 'RGPV Smart Campus Hackathon 2026',
+      category: 'Hackathon',
+      organization: 'Coding Club & Tech Society',
+      orgLogo: '🚀',
+      date: '18–19 September 2026',
+      deadline: '14 days left',
+      deadlineDate: new Date(Date.now() + 14 * 86400000).toISOString(),
+      location: 'Main Auditorium / Central Lab',
+      prize: '₹50,000 Cash Pool + Incubation',
+      eligibility: 'All RGPV campus students (Teams of 2–4)',
+      description: 'A 36-hour campus-wide hackathon focusing on AI solutions, smart energy monitoring, student utilities, and green campus technology.',
+      applicationUrl: 'https://unstop.com/hackathons/rgpv-smart-campus-2026',
+      status: 'PUBLISHED',
+      isVerifiedOrg: true
+    },
+    {
+      id: 'opp-2',
+      title: 'E-Cell Campus Innovation Challenge',
+      category: 'Competition',
+      organization: 'Entrepreneurship Cell (E-Cell)',
+      orgLogo: '💡',
+      date: '24 September 2026',
+      deadline: '21 days left',
+      deadlineDate: new Date(Date.now() + 21 * 86400000).toISOString(),
+      location: 'Seminar Hall 2, Academic Block 1',
+      prize: '₹30,000 Seed Grant + Mentorship',
+      eligibility: 'Undergraduate & PG students with early-stage business ideas',
+      description: 'Pitch your startup idea to leading alumni angel investors and startup founders. Winning teams get seed capital and incubation support.',
+      applicationUrl: 'https://ecellrgpv.org/innovation-challenge-2026',
+      status: 'PUBLISHED',
+      isVerifiedOrg: true
+    },
+    {
+      id: 'opp-3',
+      title: 'Google Summer Research Internship 2026',
+      category: 'Internship',
+      organization: 'Google Research India',
+      orgLogo: '🔬',
+      date: 'Summer 2026',
+      deadline: '30 days left',
+      deadlineDate: new Date(Date.now() + 30 * 86400000).toISOString(),
+      location: 'Bengaluru / Hybrid',
+      prize: 'Monthly Stipend ₹80,000 + Travel',
+      eligibility: '3rd and 4th year B.Tech students with CGPA >= 7.5',
+      description: 'Work alongside world-class research scientists on computer vision, deep learning, distributed algorithms, and edge intelligence.',
+      applicationUrl: 'https://careers.google.com/students',
+      status: 'PUBLISHED',
+      isVerifiedOrg: true
+    }
+  ],
+
+  // Announcements
+  announcements: [
+    {
+      id: 'ann-1',
+      clubId: 'coding-club',
+      title: 'Algorun 2026 Problem Set Released for Practice',
+      message: 'Practice rounds are now live on the online judge! All registered teams can test their environments before the weekend sprint.',
+      priority: 'IMPORTANT', // 'NORMAL' | 'IMPORTANT' | 'URGENT'
+      targetAudience: 'ALL_STUDENTS', // 'ALL_STUDENTS' | 'CLUB_MEMBERS' | 'CAMPUS_WIDE'
+      status: 'PUBLISHED',
+      publishedAt: new Date(Date.now() - 3600000).toISOString(),
+      createdBy: 'ea7fbb68-db0b-43e8-92b1-297bfde7f92b'
+    },
+    {
+      id: 'ann-2',
+      clubId: null,
+      title: 'Campus Central Library Extended Night Hours for Midterms',
+      message: 'Central Library reading rooms will remain open 24x7 from next Monday until end of examinations. Please carry verified campus student ID cards.',
+      priority: 'NORMAL',
+      targetAudience: 'CAMPUS_WIDE',
+      status: 'PUBLISHED',
+      publishedAt: new Date(Date.now() - 86400000).toISOString(),
+      createdBy: 'a0000000-0000-0000-0000-000000000001'
+    }
+  ],
+
+  // President Requests
+  presidentRequests: [
+    {
+      id: 'req-demo-1',
+      userId: 's0000000-0000-0000-0000-000000000001',
+      userName: 'Amit Verma',
+      userEnrollment: '0101EC241018',
+      requestedClubId: 'ecell-rgpv',
+      clubName: 'Entrepreneurship Cell (E-Cell)',
+      reason: 'Led multiple startup ideation events and co-founded campus peer barter platform. Seeking to formalize student incubator chapters.',
+      status: 'PENDING',
+      createdAt: new Date(Date.now() - 7200000).toISOString()
+    }
+  ],
+
+  // Event Registrations (userId -> [eventIds])
+  eventRegistrations: {},
+
+  // Admin Audit Logs (Strictly Immutable)
+  auditLogs: [
+    {
+      id: 'audit-seed-1',
+      userId: 'a0000000-0000-0000-0000-000000000001',
+      userName: 'Campus Super Admin',
+      action: 'APPROVE_EVENT',
+      resourceType: 'EVENT',
+      resourceId: 'evt-1',
+      metadata: { eventTitle: 'Algorun 2026: Annual Campus Coding Sprint', clubId: 'coding-club' },
+      createdAt: new Date(Date.now() - 86400000).toISOString()
+    },
+    {
+      id: 'audit-seed-2',
+      userId: 'ea7fbb68-db0b-43e8-92b1-297bfde7f92b',
+      userName: 'Rahul Sharma (Club President)',
+      action: 'PRESIDENT_CREATE_EVENT',
+      resourceType: 'EVENT',
+      resourceId: 'evt-1',
+      metadata: { clubId: 'coding-club', status: 'PENDING_APPROVAL' },
+      createdAt: new Date(Date.now() - 90000000).toISOString()
+    }
+  ],
+
   conversations: [],
-
-  // Offers
   offers: [],
-
-  // Completed Transactions & Reviews
   completedTransactions: [],
   reviews: [],
-
-  // Reports
   reports: [],
-
-  // Blocked Users
   blockedUsers: [],
-
-  // Security Audit Events
   securityEvents: [],
 
   // Notifications
-  notifications: []
+  notifications: [
+    {
+      id: 'notif-seed-1',
+      type: 'NEW_EVENT',
+      title: 'New Coding Sprint Published',
+      desc: 'Coding Club announced Algorun 2026. Registrations are now open!',
+      time: '1h ago',
+      unread: true,
+      relatedEventId: 'evt-1'
+    }
+  ]
 };
 
 // Store Wrapper Class
@@ -208,6 +409,7 @@ class CampusStore {
     this.state = this.loadState();
     this.listeners = [];
     this.rateLimitMap = new Map();
+    this.autoManageStatuses();
   }
 
   loadState() {
@@ -227,7 +429,16 @@ class CampusStore {
         if (!parsed.securityEvents) parsed.securityEvents = [];
         if (!parsed.reviews) parsed.reviews = [];
         if (!parsed.completedTransactions) parsed.completedTransactions = [];
-        if (!parsed.notifications) parsed.notifications = [];
+        if (!parsed.notifications) parsed.notifications = DEFAULT_STATE.notifications;
+        if (!parsed.clubs || parsed.clubs.length < 5) parsed.clubs = DEFAULT_STATE.clubs;
+        if (!parsed.events || parsed.events.length === 0) parsed.events = DEFAULT_STATE.events;
+        if (!parsed.opportunities || parsed.opportunities.length === 0) parsed.opportunities = DEFAULT_STATE.opportunities;
+        if (!parsed.announcements || parsed.announcements.length === 0) parsed.announcements = DEFAULT_STATE.announcements;
+        if (!parsed.presidentRequests) parsed.presidentRequests = DEFAULT_STATE.presidentRequests;
+        if (!parsed.auditLogs) parsed.auditLogs = DEFAULT_STATE.auditLogs;
+        if (!parsed.eventRegistrations) parsed.eventRegistrations = {};
+        if (!parsed.currentUser) parsed.currentUser = DEFAULT_STATE.currentUser;
+        if (!parsed.currentUser.role) parsed.currentUser.role = 'STUDENT';
         return parsed;
       }
     } catch (e) {
@@ -1040,7 +1251,737 @@ class CampusStore {
     this.state.notifications.forEach(n => { n.unread = false; });
     this.saveState();
   }
+
+  markNotificationRead(id) {
+    const notif = this.state.notifications.find(n => n.id === id);
+    if (notif) {
+      notif.unread = false;
+      this.saveState();
+    }
+  }
+
+  getUnreadNotificationCount() {
+    return (this.state.notifications || []).filter(n => n.unread || n.is_read === false).length;
+  }
+
+  // =========================================================================
+  // AUTOMATIC STATUS EXPIRATION MANAGEMENT
+  // =========================================================================
+  autoManageStatuses() {
+    const now = new Date();
+    let changed = false;
+
+    // Check expired opportunities
+    (this.state.opportunities || []).forEach(opp => {
+      if (opp.deadlineDate && new Date(opp.deadlineDate) < now && opp.status === 'PUBLISHED') {
+        opp.status = 'EXPIRED';
+        changed = true;
+      }
+    });
+
+    // Check completed events
+    (this.state.events || []).forEach(evt => {
+      if (evt.endDate && new Date(evt.endDate) < now && evt.status === 'PUBLISHED') {
+        evt.status = 'COMPLETED';
+        changed = true;
+      }
+    });
+
+    if (changed) {
+      this.saveState();
+    }
+  }
+
+  // =========================================================================
+  // DEVELOPER ROLE SWITCHER & SESSION REHYDRATION
+  // =========================================================================
+  switchRole(targetRole, assignedClub = null) {
+    if (!['STUDENT', 'CLUB_PRESIDENT', 'SUPER_ADMIN'].includes(targetRole)) {
+      return { success: false, error: 'Invalid role' };
+    }
+
+    this.state.currentUser.role = targetRole;
+
+    if (targetRole === 'SUPER_ADMIN') {
+      this.state.currentUser.assignedClubId = null;
+      this.state.currentUser.name = 'Campus Super Admin';
+      this.state.currentUser.email = 'admin@rgpv.ac.in';
+      this.state.currentUser.id = 'a0000000-0000-0000-0000-000000000001';
+      this.state.currentUser.isVerified = true;
+    } else if (targetRole === 'CLUB_PRESIDENT') {
+      const clubId = assignedClub || 'coding-club';
+      this.state.currentUser.assignedClubId = clubId;
+      if (clubId === 'coding-club') {
+        this.state.currentUser.name = 'Rahul Sharma';
+        this.state.currentUser.enrollment = '0101CS261001';
+        this.state.currentUser.email = '0101cs261001@rgpv.ac.in';
+        this.state.currentUser.id = 'ea7fbb68-db0b-43e8-92b1-297bfde7f92b';
+      } else if (clubId === 'robotics-club') {
+        this.state.currentUser.name = 'Abhay Tiwari';
+        this.state.currentUser.enrollment = '0101IT261001';
+        this.state.currentUser.email = '0101it261001@rgpv.ac.in';
+        this.state.currentUser.id = 'bee74d09-7be0-4e53-89b6-ae9b58088e79';
+      }
+      this.state.currentUser.isVerified = true;
+    } else {
+      // Regular student
+      this.state.currentUser.assignedClubId = null;
+      this.state.currentUser.name = 'Amit Verma';
+      this.state.currentUser.enrollment = '0101EC241018';
+      this.state.currentUser.email = '0101ec241018@rgpv.ac.in';
+      this.state.currentUser.id = 's0000000-0000-0000-0000-000000000001';
+      this.state.currentUser.isVerified = true;
+    }
+
+    this.saveState();
+    return { success: true, user: this.state.currentUser };
+  }
+
+  // =========================================================================
+  // CLUBS MANAGEMENT
+  // =========================================================================
+  getClubs(category = 'all', search = '') {
+    return (this.state.clubs || []).filter(c => {
+      if (!c.isActive && this.state.currentUser.role !== 'SUPER_ADMIN') return false;
+      if (category !== 'all' && c.category.toLowerCase() !== category.toLowerCase()) return false;
+      if (search && !c.name.toLowerCase().includes(search.toLowerCase()) && !c.description?.toLowerCase().includes(search.toLowerCase())) return false;
+      return true;
+    });
+  }
+
+  getClubById(id) {
+    return (this.state.clubs || []).find(c => c.id === id);
+  }
+
+  followClub(clubId) {
+    const followed = this.state.currentUser.followedClubs || [];
+    if (!followed.includes(clubId)) {
+      followed.push(clubId);
+      this.state.currentUser.followedClubs = followed;
+      const club = this.getClubById(clubId);
+      if (club) club.followersCount = (club.followersCount || 0) + 1;
+      this.addNotification({
+        type: 'CLUB_UPDATE',
+        title: 'Following Club',
+        desc: `You are now following ${club ? club.name : 'this club'}. You will receive new event updates.`
+      });
+      this.saveState();
+    }
+    return { success: true };
+  }
+
+  unfollowClub(clubId) {
+    const followed = this.state.currentUser.followedClubs || [];
+    const index = followed.indexOf(clubId);
+    if (index > -1) {
+      followed.splice(index, 1);
+      this.state.currentUser.followedClubs = followed;
+      const club = this.getClubById(clubId);
+      if (club && club.followersCount > 0) club.followersCount--;
+      this.saveState();
+    }
+    return { success: true };
+  }
+
+  isClubFollowed(clubId) {
+    return (this.state.currentUser.followedClubs || []).includes(clubId);
+  }
+
+  createClub(clubData) {
+    if (this.state.currentUser.role !== 'SUPER_ADMIN') {
+      return { success: false, error: 'Unauthorized: Only Super Admin can register campus clubs.' };
+    }
+    const id = clubData.id || (clubData.name.toLowerCase().replace(/[^a-z0-9]/g, '-') + '-' + Date.now().toString().slice(-4));
+    const newClub = {
+      id,
+      name: clubData.name.trim(),
+      description: clubData.description?.trim() || 'Campus student club.',
+      category: clubData.category || 'Technical',
+      tagline: clubData.tagline || 'Student Organization',
+      logo: clubData.logo || '🏛️',
+      coverImage: clubData.coverImage || 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1200&auto=format&fit=crop&q=80',
+      members: 50,
+      followersCount: 0,
+      presidentId: null,
+      presidentName: null,
+      contactEmail: clubData.contactEmail || '',
+      socialLinks: clubData.socialLinks || {},
+      isActive: true
+    };
+    this.state.clubs.unshift(newClub);
+    this.logAudit('CREATE_CLUB', 'CLUB', id, { name: newClub.name, category: newClub.category });
+    this.saveState();
+    return { success: true, club: newClub };
+  }
+
+  updateClub(clubId, updates) {
+    const club = this.getClubById(clubId);
+    if (!club) return { success: false, error: 'Club not found' };
+    
+    // Ownership check: must be admin OR president of this specific club
+    const isOwner = this.state.currentUser.role === 'CLUB_PRESIDENT' && this.state.currentUser.assignedClubId === clubId;
+    const isAdmin = this.state.currentUser.role === 'SUPER_ADMIN';
+    if (!isOwner && !isAdmin) {
+      return { success: false, error: 'Forbidden: You do not have permission to edit this club.' };
+    }
+
+    Object.assign(club, updates);
+    this.logAudit('UPDATE_CLUB', 'CLUB', clubId, updates);
+    this.saveState();
+    return { success: true, club };
+  }
+
+  assignClubPresident(clubId, userId, userName = 'Verified Student') {
+    if (this.state.currentUser.role !== 'SUPER_ADMIN') {
+      return { success: false, error: 'Unauthorized: Only Super Admin can assign presidents.' };
+    }
+    const club = this.getClubById(clubId);
+    if (!club) return { success: false, error: 'Club not found' };
+
+    club.presidentId = userId;
+    club.presidentName = userName;
+    this.logAudit('ASSIGN_PRESIDENT', 'CLUB', clubId, { userId, userName });
+    this.saveState();
+    return { success: true, club };
+  }
+
+  revokeClubPresident(clubId, reason = 'Revoked by admin') {
+    if (this.state.currentUser.role !== 'SUPER_ADMIN') {
+      return { success: false, error: 'Unauthorized: Only Super Admin can revoke presidents.' };
+    }
+    const club = this.getClubById(clubId);
+    if (!club) return { success: false, error: 'Club not found' };
+
+    const prevPresId = club.presidentId;
+    club.presidentId = null;
+    club.presidentName = null;
+    this.logAudit('REVOKE_PRESIDENT_ACCESS', 'CLUB', clubId, { previousPresidentId: prevPresId, reason });
+    this.saveState();
+    return { success: true };
+  }
+
+  // =========================================================================
+  // EVENTS MANAGEMENT & STRICT MULTI-TENANT RBAC
+  // =========================================================================
+  getEvents(filters = {}) {
+    return (this.state.events || []).filter(e => {
+      // Role visibility: Students only see PUBLISHED
+      if (this.state.currentUser.role === 'STUDENT') {
+        if (e.status !== 'PUBLISHED' && e.status !== 'COMPLETED') return false;
+      } else if (this.state.currentUser.role === 'CLUB_PRESIDENT') {
+        // Presidents see published + events for their own club
+        const isOwn = e.clubId === this.state.currentUser.assignedClubId;
+        if (!isOwn && e.status !== 'PUBLISHED' && e.status !== 'COMPLETED') return false;
+      }
+      // Super admin sees all
+
+      if (filters.status && filters.status !== 'all' && e.status !== filters.status) return false;
+      if (filters.clubId && filters.clubId !== 'all' && e.clubId !== filters.clubId) return false;
+      if (filters.category && filters.category !== 'all' && e.category.toLowerCase() !== filters.category.toLowerCase()) return false;
+      if (filters.search) {
+        const s = filters.search.toLowerCase();
+        if (!e.title.toLowerCase().includes(s) && !e.description.toLowerCase().includes(s)) return false;
+      }
+      return true;
+    });
+  }
+
+  getEventById(id) {
+    return (this.state.events || []).find(e => e.id === id);
+  }
+
+  createEvent(eventData) {
+    const isPresident = this.state.currentUser.role === 'CLUB_PRESIDENT';
+    const isAdmin = this.state.currentUser.role === 'SUPER_ADMIN';
+
+    if (!isPresident && !isAdmin) {
+      return { success: false, error: 'Unauthorized: Only Club Presidents or Campus Admin can create events.' };
+    }
+
+    // MULTI-TENANT OWNERSHIP SECURITY: If president, force clubId to assigned club
+    const clubId = isPresident ? this.state.currentUser.assignedClubId : (eventData.clubId || 'coding-club');
+    if (!clubId) {
+      return { success: false, error: 'No active club assigned.' };
+    }
+
+    const newEvt = {
+      id: 'evt-' + Date.now(),
+      clubId,
+      title: eventData.title.trim(),
+      description: (eventData.description || 'Campus event.').trim(),
+      posterImage: eventData.posterImage || 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=800&auto=format&fit=crop&q=80',
+      category: eventData.category || 'General',
+      venue: eventData.venue?.trim() || 'Central Auditorium',
+      startDate: eventData.startDate || new Date(Date.now() + 7 * 86400000).toISOString(),
+      endDate: eventData.endDate || new Date(Date.now() + 7 * 86400000 + 4 * 3600000).toISOString(),
+      registrationDeadline: eventData.registrationDeadline || new Date(Date.now() + 6 * 86400000).toISOString(),
+      registrationUrl: eventData.registrationUrl || '',
+      maxParticipants: parseInt(eventData.maxParticipants, 10) || 100,
+      registrationsCount: 0,
+      // Presidents submit for approval; Admins can publish directly
+      status: isAdmin ? (eventData.status || 'PUBLISHED') : (eventData.isDraft ? 'DRAFT' : 'PENDING_APPROVAL'),
+      rejectionReason: null,
+      createdBy: this.state.currentUser.id,
+      createdAt: new Date().toISOString()
+    };
+
+    this.state.events.unshift(newEvt);
+    this.logAudit(
+      isAdmin ? 'ADMIN_CREATE_EVENT' : 'PRESIDENT_CREATE_EVENT',
+      'EVENT',
+      newEvt.id,
+      { clubId, title: newEvt.title, status: newEvt.status }
+    );
+    this.saveState();
+    return { success: true, event: newEvt };
+  }
+
+  updateEvent(eventId, updates) {
+    const evt = this.getEventById(eventId);
+    if (!evt) return { success: false, error: 'Event not found' };
+
+    const isPresident = this.state.currentUser.role === 'CLUB_PRESIDENT';
+    const isAdmin = this.state.currentUser.role === 'SUPER_ADMIN';
+
+    // CRITICAL MULTI-TENANT OWNERSHIP VERIFICATION:
+    // A President can NEVER edit another club's event!
+    if (isPresident && evt.clubId !== this.state.currentUser.assignedClubId) {
+      return { success: false, error: '403 Forbidden: You do not own this club and cannot edit its events.' };
+    }
+    if (!isPresident && !isAdmin) {
+      return { success: false, error: '403 Forbidden: Unauthorized.' };
+    }
+
+    // Disallow president from changing event to PUBLISHED directly
+    if (isPresident && updates.status === 'PUBLISHED') {
+      updates.status = 'PENDING_APPROVAL';
+    }
+
+    Object.assign(evt, updates, { updatedAt: new Date().toISOString() });
+    this.logAudit(
+      isAdmin ? 'ADMIN_UPDATE_EVENT' : 'PRESIDENT_UPDATE_EVENT',
+      'EVENT',
+      eventId,
+      updates
+    );
+    this.saveState();
+    return { success: true, event: evt };
+  }
+
+  approveEvent(eventId) {
+    if (this.state.currentUser.role !== 'SUPER_ADMIN') {
+      return { success: false, error: 'Unauthorized: Only Super Admin can approve events.' };
+    }
+    const evt = this.getEventById(eventId);
+    if (!evt) return { success: false, error: 'Event not found' };
+
+    evt.status = 'PUBLISHED';
+    evt.rejectionReason = null;
+    this.logAudit('APPROVE_EVENT', 'EVENT', eventId, { title: evt.title, clubId: evt.clubId });
+
+    // Notify president / creator
+    if (evt.createdBy) {
+      this.addNotification({
+        type: 'EVENT_APPROVED',
+        title: 'Event Approved! 🎉',
+        desc: `Your event "${evt.title}" has been approved and published to students.`
+      });
+    }
+
+    this.saveState();
+    return { success: true, event: evt };
+  }
+
+  rejectEvent(eventId, reason = 'Requires adjustments') {
+    if (this.state.currentUser.role !== 'SUPER_ADMIN') {
+      return { success: false, error: 'Unauthorized: Only Super Admin can reject events.' };
+    }
+    const evt = this.getEventById(eventId);
+    if (!evt) return { success: false, error: 'Event not found' };
+
+    evt.status = 'REJECTED';
+    evt.rejectionReason = reason;
+    this.logAudit('REJECT_EVENT', 'EVENT', eventId, { title: evt.title, reason });
+
+    if (evt.createdBy) {
+      this.addNotification({
+        type: 'EVENT_REJECTED',
+        title: 'Event Revision Requested',
+        desc: `"${evt.title}" was not approved: ${reason}`
+      });
+    }
+
+    this.saveState();
+    return { success: true, event: evt };
+  }
+
+  cancelEvent(eventId, reason = 'Cancelled by organizers') {
+    const evt = this.getEventById(eventId);
+    if (!evt) return { success: false, error: 'Event not found' };
+
+    const isOwner = this.state.currentUser.role === 'CLUB_PRESIDENT' && evt.clubId === this.state.currentUser.assignedClubId;
+    const isAdmin = this.state.currentUser.role === 'SUPER_ADMIN';
+
+    if (!isOwner && !isAdmin) {
+      return { success: false, error: '403 Forbidden: Unauthorized to cancel this event.' };
+    }
+
+    evt.status = 'CANCELLED';
+    evt.rejectionReason = reason;
+    this.logAudit('CANCEL_EVENT', 'EVENT', eventId, { reason });
+
+    // Notify registered students
+    this.addNotification({
+      type: 'EVENT_CANCELLED',
+      title: 'Event Cancelled',
+      desc: `The event "${evt.title}" has been cancelled: ${reason}`
+    });
+
+    this.saveState();
+    return { success: true, event: evt };
+  }
+
+  // =========================================================================
+  // EVENT REGISTRATION & SEAT ENFORCEMENT
+  // =========================================================================
+  registerForEvent(eventId) {
+    const evt = this.getEventById(eventId);
+    if (!evt) return { success: false, error: 'Event not found' };
+
+    if (evt.status !== 'PUBLISHED') {
+      return { success: false, error: 'Event is not open for registration.' };
+    }
+
+    if (evt.registrationDeadline && new Date(evt.registrationDeadline) < new Date()) {
+      return { success: false, error: 'Registration deadline has passed.' };
+    }
+
+    const userId = this.state.currentUser.id;
+    if (!this.state.eventRegistrations[userId]) {
+      this.state.eventRegistrations[userId] = [];
+    }
+
+    // UNIQUE REGISTRATION CONSTRAINT
+    if (this.state.eventRegistrations[userId].includes(eventId)) {
+      return { success: false, error: 'You are already registered for this event.' };
+    }
+
+    // CAPACITY CHECK
+    if (evt.registrationsCount >= evt.maxParticipants) {
+      return { success: false, error: 'Event has reached maximum seat capacity.' };
+    }
+
+    this.state.eventRegistrations[userId].push(eventId);
+    evt.registrationsCount = (evt.registrationsCount || 0) + 1;
+
+    this.addNotification({
+      type: 'REGISTRATION_CONFIRMATION',
+      title: 'Registration Confirmed! 🎟️',
+      desc: `You are confirmed for ${evt.title} at ${evt.venue}.`,
+      relatedEventId: eventId
+    });
+
+    this.saveState();
+    return { success: true, message: 'Registration confirmed successfully!' };
+  }
+
+  isRegisteredForEvent(eventId) {
+    const userId = this.state.currentUser.id;
+    return Boolean(this.state.eventRegistrations[userId]?.includes(eventId));
+  }
+
+  // =========================================================================
+  // ANNOUNCEMENTS
+  // =========================================================================
+  getAnnouncements(filters = {}) {
+    return (this.state.announcements || []).filter(a => {
+      if (a.status !== 'PUBLISHED' && this.state.currentUser.role !== 'SUPER_ADMIN') return false;
+      if (filters.clubId && a.clubId !== filters.clubId) return false;
+      return true;
+    });
+  }
+
+  createAnnouncement(annData) {
+    const isPresident = this.state.currentUser.role === 'CLUB_PRESIDENT';
+    const isAdmin = this.state.currentUser.role === 'SUPER_ADMIN';
+
+    if (!isPresident && !isAdmin) {
+      return { success: false, error: 'Unauthorized to publish announcements.' };
+    }
+
+    // Strict multi-tenant club boundary
+    const clubId = isPresident ? this.state.currentUser.assignedClubId : annData.clubId;
+
+    const newAnn = {
+      id: 'ann-' + Date.now(),
+      clubId: clubId || null,
+      title: annData.title.trim(),
+      message: annData.message.trim(),
+      image: annData.image || null,
+      priority: annData.priority || 'NORMAL',
+      targetAudience: isPresident ? (annData.targetAudience || 'ALL_STUDENTS') : 'CAMPUS_WIDE',
+      status: 'PUBLISHED',
+      publishedAt: new Date().toISOString(),
+      createdBy: this.state.currentUser.id
+    };
+
+    this.state.announcements.unshift(newAnn);
+    this.logAudit(
+      isAdmin ? 'ADMIN_CREATE_ANNOUNCEMENT' : 'PRESIDENT_CREATE_ANNOUNCEMENT',
+      'ANNOUNCEMENT',
+      newAnn.id,
+      { title: newAnn.title, clubId }
+    );
+
+    this.addNotification({
+      type: 'NEW_ANNOUNCEMENT',
+      title: `${newAnn.priority === 'URGENT' ? '🚨 URGENT: ' : ''}${newAnn.title}`,
+      desc: newAnn.message.slice(0, 80) + '...',
+      relatedClubId: clubId
+    });
+
+    this.saveState();
+    return { success: true, announcement: newAnn };
+  }
+
+  deleteAnnouncement(annId) {
+    const idx = (this.state.announcements || []).findIndex(a => a.id === annId);
+    if (idx === -1) return { success: false, error: 'Announcement not found' };
+
+    const ann = this.state.announcements[idx];
+    const isOwner = this.state.currentUser.role === 'CLUB_PRESIDENT' && ann.clubId === this.state.currentUser.assignedClubId;
+    const isAdmin = this.state.currentUser.role === 'SUPER_ADMIN';
+
+    if (!isOwner && !isAdmin) {
+      return { success: false, error: '403 Forbidden: You do not own this announcement.' };
+    }
+
+    this.state.announcements.splice(idx, 1);
+    this.logAudit('DELETE_ANNOUNCEMENT', 'ANNOUNCEMENT', annId, { title: ann.title });
+    this.saveState();
+    return { success: true };
+  }
+
+  // =========================================================================
+  // CLUB PRESIDENT REQUESTS & APPROVAL WORKFLOW
+  // =========================================================================
+  getPresidentRequests(status = 'all') {
+    return (this.state.presidentRequests || []).filter(r => {
+      if (status !== 'all' && r.status !== status) return false;
+      return true;
+    });
+  }
+
+  submitPresidentRequest(clubId, reason) {
+    const club = this.getClubById(clubId);
+    if (!club) return { success: false, error: 'Club not found' };
+
+    const existingPending = (this.state.presidentRequests || []).find(
+      r => r.userId === this.state.currentUser.id && r.requestedClubId === clubId && r.status === 'PENDING'
+    );
+    if (existingPending) {
+      return { success: false, error: 'You already have a pending leadership request for this club.' };
+    }
+
+    const newReq = {
+      id: 'req-' + Date.now(),
+      userId: this.state.currentUser.id,
+      userName: this.state.currentUser.name,
+      userEnrollment: this.state.currentUser.enrollment,
+      requestedClubId: clubId,
+      clubName: club.name,
+      reason: reason.trim(),
+      status: 'PENDING',
+      createdAt: new Date().toISOString()
+    };
+
+    this.state.presidentRequests.unshift(newReq);
+    this.addNotification({
+      type: 'PRESIDENT_REQUEST_SUBMITTED',
+      title: 'Leadership Request Submitted',
+      desc: `Your application to lead ${club.name} has been received for administrative review.`
+    });
+    this.saveState();
+    return { success: true, request: newReq };
+  }
+
+  approvePresidentRequest(reqId) {
+    if (this.state.currentUser.role !== 'SUPER_ADMIN') {
+      return { success: false, error: 'Unauthorized: Only Super Admin can approve leadership requests.' };
+    }
+
+    const req = (this.state.presidentRequests || []).find(r => r.id === reqId);
+    if (!req) return { success: false, error: 'Request not found' };
+
+    req.status = 'APPROVED';
+    req.reviewedBy = this.state.currentUser.id;
+    req.reviewedAt = new Date().toISOString();
+
+    // Assign president to the club
+    const club = this.getClubById(req.requestedClubId);
+    if (club) {
+      club.presidentId = req.userId;
+      club.presidentName = req.userName;
+    }
+
+    // If the approved user is the active user, update their role immediately
+    if (this.state.currentUser.id === req.userId) {
+      this.state.currentUser.role = 'CLUB_PRESIDENT';
+      this.state.currentUser.assignedClubId = req.requestedClubId;
+    }
+
+    this.logAudit('APPROVE_PRESIDENT_REQUEST', 'CLUB_PRESIDENT_REQUEST', reqId, {
+      userId: req.userId,
+      clubId: req.requestedClubId
+    });
+
+    this.addNotification({
+      type: 'PRESIDENT_REQUEST_APPROVED',
+      title: 'President Access Approved! 🎖️',
+      desc: `Leadership access for ${club ? club.name : 'your club'} is now active. You have access to Club Admin.`
+    });
+
+    this.saveState();
+    return { success: true, request: req };
+  }
+
+  rejectPresidentRequest(reqId, reason = 'Does not meet current semester eligibility') {
+    if (this.state.currentUser.role !== 'SUPER_ADMIN') {
+      return { success: false, error: 'Unauthorized: Only Super Admin can reject requests.' };
+    }
+
+    const req = (this.state.presidentRequests || []).find(r => r.id === reqId);
+    if (!req) return { success: false, error: 'Request not found' };
+
+    req.status = 'REJECTED';
+    req.rejectionReason = reason;
+    req.reviewedBy = this.state.currentUser.id;
+    req.reviewedAt = new Date().toISOString();
+
+    this.logAudit('REJECT_PRESIDENT_REQUEST', 'CLUB_PRESIDENT_REQUEST', reqId, { reason });
+
+    this.addNotification({
+      type: 'PRESIDENT_REQUEST_REJECTED',
+      title: 'Leadership Request Update',
+      desc: `Your club president request was not approved: ${reason}`
+    });
+
+    this.saveState();
+    return { success: true, request: req };
+  }
+
+  // =========================================================================
+  // OPPORTUNITIES
+  // =========================================================================
+  getOpportunities(filters = {}) {
+    return (this.state.opportunities || []).filter(o => {
+      if (o.status !== 'PUBLISHED' && this.state.currentUser.role !== 'SUPER_ADMIN') return false;
+      if (filters.category && filters.category !== 'all' && o.category.toLowerCase() !== filters.category.toLowerCase()) return false;
+      if (filters.search) {
+        const s = filters.search.toLowerCase();
+        if (!o.title.toLowerCase().includes(s) && !o.description.toLowerCase().includes(s)) return false;
+      }
+      return true;
+    });
+  }
+
+  createOpportunity(oppData) {
+    if (this.state.currentUser.role !== 'SUPER_ADMIN') {
+      return { success: false, error: 'Unauthorized: Only Super Admin can publish campus opportunities.' };
+    }
+
+    const newOpp = {
+      id: 'opp-' + Date.now(),
+      title: oppData.title.trim(),
+      category: oppData.category || 'Other',
+      organization: oppData.organization.trim(),
+      orgLogo: oppData.orgLogo || '🎯',
+      deadline: oppData.deadline || '14 days left',
+      deadlineDate: oppData.deadlineDate || new Date(Date.now() + 14 * 86400000).toISOString(),
+      location: oppData.location || 'Campus / Online',
+      prize: oppData.prize || '',
+      eligibility: oppData.eligibility || 'All Students',
+      description: oppData.description.trim(),
+      applicationUrl: oppData.applicationUrl || '#',
+      status: 'PUBLISHED',
+      isVerifiedOrg: true
+    };
+
+    this.state.opportunities.unshift(newOpp);
+    this.logAudit('CREATE_OPPORTUNITY', 'OPPORTUNITY', newOpp.id, { title: newOpp.title });
+    this.saveState();
+    return { success: true, opportunity: newOpp };
+  }
+
+  // =========================================================================
+  // AUDIT LOGGING (STRICTLY IMMUTABLE)
+  // =========================================================================
+  getAuditLogs(filters = {}) {
+    if (this.state.currentUser.role !== 'SUPER_ADMIN') {
+      return [];
+    }
+    return (this.state.auditLogs || []).filter(log => {
+      if (filters.action && log.action !== filters.action) return false;
+      if (filters.resourceType && log.resourceType !== filters.resourceType) return false;
+      return true;
+    });
+  }
+
+  logAudit(action, resourceType, resourceId, metadata = {}) {
+    const logItem = {
+      id: 'audit-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+      userId: this.state.currentUser.id,
+      userName: `${this.state.currentUser.name} (${this.state.currentUser.role})`,
+      action,
+      resourceType,
+      resourceId: String(resourceId),
+      metadata,
+      createdAt: new Date().toISOString()
+    };
+    if (!this.state.auditLogs) this.state.auditLogs = [];
+    this.state.auditLogs.unshift(logItem);
+    if (this.state.auditLogs.length > 500) this.state.auditLogs.pop();
+    this.saveState();
+  }
+
+  // Developer Role Switcher (Facilitates testing and evaluation across all roles)
+  switchRole(roleKey) {
+    if (roleKey === 'CLUB_PRESIDENT_CODING') {
+      this.state.currentUser.role = 'CLUB_PRESIDENT';
+      this.state.currentUser.id = '0101cs261001@rgpv.ac.in';
+      this.state.currentUser.name = 'Rahul Sharma';
+      this.state.currentUser.enrollment = '0101CS261001';
+      this.state.currentUser.assignedClubId = 'coding-club';
+      this.state.currentUser.isVerified = true;
+    } else if (roleKey === 'CLUB_PRESIDENT_ROBOTICS') {
+      this.state.currentUser.role = 'CLUB_PRESIDENT';
+      this.state.currentUser.id = '0101it261001@rgpv.ac.in';
+      this.state.currentUser.name = 'Abhay Verma';
+      this.state.currentUser.enrollment = '0101IT261001';
+      this.state.currentUser.assignedClubId = 'robotics-club';
+      this.state.currentUser.isVerified = true;
+    } else if (roleKey === 'SUPER_ADMIN') {
+      this.state.currentUser.role = 'SUPER_ADMIN';
+      this.state.currentUser.id = 'admin@rgpv.ac.in';
+      this.state.currentUser.name = 'Campus Super Admin';
+      this.state.currentUser.enrollment = 'RGPV-ADMIN-01';
+      this.state.currentUser.assignedClubId = null;
+      this.state.currentUser.isVerified = true;
+    } else { // STUDENT
+      this.state.currentUser.role = 'STUDENT';
+      this.state.currentUser.id = '0101ec241018@rgpv.ac.in';
+      this.state.currentUser.name = 'Amit Sharma';
+      this.state.currentUser.enrollment = '0101EC241018';
+      this.state.currentUser.assignedClubId = null;
+      this.state.currentUser.isVerified = true;
+    }
+    this.saveState();
+    return this.state.currentUser;
+  }
 }
 
 // Global instance
 window.Store = new CampusStore();
+window.CampusStore = window.Store;
+
+

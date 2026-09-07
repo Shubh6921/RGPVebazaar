@@ -2232,3 +2232,642 @@ input:focus, select:focus, textarea:focus {
     justify-content: space-around;
   }
 }
+
+/* ==========================================================================
+   CAMPUS ADMIN + CLUB PRESIDENT MANAGEMENT SYSTEM STYLES
+   ========================================================================== */
+
+/* Role Switcher Pill in Navbar */
+.role-switcher-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--soft-bg);
+  border: 1px solid var(--border-color);
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.role-switcher-select {
+  background: transparent;
+  border: none;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--primary-crimson);
+  cursor: pointer;
+  outline: none;
+}
+
+/* Statistics Ribbon */
+.admin-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.admin-stat-card {
+  background: var(--pure-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+.admin-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+.admin-stat-number {
+  font-size: 1.85rem;
+  font-weight: 800;
+  font-family: var(--font-display);
+  color: var(--obsidian);
+  line-height: 1.2;
+}
+.admin-stat-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 0.35rem;
+}
+
+/* Status Badges */
+.badge-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.badge-status-published {
+  background: var(--badge-green-bg);
+  color: var(--badge-green-text);
+  border: 1px solid rgba(5, 150, 105, 0.2);
+}
+.badge-status-pending {
+  background: var(--badge-amber-bg);
+  color: var(--badge-amber-text);
+  border: 1px solid rgba(217, 119, 6, 0.25);
+}
+.badge-status-draft {
+  background: #F1F5F9;
+  color: #64748B;
+  border: 1px solid #CBD5E1;
+}
+.badge-status-rejected {
+  background: #FEF2F2;
+  color: #DC2626;
+  border: 1px solid rgba(220, 38, 38, 0.25);
+}
+.badge-status-cancelled {
+  background: #E2E8F0;
+  color: #475569;
+  border: 1px solid #94A3B8;
+}
+
+/* Admin Console Sub-Navigation */
+.admin-subnav-bar {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 2px solid var(--border-color);
+  margin-bottom: 1.75rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+.admin-subnav-item {
+  padding: 0.55rem 1.1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+}
+.admin-subnav-item.active {
+  color: var(--primary-crimson);
+  background: var(--crimson-subtle);
+  font-weight: 700;
+}
+
+/* Data Table */
+.admin-table-card {
+  background: var(--pure-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 2rem;
+}
+.admin-table-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--soft-bg);
+}
+.admin-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  text-align: left;
+}
+.admin-data-table th {
+  padding: 0.85rem 1rem;
+  background: #FAFAFA;
+  font-weight: 700;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.admin-data-table td {
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid var(--border-light);
+  color: var(--obsidian);
+  vertical-align: middle;
+}
+.admin-data-table tr:hover {
+  background: rgba(248, 250, 252, 0.7);
+}
+
+/* Event Cards */
+.events-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.25rem;
+}
+.campus-event-card {
+  background: var(--pure-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  cursor: pointer;
+}
+.campus-event-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+}
+.event-card-poster {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  background: #0F172A;
+  position: relative;
+}
+.event-card-body {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+.event-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+.event-card-title {
+  font-size: 1.15rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: 0.5rem;
+  color: var(--obsidian);
+}
+.event-venue-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.75rem;
+}
+
+/* Club Header Banner in Club President Dashboard */
+.club-president-banner {
+  background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
+  color: white;
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.club-president-banner-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+.club-badge-logo {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Clubs Directory Grid */
+.clubs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.25rem;
+}
+.campus-club-card {
+  background: var(--pure-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+.campus-club-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+.club-cover-strip {
+  width: 100%;
+  height: 90px;
+  object-fit: cover;
+  background: linear-gradient(135deg, var(--primary-crimson), #780000);
+}
+.club-card-content {
+  padding: 1.25rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+.club-avatar-overlap {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-md);
+  background: var(--pure-white);
+  box-shadow: var(--shadow-md);
+  border: 2px solid var(--pure-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  margin-top: -38px;
+  margin-bottom: 0.75rem;
+}
+
+/* Monospace Audit Identifiers */
+.audit-code {
+  font-family: SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 0.76rem;
+  background: #F1F5F9;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  color: #334155;
+}
+
+/* Modal Overlay & Containers */
+.campus-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+.campus-modal-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+.campus-modal-overlay.open .campus-modal {
+  transform: translateY(0) scale(1);
+}
+.campus-modal {
+  background: var(--pure-white);
+  border-radius: var(--radius-lg, 12px);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(12px) scale(0.98);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+.campus-modal-lg {
+  max-width: 800px;
+}
+.campus-modal-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #FFFFFF;
+}
+.campus-modal-title {
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0;
+}
+.campus-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: #94A3B8;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 6px;
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+.campus-modal-close:hover {
+  color: var(--text-main);
+  background: #F1F5F9;
+}
+.campus-modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+.campus-modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border-color);
+  background: #F8FAFC;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+/* Toast Notifications */
+.campus-toast-container {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 10500;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  pointer-events: none;
+  max-width: 380px;
+  width: calc(100% - 3rem);
+}
+.campus-toast {
+  pointer-events: auto;
+  background: #0F172A;
+  color: #FFFFFF;
+  padding: 0.9rem 1.2rem;
+  border-radius: 8px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.25);
+  font-size: 0.88rem;
+  line-height: 1.4;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  animation: toastSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  border-left: 4px solid #3B82F6;
+}
+.campus-toast.success { border-left-color: #10B981; }
+.campus-toast.error { border-left-color: #EF4444; }
+.campus-toast.warning { border-left-color: #F59E0B; }
+@keyframes toastSlideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* ==========================================================================
+   TRENDY CLASSIC CUSTOM CURSOR ANIMATION
+   ========================================================================== */
+
+/* Native cursor suppression on desktop when custom cursor is active */
+@media (pointer: fine) {
+  body.has-custom-cursor,
+  body.has-custom-cursor a,
+  body.has-custom-cursor button,
+  body.has-custom-cursor [role="button"],
+  body.has-custom-cursor select,
+  body.has-custom-cursor .nav-item,
+  body.has-custom-cursor .btn,
+  body.has-custom-cursor .brand-wrapper,
+  body.has-custom-cursor .btn-enroll-chip,
+  body.has-custom-cursor .market-card,
+  body.has-custom-cursor .resource-card,
+  body.has-custom-cursor .club-card,
+  body.has-custom-cursor .event-card {
+    cursor: none !important;
+  }
+
+  /* Keep native text selection cursor on text inputs for ergonomics */
+  body.has-custom-cursor input[type="text"],
+  body.has-custom-cursor input[type="email"],
+  body.has-custom-cursor input[type="password"],
+  body.has-custom-cursor input[type="search"],
+  body.has-custom-cursor input[type="number"],
+  body.has-custom-cursor textarea {
+    cursor: text !important;
+  }
+}
+
+/* Custom Cursor Root Container */
+.custom-cursor-root {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none !important;
+  z-index: 999999;
+  opacity: 0;
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+.custom-cursor-root.is-visible {
+  opacity: 1;
+}
+
+/* 1. Precision Ruby Core Dot */
+.cursor-dot {
+  position: fixed;
+  top: -3.5px;
+  left: -3.5px;
+  width: 7px;
+  height: 7px;
+  background: var(--primary-crimson, #C1121F);
+  border-radius: 50%;
+  pointer-events: none !important;
+  z-index: 1000001;
+  will-change: transform;
+  box-shadow: 0 0 10px rgba(193, 18, 31, 0.75), 0 0 3px #FFFFFF;
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, opacity 0.2s ease;
+}
+
+/* 2. Concentric Follower Ring (LERP Physics + Dynamic Velocity Skew) */
+.cursor-ring {
+  position: fixed;
+  top: -18px;
+  left: -18px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  pointer-events: none !important;
+  z-index: 1000000;
+  will-change: transform;
+  border: 1.5px solid rgba(193, 18, 31, 0.52);
+  background: rgba(193, 18, 31, 0.035);
+  box-shadow: 0 0 16px rgba(193, 18, 31, 0.14), inset 0 0 8px rgba(193, 18, 31, 0.04);
+  backdrop-filter: blur(0.6px);
+  -webkit-backdrop-filter: blur(0.6px);
+  transform-origin: center center;
+  transition: border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              background 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              border-radius 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cursor-ring-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.08) 0%, transparent 70%);
+}
+
+/* Hover States (Interactive targets) */
+.custom-cursor-root.is-hovering .cursor-ring {
+  border-color: rgba(193, 18, 31, 0.88);
+  background: rgba(193, 18, 31, 0.12);
+  box-shadow: 0 0 24px rgba(193, 18, 31, 0.38), inset 0 0 12px rgba(193, 18, 31, 0.15);
+}
+
+.custom-cursor-root.is-hovering .cursor-dot {
+  transform: scale(0.6);
+  background: #9E0F14;
+  box-shadow: 0 0 14px rgba(193, 18, 31, 0.9);
+}
+
+.custom-cursor-root.is-card-hover .cursor-ring {
+  border-color: rgba(193, 18, 31, 0.7);
+  background: rgba(193, 18, 31, 0.08);
+  box-shadow: 0 0 30px rgba(193, 18, 31, 0.25);
+}
+
+/* Text Input State */
+.custom-cursor-root.is-text-input .cursor-ring {
+  border-color: rgba(193, 18, 31, 0.4);
+  background: rgba(193, 18, 31, 0.03);
+  border-radius: 6px;
+  box-shadow: 0 0 10px rgba(193, 18, 31, 0.1);
+}
+
+.custom-cursor-root.is-text-input .cursor-dot {
+  opacity: 0.25;
+}
+
+/* Clicking State (MouseDown) */
+.custom-cursor-root.is-clicking .cursor-ring {
+  border-color: #9E0F14;
+  background: rgba(193, 18, 31, 0.24);
+  box-shadow: 0 0 20px rgba(193, 18, 31, 0.6);
+}
+
+.custom-cursor-root.is-clicking .cursor-dot {
+  transform: scale(1.35);
+  background: #780000;
+  box-shadow: 0 0 16px rgba(193, 18, 31, 1);
+}
+
+/* 3. Click Ripple Ring Animation */
+.cursor-ripple {
+  position: fixed;
+  top: -20px;
+  left: -20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  pointer-events: none !important;
+  z-index: 999997;
+  border: 1.8px solid rgba(193, 18, 31, 0.85);
+  animation: cursorRipplePulse 0.48s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes cursorRipplePulse {
+  0% {
+    transform: translate3d(var(--x, 0), var(--y, 0), 0) scale(0.4);
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(var(--x, 0), var(--y, 0), 0) scale(2.8);
+    opacity: 0;
+    border-color: rgba(245, 158, 11, 0.5);
+  }
+}
+
+/* 4. Ethereal Stardust Particle Sparks */
+.cursor-particle {
+  position: fixed;
+  top: 0;
+  left: 0;
+  border-radius: 50%;
+  pointer-events: none !important;
+  z-index: 999996;
+  background: radial-gradient(circle, #F59E0B 0%, #C1121F 85%);
+  box-shadow: 0 0 9px rgba(245, 158, 11, 0.85), 0 0 4px rgba(193, 18, 31, 0.6);
+  will-change: transform, opacity;
+}
+
+/* Reduced Motion Override */
+@media (prefers-reduced-motion: reduce) {
+  .cursor-ring,
+  .cursor-dot {
+    transition: none !important;
+    animation: none !important;
+  }
+  .cursor-particle,
+  .cursor-ripple {
+    display: none !important;
+  }
+}
+
+

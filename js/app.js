@@ -90,11 +90,44 @@
     }, 3000);
   }
 
+  // Campus Toast Helper
+  function showCampusToast(msg, type = 'info') {
+    const container = document.getElementById('campus-toast-container') || document.getElementById('toast-container');
+    if (!container) return alert(msg);
+    const toast = document.createElement('div');
+    toast.className = `campus-toast ${type}`;
+    const icon = type === 'success' ? '✓' : (type === 'error' ? '✕' : (type === 'warning' ? '⚠️' : 'ℹ️'));
+    toast.innerHTML = `<span style="font-weight:700; font-size:1.1rem; line-height:1;">${icon}</span><div>${msg}</div>`;
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(-10px)';
+      toast.style.transition = 'all 0.3s ease';
+      setTimeout(() => toast.remove(), 300);
+    }, 3800);
+  }
+
   // Route history stack
   let routeHistory = [];
 
   // Router
   function navigate(route, param = null, pushHistory = true) {
+    const user = window.Store.state.currentUser;
+    const role = (user && user.role) ? user.role : 'STUDENT';
+
+    // Strict Role-Based Route Guards
+    if (route === 'club-admin' && role !== 'CLUB_PRESIDENT' && role !== 'SUPER_ADMIN') {
+      showCampusToast('Access Denied: Only verified Club Presidents or Campus Administrators can access this console.', 'error');
+      navigate('home', null, false);
+      return;
+    }
+
+    if (route === 'admin' && role !== 'SUPER_ADMIN') {
+      showCampusToast('Access Denied: Restricted to Campus Super Administrators.', 'error');
+      navigate('home', null, false);
+      return;
+    }
+
     if (pushHistory && currentRoute && currentRoute !== route) {
       routeHistory.push(currentRoute);
       try {
@@ -129,6 +162,10 @@
     if (route === 'profile') renderProfile();
     if (route === 'chat') renderChat(param || activeChatConversationId);
     if (route === 'verify') initVerifyFlow();
+    if (route === 'events') renderEvents();
+    if (route === 'clubs') renderClubs();
+    if (route === 'club-admin') renderClubAdmin();
+    if (route === 'admin') renderAdmin();
   }
 
   // Global Go Back function
@@ -154,8 +191,9 @@
     }
 
     // If modal is open, close modal
-    const openModal = document.querySelector('.modal-overlay.active');
+    const openModal = document.querySelector('.campus-modal-overlay.open, .modal-overlay.active');
     if (openModal) {
+      openModal.classList.remove('open');
       openModal.classList.remove('active');
       return;
     }
@@ -189,13 +227,48 @@
     const profileBtn = document.getElementById('nav-profile-btn');
     const guestActions = document.getElementById('nav-guest-actions');
     const userChip = document.getElementById('nav-user-chip');
+    const clubAdminLink = document.getElementById('nav-item-club-admin');
+    const superAdminLink = document.getElementById('nav-item-super-admin');
+    const devRoleSelector = document.getElementById('dev-role-selector');
+    const userRoleBadge = document.getElementById('nav-user-role-badge');
+
+    const role = (user && user.role) ? user.role : 'STUDENT';
+
+    if (clubAdminLink) {
+      clubAdminLink.style.display = (role === 'CLUB_PRESIDENT' || role === 'SUPER_ADMIN') ? 'inline-flex' : 'none';
+    }
+    if (superAdminLink) {
+      superAdminLink.style.display = (role === 'SUPER_ADMIN') ? 'inline-flex' : 'none';
+    }
+
+    if (devRoleSelector) {
+      if (role === 'SUPER_ADMIN') {
+        devRoleSelector.value = 'SUPER_ADMIN';
+      } else if (role === 'CLUB_PRESIDENT') {
+        devRoleSelector.value = user.assignedClubId === 'robotics-club' ? 'CLUB_PRESIDENT_ROBOTICS' : 'CLUB_PRESIDENT_CODING';
+      } else {
+        devRoleSelector.value = 'STUDENT';
+      }
+    }
 
     if (user && user.isVerified) {
       if (guestActions) guestActions.style.display = 'none';
       if (userChip) {
         userChip.style.display = 'flex';
-        document.getElementById('nav-user-avatar').textContent = user.avatar || 'RS';
+        document.getElementById('nav-user-avatar').textContent = user.avatar || (user.name ? user.name.slice(0, 2).toUpperCase() : 'RS');
         document.getElementById('nav-user-name').textContent = (user.name || user.full_name || 'Student').split(' ')[0];
+        if (userRoleBadge) {
+          if (role === 'SUPER_ADMIN') {
+            userRoleBadge.textContent = 'Admin 🏛️';
+            userRoleBadge.className = 'badge-status badge-status-rejected';
+          } else if (role === 'CLUB_PRESIDENT') {
+            userRoleBadge.textContent = 'President 🎖️';
+            userRoleBadge.className = 'badge-status badge-status-published';
+          } else {
+            userRoleBadge.textContent = 'Verified ✓';
+            userRoleBadge.className = 'badge-verified';
+          }
+        }
       }
     } else {
       if (guestActions) guestActions.style.display = 'flex';
@@ -203,7 +276,7 @@
     }
 
     // Unread notifications badge
-    const unreadCount = window.Store.state.notifications.filter(n => n.unread).length;
+    const unreadCount = (window.Store.state.notifications || []).filter(n => n.unread).length;
     const notifDot = document.getElementById('nav-notif-dot');
     if (notifDot) {
       notifDot.style.display = unreadCount > 0 ? 'block' : 'none';
@@ -2793,6 +2866,1281 @@
       navigate('landing');
       showToast('Signed out of campus session.');
     }
+  // =========================================================================
+  // CAMPUS ADMIN & CLUB PRESIDENT MANAGEMENT SYSTEM
+  // =========================================================================
+
+  let currentEventsCategory = 'all';
+  let currentEventsSearch = '';
+  let currentClubsCategory = 'all';
+  let currentClubsSearch = '';
+  let currentClubAdminTab = 'events';
+  let currentAdminTab = 'dashboard';
+  let activeDetailEventId = null;
+
+  // Developer Role Switcher Handler
+  window.handleRoleSwitch = function(roleValue) {
+    const updatedUser = window.Store.switchRole(roleValue);
+    syncNavHeader();
+    showCampusToast(`Active role switched to ${updatedUser.name} (${updatedUser.role})`, 'info');
+
+    // Route access guard verification
+    if (currentRoute === 'admin' && updatedUser.role !== 'SUPER_ADMIN') {
+      navigate('home');
+    } else if (currentRoute === 'club-admin' && updatedUser.role !== 'CLUB_PRESIDENT' && updatedUser.role !== 'SUPER_ADMIN') {
+      navigate('home');
+    } else {
+      if (currentRoute === 'events') renderEvents();
+      if (currentRoute === 'clubs') renderClubs();
+      if (currentRoute === 'club-admin') renderClubAdmin();
+      if (currentRoute === 'admin') renderAdmin();
+    }
+  };
+
+  // Events View Controller
+  window.handleEventsSearch = function() {
+    const input = document.getElementById('events-search-input');
+    currentEventsSearch = input ? input.value.trim().toLowerCase() : '';
+    renderEvents();
+  };
+
+  window.filterEventsCategory = function(cat) {
+    currentEventsCategory = cat;
+    document.querySelectorAll('#events-category-chips .filter-pill').forEach(pill => {
+      if (pill.getAttribute('onclick')?.includes(`'${cat}'`)) {
+        pill.classList.add('active');
+      } else {
+        pill.classList.remove('active');
+      }
+    });
+    renderEvents();
+  };
+
+  function renderEvents() {
+    const container = document.getElementById('events-grid-container');
+    if (!container) return;
+
+    const user = window.Store.state.currentUser;
+    const isPresOrAdmin = user && (user.role === 'CLUB_PRESIDENT' || user.role === 'SUPER_ADMIN');
+    
+    // Toggle "+ Create Event" action button in header
+    const createBtn = document.getElementById('btn-events-create-action');
+    if (createBtn) {
+      createBtn.style.display = isPresOrAdmin ? 'inline-flex' : 'none';
+    }
+
+    const events = window.Store.getEvents({
+      category: currentEventsCategory,
+      search: currentEventsSearch
+    });
+
+    if (events.length === 0) {
+      container.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 1.5rem; background: #FFFFFF; border-radius: var(--radius-lg); border: 1px solid var(--border-color);">
+          <div style="font-size: 3rem; margin-bottom: 1rem;">📅</div>
+          <h3 class="font-serif" style="font-size: 1.4rem; color: var(--text-main); margin-bottom: 0.5rem;">No Events Found</h3>
+          <p style="color: #64748B; font-size: 0.95rem; max-width: 420px; margin: 0 auto 1.5rem;">There are no scheduled events matching your filter criteria. Check back soon for upcoming hackathons and workshops.</p>
+          ${isPresOrAdmin ? `<button class="btn btn-primary" onclick="window.openCreateEventModal()">+ Create New Event</button>` : ''}
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = events.map(evt => {
+      const club = window.Store.getClubById(evt.clubId);
+      const isRegistered = window.Store.isRegisteredForEvent(evt.id);
+      const isFull = (evt.registrationsCount || 0) >= (evt.maxParticipants || 100);
+      const isPastDeadline = evt.registrationDeadline && new Date(evt.registrationDeadline) < new Date();
+      
+      const startDate = evt.startDate ? new Date(evt.startDate) : new Date();
+      const dateFormatted = startDate.toLocaleDateString('en-IN', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
+      const timeFormatted = startDate.toLocaleTimeString('en-IN', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      let statusBadge = '';
+      if (evt.status === 'PUBLISHED') {
+        statusBadge = `<span class="badge-status badge-status-published">Published</span>`;
+      } else if (evt.status === 'PENDING_APPROVAL') {
+        statusBadge = `<span class="badge-status badge-status-pending">Pending Review</span>`;
+      } else if (evt.status === 'REJECTED') {
+        statusBadge = `<span class="badge-status badge-status-rejected">Rejected</span>`;
+      } else if (evt.status === 'CANCELLED') {
+        statusBadge = `<span class="badge-status" style="background:#F1F5F9; color:#64748B;">Cancelled</span>`;
+      }
+
+      return `
+        <div class="campus-event-card">
+          <div style="position: relative; height: 160px; overflow: hidden; background: #0F172A;">
+            <img src="${evt.posterImage || 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=800&auto=format&fit=crop&q=80'}" alt="${evt.title}" style="width:100%; height:100%; object-fit: cover; opacity: 0.9;">
+            <div style="position: absolute; top: 10px; left: 10px; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <span class="badge badge-tag" style="background: rgba(15, 23, 42, 0.75); color: #FFF; backdrop-filter: blur(4px);">${evt.category}</span>
+              ${statusBadge}
+            </div>
+            <div style="position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: #FFF; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;">
+              👥 ${evt.registrationsCount || 0} / ${evt.maxParticipants} Registered
+            </div>
+          </div>
+          <div class="campus-event-body">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <span style="font-size: 1.1rem;">${club ? club.logo : '🏛️'}</span>
+              <span style="font-size: 0.82rem; font-weight: 600; color: #64748B;">${club ? club.name : 'Campus Club'}</span>
+            </div>
+            <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.5rem; line-height: 1.35;">${evt.title}</h3>
+            <p style="font-size: 0.85rem; color: #475569; line-height: 1.5; margin-bottom: 1rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+              ${evt.description}
+            </p>
+            <div style="font-size: 0.82rem; color: #64748B; margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.35rem;">
+              <div>📅 <strong>${dateFormatted}</strong> at ${timeFormatted}</div>
+              <div>📍 <strong>Venue:</strong> ${evt.venue || 'Central Campus'}</div>
+            </div>
+            <div style="display: flex; gap: 0.6rem; align-items: center; margin-top: auto;">
+              <button class="btn btn-secondary btn-sm" style="flex: 1;" onclick="CampusApp.viewEventDetails('${evt.id}')">View Details</button>
+              ${evt.status === 'PUBLISHED' ? `
+                ${isRegistered ? `
+                  <button class="btn btn-sm" style="background:#DCFCE7; color:#166534; border:1px solid #BBF7D0; cursor:default;" disabled>✓ Registered</button>
+                ` : isFull ? `
+                  <button class="btn btn-sm" style="background:#F1F5F9; color:#64748B; border:1px solid #E2E8F0;" disabled>Full</button>
+                ` : isPastDeadline ? `
+                  <button class="btn btn-sm" style="background:#F1F5F9; color:#64748B; border:1px solid #E2E8F0;" disabled>Closed</button>
+                ` : `
+                  <button class="btn btn-primary btn-sm" onclick="CampusApp.quickRegister('${evt.id}')">Register</button>
+                `}
+              ` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Clubs Directory Controller
+  window.handleClubsSearch = function() {
+    const input = document.getElementById('clubs-search-input');
+    currentClubsSearch = input ? input.value.trim().toLowerCase() : '';
+    renderClubs();
+  };
+
+  window.filterClubsCategory = function(cat) {
+    currentClubsCategory = cat;
+    document.querySelectorAll('#view-clubs .filter-pill').forEach(pill => {
+      if (pill.getAttribute('onclick')?.includes(`'${cat}'`)) {
+        pill.classList.add('active');
+      } else {
+        pill.classList.remove('active');
+      }
+    });
+    renderClubs();
+  };
+
+  function renderClubs() {
+    const container = document.getElementById('clubs-grid-container');
+    if (!container) return;
+
+    let clubs = window.Store.state.clubs || [];
+    if (currentClubsCategory !== 'all') {
+      clubs = clubs.filter(c => c.category && c.category.toLowerCase() === currentClubsCategory.toLowerCase());
+    }
+    if (currentClubsSearch) {
+      clubs = clubs.filter(c => 
+        (c.name && c.name.toLowerCase().includes(currentClubsSearch)) ||
+        (c.tagline && c.tagline.toLowerCase().includes(currentClubsSearch)) ||
+        (c.description && c.description.toLowerCase().includes(currentClubsSearch))
+      );
+    }
+
+    if (clubs.length === 0) {
+      container.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 1.5rem; background: #FFFFFF; border-radius: var(--radius-lg); border: 1px solid var(--border-color);">
+          <div style="font-size: 3rem; margin-bottom: 1rem;">🏛️</div>
+          <h3 class="font-serif" style="font-size: 1.4rem; color: var(--text-main); margin-bottom: 0.5rem;">No Clubs Match Your Criteria</h3>
+          <p style="color: #64748B; font-size: 0.95rem; max-width: 420px; margin: 0 auto 1.5rem;">Try a different search keyword or category filter.</p>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = clubs.map(c => {
+      const isFollowed = window.Store.isClubFollowed(c.id);
+      const clubEvents = (window.Store.state.events || []).filter(e => e.clubId === c.id && e.status === 'PUBLISHED');
+
+      return `
+        <div class="campus-club-card">
+          <div class="club-cover-strip" style="background-image: url('${c.coverImage || ''}'); background-size: cover; background-position: center;"></div>
+          <div class="club-card-content">
+            <div class="club-avatar-overlap">${c.logo || '🏛️'}</div>
+            <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom: 0.25rem;">
+              <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--text-main); margin:0;">${c.name}</h3>
+              <span class="badge badge-tag">${c.category}</span>
+            </div>
+            <p style="font-size: 0.85rem; color: #64748B; font-weight: 500; margin-bottom: 0.75rem;">${c.tagline || 'Campus Student Society'}</p>
+            <p style="font-size: 0.85rem; color: #334155; line-height: 1.5; margin-bottom: 1rem; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
+              ${c.description}
+            </p>
+
+            <div style="margin-bottom: 1.25rem; font-size: 0.82rem; color: #64748B; border-top: 1px solid var(--border-color); padding-top: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                ${c.presidentName ? `
+                  <span>🎖️ <strong>${c.presidentName}</strong></span>
+                ` : `
+                  <span style="color: #F59E0B; font-weight: 600;">Leadership Open</span>
+                `}
+              </div>
+              <div>
+                <span>👥 ${c.followersCount || 0} Followers</span>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 0.5rem; margin-top: auto;">
+              <button class="btn btn-sm ${isFollowed ? 'btn-secondary' : 'btn-primary'}" style="flex: 1;" onclick="CampusApp.toggleFollowClub('${c.id}')">
+                ${isFollowed ? '✓ Following' : '+ Follow'}
+              </button>
+              <button class="btn btn-secondary btn-sm" onclick="CampusApp.filterEventsByClub('${c.id}')">
+                Events (${clubEvents.length})
+              </button>
+              ${!c.presidentName ? `
+                <button class="btn btn-ghost btn-sm" title="Apply for leadership" onclick="window.openRequestPresidentModal('${c.id}')">
+                  Apply 🎖️
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Club President Dashboard Controller
+  window.setClubAdminTab = function(tab) {
+    currentClubAdminTab = tab;
+    document.querySelectorAll('.admin-subnav-item[data-club-tab]').forEach(btn => {
+      if (btn.getAttribute('data-club-tab') === tab) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+    renderClubAdminTabContent();
+  };
+
+  function renderClubAdmin() {
+    const user = window.Store.state.currentUser;
+    // Multi-tenant club resolution
+    let clubId = user.assignedClubId;
+    if (user.role === 'SUPER_ADMIN' && !clubId) {
+      clubId = 'coding-club'; // Default fallback for super admin in club admin view
+    }
+
+    const club = window.Store.getClubById(clubId);
+    if (!club) {
+      const banner = document.getElementById('club-admin-banner');
+      if (banner) banner.style.display = 'none';
+      const stats = document.getElementById('club-admin-stats-grid');
+      if (stats) stats.style.display = 'none';
+      document.getElementById('club-admin-tab-content').innerHTML = `
+        <div style="text-align: center; padding: 4rem 1.5rem; background: #FFFFFF; border-radius: 12px; border: 1px solid var(--border-color); margin-top: 1.5rem;">
+          <div style="font-size: 3rem; margin-bottom: 1rem;">🏛️</div>
+          <h3 class="font-serif">No Club Assigned to Your Presidency</h3>
+          <p style="color: #64748B; margin-bottom: 1.5rem;">Your account is not currently linked to an active campus club. Submit a leadership request or contact Campus Admin.</p>
+          <button class="btn btn-primary" onclick="window.openRequestPresidentModal()">Request Leadership →</button>
+        </div>
+      `;
+      return;
+    }
+
+    const banner = document.getElementById('club-admin-banner');
+    if (banner) banner.style.display = 'block';
+    const stats = document.getElementById('club-admin-stats-grid');
+    if (stats) stats.style.display = 'grid';
+
+    // Update banner
+    const logoEl = document.getElementById('club-admin-logo');
+    const titleEl = document.getElementById('club-admin-title');
+    const descEl = document.getElementById('club-admin-desc');
+    if (logoEl) logoEl.textContent = club.logo || '🏛️';
+    if (titleEl) titleEl.textContent = `${club.name} — President Console`;
+    if (descEl) descEl.textContent = `Strict multi-tenant club boundary active. You are managing ${club.name}. Actions are logged.`;
+
+    // Metrics Ribbon
+    const myEvents = (window.Store.state.events || []).filter(e => e.clubId === club.id);
+    const totalRegs = myEvents.reduce((sum, e) => sum + (e.registrationsCount || 0), 0);
+    const myAnnouncements = (window.Store.state.announcements || []).filter(a => a.clubId === club.id);
+
+    const m1 = document.getElementById('club-stat-members');
+    const m2 = document.getElementById('club-stat-events');
+    const m3 = document.getElementById('club-stat-regs');
+    const m4 = document.getElementById('club-stat-followers');
+    const m5 = document.getElementById('club-stat-announcements');
+
+    if (m1) m1.textContent = club.members || 50;
+    if (m2) m2.textContent = myEvents.length;
+    if (m3) m3.textContent = totalRegs;
+    if (m4) m4.textContent = club.followersCount || 0;
+    if (m5) m5.textContent = myAnnouncements.length;
+
+    renderClubAdminTabContent();
+  }
+
+  function renderClubAdminTabContent() {
+    const container = document.getElementById('club-admin-tab-content');
+    if (!container) return;
+
+    const user = window.Store.state.currentUser;
+    const clubId = user.assignedClubId || (user.role === 'SUPER_ADMIN' ? 'coding-club' : null);
+    const club = window.Store.getClubById(clubId);
+    if (!club) return;
+
+    if (currentClubAdminTab === 'events') {
+      const myEvents = (window.Store.state.events || []).filter(e => e.clubId === club.id);
+      container.innerHTML = `
+        <div style="background: #FFFFFF; border-radius: var(--radius-lg); border: 1px solid var(--border-color); overflow: hidden; padding: 1.5rem; margin-top: 1.25rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.25rem;">
+            <div>
+              <h3 class="font-serif" style="font-size: 1.25rem; margin:0;">Club Events & Competitions</h3>
+              <p style="font-size: 0.85rem; color: #64748B; margin: 0.25rem 0 0 0;">Events created are submitted to Campus Admin for official publication.</p>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="window.openCreateEventModal('${club.id}')">+ New Event</button>
+          </div>
+
+          ${myEvents.length === 0 ? `
+            <div style="text-align:center; padding: 3rem 1rem; color: #64748B;">
+              <p>No events submitted yet for ${club.name}. Click "+ New Event" to create your first event proposal.</p>
+            </div>
+          ` : `
+            <div style="overflow-x:auto;">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Event Title</th>
+                    <th>Category</th>
+                    <th>Schedule</th>
+                    <th>Registrations</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${myEvents.map(e => {
+                    let badge = '';
+                    if (e.status === 'PUBLISHED') badge = '<span class="badge-status badge-status-published">Published</span>';
+                    else if (e.status === 'PENDING_APPROVAL') badge = '<span class="badge-status badge-status-pending">Pending Approval</span>';
+                    else if (e.status === 'REJECTED') badge = `<span class="badge-status badge-status-rejected" title="${e.rejectionReason || ''}">Rejected</span>`;
+                    else if (e.status === 'CANCELLED') badge = '<span class="badge-status" style="background:#F1F5F9; color:#64748B;">Cancelled</span>';
+
+                    return `
+                      <tr>
+                        <td>
+                          <strong>${e.title}</strong>
+                          ${e.rejectionReason ? `<div style="font-size:0.78rem; color:#DC2626; margin-top:0.2rem;">Reason: ${e.rejectionReason}</div>` : ''}
+                        </td>
+                        <td>${e.category}</td>
+                        <td style="font-size:0.82rem;">${new Date(e.startDate).toLocaleDateString('en-IN')}</td>
+                        <td><strong>${e.registrationsCount || 0}</strong> / ${e.maxParticipants}</td>
+                        <td>${badge}</td>
+                        <td>
+                          <div style="display:flex; gap:0.4rem;">
+                            <button class="btn btn-ghost btn-sm" onclick="CampusApp.viewEventDetails('${e.id}')">View</button>
+                            ${e.status !== 'CANCELLED' ? `
+                              <button class="btn btn-ghost btn-sm" style="color:#DC2626;" onclick="CampusApp.handleCancelEvent('${e.id}')">Cancel</button>
+                            ` : ''}
+                          </div>
+                        </td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
+          `}
+        </div>
+      `;
+    } else if (currentClubAdminTab === 'announcements') {
+      const myAnn = (window.Store.state.announcements || []).filter(a => a.clubId === club.id);
+      container.innerHTML = `
+        <div style="background: #FFFFFF; border-radius: var(--radius-lg); border: 1px solid var(--border-color); padding: 1.5rem; margin-top: 1.25rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.25rem;">
+            <div>
+              <h3 class="font-serif" style="font-size: 1.25rem; margin:0;">Club Announcements</h3>
+              <p style="font-size: 0.85rem; color: #64748B; margin: 0.25rem 0 0 0;">Broadcast notices directly to students and club followers.</p>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="window.openCreateAnnouncementModal('${club.id}')">+ Broadcast Announcement</button>
+          </div>
+
+          ${myAnn.length === 0 ? `
+            <div style="text-align:center; padding: 3rem 1rem; color: #64748B;">
+              <p>No announcements published yet. Click above to send your first message.</p>
+            </div>
+          ` : `
+            <div style="display:flex; flex-direction:column; gap:1rem;">
+              ${myAnn.map(a => `
+                <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 1.25rem; background: #F8FAFC;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.5rem;">
+                    <div style="display:flex; align-items:center; gap:0.5rem;">
+                      <span class="badge ${a.priority === 'urgent' || a.priority === 'URGENT' ? 'badge-status-rejected' : 'badge-status-published'}">
+                        ${a.priority === 'urgent' || a.priority === 'URGENT' ? '🚨 Urgent Alert' : 'Normal'}
+                      </span>
+                      <h4 style="margin:0; font-size: 1.05rem;">${a.title}</h4>
+                    </div>
+                    <button class="btn btn-ghost btn-sm" style="color:#DC2626;" onclick="CampusApp.handleDeleteAnnouncement('${a.id}')">Delete</button>
+                  </div>
+                  <p style="font-size: 0.9rem; color: #334155; line-height: 1.5; margin: 0 0 0.5rem 0;">${a.message || a.content}</p>
+                  <div style="font-size: 0.78rem; color: #64748B;">Published on ${new Date(a.publishedAt || a.createdAt).toLocaleString('en-IN')}</div>
+                </div>
+              `).join('')}
+            </div>
+          `}
+        </div>
+      `;
+    } else if (currentClubAdminTab === 'details') {
+      container.innerHTML = `
+        <div style="background: #FFFFFF; border-radius: var(--radius-lg); border: 1px solid var(--border-color); padding: 1.5rem; margin-top: 1.25rem;">
+          <h3 class="font-serif" style="font-size: 1.25rem; margin-bottom: 1rem;">Club Profile & Governance</h3>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; font-size: 0.9rem;">
+            <div><strong>Club Name:</strong> ${club.name}</div>
+            <div><strong>Category:</strong> ${club.category}</div>
+            <div><strong>Assigned President:</strong> ${club.presidentName || 'Unassigned'} (${club.presidentId || 'N/A'})</div>
+            <div><strong>Active Members:</strong> ${club.members || 50}</div>
+            <div style="grid-column: 1 / -1;"><strong>Description:</strong> ${club.description}</div>
+          </div>
+        </div>
+      `;
+    } else if (currentClubAdminTab === 'analytics') {
+      container.innerHTML = `
+        <div style="background: #FFFFFF; border-radius: var(--radius-lg); border: 1px solid var(--border-color); padding: 1.5rem; margin-top: 1.25rem;">
+          <h3 class="font-serif" style="font-size: 1.25rem; margin-bottom: 1rem;">Engagement & Registration Analytics</h3>
+          <p style="color: #64748B; font-size: 0.9rem;">Student participation metrics are computed in real-time across your club's events and follower subscriptions.</p>
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+            <div style="background: #F8FAFC; padding: 1.25rem; border-radius: 8px; border: 1px solid var(--border-color); text-align: center;">
+              <div style="font-size: 1.8rem; font-weight: 800; color: var(--primary-crimson);">${club.followersCount || 0}</div>
+              <div style="font-size: 0.8rem; color: #64748B; text-transform: uppercase; font-weight: 600;">Student Subscribers</div>
+            </div>
+            <div style="background: #F8FAFC; padding: 1.25rem; border-radius: 8px; border: 1px solid var(--border-color); text-align: center;">
+              <div style="font-size: 1.8rem; font-weight: 800; color: #10B981;">98%</div>
+              <div style="font-size: 0.8rem; color: #64748B; text-transform: uppercase; font-weight: 600;">Verified Enrollment Rate</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  // Campus Super Admin Console Controller
+  window.setAdminTab = function(tab) {
+    currentAdminTab = tab;
+    document.querySelectorAll('.admin-subnav-item[data-admin-tab]').forEach(btn => {
+      if (btn.getAttribute('data-admin-tab') === tab) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+    renderAdminTabContent();
+  };
+
+  function renderAdmin() {
+    const user = window.Store.state.currentUser;
+    if (user.role !== 'SUPER_ADMIN') {
+      showCampusToast('Access Denied: Super Admin role required.', 'error');
+      navigate('home');
+      return;
+    }
+
+    const clubs = window.Store.state.clubs || [];
+    const events = window.Store.state.events || [];
+    const pendingEvents = events.filter(e => e.status === 'PENDING_APPROVAL');
+    const pendingReqs = window.Store.getPresidentRequests('PENDING');
+    const presidentsCount = clubs.filter(c => Boolean(c.presidentName)).length;
+
+    // Overview Stats
+    const s1 = document.getElementById('stat-total-students');
+    const s2 = document.getElementById('stat-total-clubs');
+    const s3 = document.getElementById('stat-total-presidents');
+    const s4 = document.getElementById('stat-pending-events');
+    const s5 = document.getElementById('stat-pending-requests');
+    const s6 = document.getElementById('stat-active-opps');
+
+    if (s1) s1.textContent = window.Store.state.roster?.length || 959;
+    if (s2) s2.textContent = clubs.length;
+    if (s3) s3.textContent = presidentsCount;
+    if (s4) s4.textContent = pendingEvents.length;
+    if (s5) s5.textContent = pendingReqs.length;
+    if (s6) s6.textContent = (window.Store.state.opportunities || []).length;
+
+    // Badges in tabs
+    const bEvents = document.getElementById('admin-badge-pending-events');
+    const bReqs = document.getElementById('admin-badge-pending-reqs');
+    if (bEvents) bEvents.textContent = pendingEvents.length;
+    if (bReqs) bReqs.textContent = pendingReqs.length;
+
+    renderAdminTabContent();
+  }
+
+  function renderAdminTabContent() {
+    const container = document.getElementById('super-admin-tab-content');
+    if (!container) return;
+
+    const events = window.Store.state.events || [];
+    const pendingEvents = events.filter(e => e.status === 'PENDING_APPROVAL');
+    const pendingReqs = window.Store.getPresidentRequests('PENDING');
+    const clubs = window.Store.state.clubs || [];
+
+    if (currentAdminTab === 'dashboard') {
+      container.innerHTML = `
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.25rem;">
+          <!-- Pending Events Approval Box -->
+          <div style="background:#FFFFFF; border:1px solid var(--border-color); border-radius:12px; padding:1.5rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+              <h3 class="font-serif" style="font-size:1.2rem; margin:0;">Pending Event Approvals</h3>
+              <span class="badge badge-status-pending">${pendingEvents.length} Pending</span>
+            </div>
+            ${pendingEvents.length === 0 ? `
+              <p style="color:#64748B; font-size:0.9rem;">No events awaiting review. All clear!</p>
+            ` : `
+              <div style="display:flex; flex-direction:column; gap:0.75rem;">
+                ${pendingEvents.slice(0, 3).map(e => `
+                  <div style="border:1px solid #E2E8F0; padding:0.9rem; border-radius:8px; background:#F8FAFC;">
+                    <div style="font-weight:700; color:var(--text-main); font-size:0.95rem;">${e.title}</div>
+                    <div style="font-size:0.8rem; color:#64748B; margin-top:0.2rem;">Hosted by: ${window.Store.getClubById(e.clubId)?.name || 'Club'} · ${e.category}</div>
+                    <div style="display:flex; gap:0.5rem; margin-top:0.6rem;">
+                      <button class="btn btn-primary btn-sm" onclick="CampusApp.handleApproveEvent('${e.id}')">Approve</button>
+                      <button class="btn btn-ghost btn-sm" style="color:#DC2626;" onclick="CampusApp.openRejectionModal('event', '${e.id}')">Reject</button>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+              <button class="btn btn-ghost btn-sm" style="margin-top:1rem;" onclick="window.setAdminTab('event-approvals')">View all approvals →</button>
+            `}
+          </div>
+
+          <!-- Pending Leadership Applications Box -->
+          <div style="background:#FFFFFF; border:1px solid var(--border-color); border-radius:12px; padding:1.5rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+              <h3 class="font-serif" style="font-size:1.2rem; margin:0;">Leadership Applications</h3>
+              <span class="badge badge-status-rejected">${pendingReqs.length} Pending</span>
+            </div>
+            ${pendingReqs.length === 0 ? `
+              <p style="color:#64748B; font-size:0.9rem;">No leadership requests waiting for decision.</p>
+            ` : `
+              <div style="display:flex; flex-direction:column; gap:0.75rem;">
+                ${pendingReqs.slice(0, 3).map(r => `
+                  <div style="border:1px solid #E2E8F0; padding:0.9rem; border-radius:8px; background:#F8FAFC;">
+                    <div style="font-weight:700; color:var(--text-main); font-size:0.95rem;">${r.userName} (${r.userEnrollment})</div>
+                    <div style="font-size:0.8rem; color:#64748B; margin-top:0.2rem;">Applying for: <strong>${r.clubName}</strong></div>
+                    <div style="font-size:0.82rem; color:#334155; margin-top:0.4rem; font-style:italic;">"${r.reason}"</div>
+                    <div style="display:flex; gap:0.5rem; margin-top:0.6rem;">
+                      <button class="btn btn-primary btn-sm" onclick="CampusApp.handleApprovePresidentRequest('${r.id}')">Approve</button>
+                      <button class="btn btn-ghost btn-sm" style="color:#DC2626;" onclick="CampusApp.openRejectionModal('president_request', '${r.id}')">Reject</button>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+              <button class="btn btn-ghost btn-sm" style="margin-top:1rem;" onclick="window.setAdminTab('president-requests')">View all applications →</button>
+            `}
+          </div>
+        </div>
+      `;
+    } else if (currentAdminTab === 'event-approvals') {
+      container.innerHTML = `
+        <div style="background: #FFFFFF; border-radius: 12px; border: 1px solid var(--border-color); padding: 1.5rem; margin-top: 1.25rem;">
+          <h3 class="font-serif" style="font-size: 1.25rem; margin-bottom: 0.5rem;">Event Approval Queue</h3>
+          <p style="color: #64748B; font-size: 0.85rem; margin-bottom: 1.25rem;">Review and sanction club proposals before publication to university students.</p>
+
+          ${pendingEvents.length === 0 ? `
+            <div style="text-align:center; padding: 3rem 1rem; color: #64748B;">All proposed events have been processed. Queue is empty.</div>
+          ` : `
+            <div style="overflow-x:auto;">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Host Club</th>
+                    <th>Event Details</th>
+                    <th>Category</th>
+                    <th>Schedule & Venue</th>
+                    <th>Capacity</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${pendingEvents.map(e => `
+                    <tr>
+                      <td><strong>${window.Store.getClubById(e.clubId)?.name || 'Club'}</strong></td>
+                      <td>
+                        <strong>${e.title}</strong>
+                        <div style="font-size:0.8rem; color:#64748B; margin-top:0.2rem;">${e.description}</div>
+                      </td>
+                      <td><span class="badge badge-tag">${e.category}</span></td>
+                      <td style="font-size:0.82rem;">${new Date(e.startDate).toLocaleDateString('en-IN')}<br>📍 ${e.venue}</td>
+                      <td>${e.maxParticipants} seats</td>
+                      <td>
+                        <div style="display:flex; gap:0.4rem;">
+                          <button class="btn btn-primary btn-sm" onclick="CampusApp.handleApproveEvent('${e.id}')">Approve & Publish</button>
+                          <button class="btn btn-ghost btn-sm" style="color:#DC2626;" onclick="CampusApp.openRejectionModal('event', '${e.id}')">Reject</button>
+                        </div>
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          `}
+        </div>
+      `;
+    } else if (currentAdminTab === 'president-requests') {
+      container.innerHTML = `
+        <div style="background: #FFFFFF; border-radius: 12px; border: 1px solid var(--border-color); padding: 1.5rem; margin-top: 1.25rem;">
+          <h3 class="font-serif" style="font-size: 1.25rem; margin-bottom: 0.5rem;">Student Leadership Applications</h3>
+          <p style="color: #64748B; font-size: 0.85rem; margin-bottom: 1.25rem;">Verified students seeking appointment as authorized Club Presidents.</p>
+
+          ${pendingReqs.length === 0 ? `
+            <div style="text-align:center; padding: 3rem 1rem; color: #64748B;">No pending leadership requests.</div>
+          ` : `
+            <div style="overflow-x:auto;">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Applicant Student</th>
+                    <th>Target Club</th>
+                    <th>Statement of Intent</th>
+                    <th>Submitted</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${pendingReqs.map(r => `
+                    <tr>
+                      <td>
+                        <strong>${r.userName}</strong>
+                        <div style="font-size:0.8rem; color:#64748B;">Enrollment: ${r.userEnrollment}</div>
+                      </td>
+                      <td><strong>${r.clubName}</strong></td>
+                      <td style="font-size:0.88rem; line-height:1.4;">"${r.reason}"</td>
+                      <td style="font-size:0.8rem; color:#64748B;">${new Date(r.createdAt).toLocaleDateString('en-IN')}</td>
+                      <td>
+                        <div style="display:flex; gap:0.4rem;">
+                          <button class="btn btn-primary btn-sm" onclick="CampusApp.handleApprovePresidentRequest('${r.id}')">Approve</button>
+                          <button class="btn btn-ghost btn-sm" style="color:#DC2626;" onclick="CampusApp.openRejectionModal('president_request', '${r.id}')">Reject</button>
+                        </div>
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          `}
+        </div>
+      `;
+    } else if (currentAdminTab === 'clubs') {
+      container.innerHTML = `
+        <div style="background: #FFFFFF; border-radius: 12px; border: 1px solid var(--border-color); padding: 1.5rem; margin-top: 1.25rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.25rem;">
+            <div>
+              <h3 class="font-serif" style="font-size: 1.25rem; margin:0;">Active Campus Societies</h3>
+              <p style="font-size: 0.85rem; color: #64748B; margin: 0.25rem 0 0 0;">Manage registered clubs and appointed club leadership.</p>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="window.openCreateClubModal()">+ Register New Club</button>
+          </div>
+
+          <div style="overflow-x:auto;">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Club</th>
+                  <th>Category</th>
+                  <th>Appointed President</th>
+                  <th>Followers</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${clubs.map(c => `
+                  <tr>
+                    <td>
+                      <div style="display:flex; align-items:center; gap:0.6rem;">
+                        <span style="font-size:1.4rem;">${c.logo || '🏛️'}</span>
+                        <div>
+                          <strong>${c.name}</strong>
+                          <div style="font-size:0.78rem; color:#64748B;">Slug: ${c.id}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="badge badge-tag">${c.category}</span></td>
+                    <td>
+                      ${c.presidentName ? `
+                        <strong>${c.presidentName}</strong>
+                        <div style="font-size:0.75rem; color:#64748B;">ID: ${c.presidentId}</div>
+                      ` : `
+                        <span style="color:#F59E0B; font-weight:600;">None (Vacant)</span>
+                      `}
+                    </td>
+                    <td>${c.followersCount || 0}</td>
+                    <td>
+                      <div style="display:flex; gap:0.4rem;">
+                        <button class="btn btn-secondary btn-sm" onclick="window.openAssignPresidentModal('${c.id}')">Assign</button>
+                        ${c.presidentName ? `
+                          <button class="btn btn-ghost btn-sm" style="color:#DC2626;" onclick="CampusApp.handleRevokePresident('${c.id}')">Revoke</button>
+                        ` : ''}
+                      </div>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    } else if (currentAdminTab === 'all-events') {
+      container.innerHTML = `
+        <div style="background: #FFFFFF; border-radius: 12px; border: 1px solid var(--border-color); padding: 1.5rem; margin-top: 1.25rem;">
+          <h3 class="font-serif" style="font-size: 1.25rem; margin-bottom: 1.25rem;">Master Campus Events Register</h3>
+          <div style="overflow-x:auto;">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Club</th>
+                  <th>Status</th>
+                  <th>Schedule</th>
+                  <th>Capacity</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${events.map(e => `
+                  <tr>
+                    <td><strong>${e.title}</strong></td>
+                    <td>${window.Store.getClubById(e.clubId)?.name || 'Club'}</td>
+                    <td><span class="badge-status badge-status-${(e.status || '').toLowerCase()}">${e.status}</span></td>
+                    <td style="font-size:0.82rem;">${new Date(e.startDate).toLocaleDateString('en-IN')}</td>
+                    <td>${e.registrationsCount || 0} / ${e.maxParticipants}</td>
+                    <td>
+                      <div style="display:flex; gap:0.4rem;">
+                        <button class="btn btn-ghost btn-sm" onclick="CampusApp.viewEventDetails('${e.id}')">View</button>
+                        ${e.status !== 'CANCELLED' ? `
+                          <button class="btn btn-ghost btn-sm" style="color:#DC2626;" onclick="CampusApp.handleCancelEvent('${e.id}')">Cancel</button>
+                        ` : ''}
+                      </div>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    } else if (currentAdminTab === 'audit-logs') {
+      const logs = window.Store.getAuditLogs();
+      container.innerHTML = `
+        <div style="background: #FFFFFF; border-radius: 12px; border: 1px solid var(--border-color); padding: 1.5rem; margin-top: 1.25rem;">
+          <h3 class="font-serif" style="font-size: 1.25rem; margin-bottom: 0.35rem;">Platform Security & Administrative Audit Trail</h3>
+          <p style="color: #64748B; font-size: 0.85rem; margin-bottom: 1.25rem;">Immutable ledger documenting institutional decisions, role grants, and content moderation.</p>
+
+          ${logs.length === 0 ? `
+            <div style="text-align:center; padding: 2rem; color: #64748B;">No audit entries logged in this session yet.</div>
+          ` : `
+            <div style="overflow-x:auto;">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Timestamp</th>
+                    <th>Actor</th>
+                    <th>Action</th>
+                    <th>Resource Type</th>
+                    <th>Resource ID</th>
+                    <th>Metadata Details</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${logs.map(l => `
+                    <tr>
+                      <td class="audit-code" style="white-space:nowrap;">${new Date(l.createdAt).toLocaleTimeString('en-IN')}</td>
+                      <td style="font-weight:600;">${l.userName}</td>
+                      <td><span class="badge-tag">${l.action}</span></td>
+                      <td class="audit-code">${l.resourceType}</td>
+                      <td class="audit-code">${l.resourceId}</td>
+                      <td class="audit-code" style="max-width:300px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${JSON.stringify(l.metadata || {})}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          `}
+        </div>
+      `;
+    } else {
+      container.innerHTML = `
+        <div style="background: #FFFFFF; border-radius: 12px; border: 1px solid var(--border-color); padding: 2rem; margin-top: 1.25rem; text-align: center;">
+          <h3 class="font-serif">${currentAdminTab.toUpperCase()}</h3>
+          <p style="color: #64748B;">Sub-panel active.</p>
+        </div>
+      `;
+    }
+  }
+
+  // Campus Application Orchestrator & Modal Operations
+  window.CampusApp = {
+    showToast: showCampusToast,
+
+    openModal: function(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('open');
+    },
+
+    closeModal: function(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('open');
+    },
+
+    viewEventDetails: function(eventId) {
+      const evt = window.Store.getEventById(eventId);
+      if (!evt) return;
+      activeDetailEventId = eventId;
+
+      const club = window.Store.getClubById(evt.clubId);
+      const isReg = window.Store.isRegisteredForEvent(evt.id);
+      const isFull = (evt.registrationsCount || 0) >= (evt.maxParticipants || 100);
+      const isPast = evt.registrationDeadline && new Date(evt.registrationDeadline) < new Date();
+
+      document.getElementById('modal-event-title').textContent = evt.title;
+      document.getElementById('modal-event-club').textContent = club ? club.name : 'Campus Club';
+      document.getElementById('modal-event-category').textContent = evt.category;
+      document.getElementById('modal-event-datetime').textContent = new Date(evt.startDate).toLocaleString('en-IN');
+      document.getElementById('modal-event-location').textContent = evt.venue;
+      document.getElementById('modal-event-capacity').textContent = `${evt.registrationsCount || 0} / ${evt.maxParticipants} Registered`;
+      document.getElementById('modal-event-deadline').textContent = evt.registrationDeadline ? new Date(evt.registrationDeadline).toLocaleDateString('en-IN') : 'Open until event';
+      document.getElementById('modal-event-description').textContent = evt.description;
+
+      const rejBox = document.getElementById('modal-event-rejection-box');
+      if (evt.rejectionReason && rejBox) {
+        rejBox.style.display = 'block';
+        document.getElementById('modal-event-rejection-text').textContent = evt.rejectionReason;
+      } else if (rejBox) {
+        rejBox.style.display = 'none';
+      }
+
+      const regBtn = document.getElementById('btn-modal-event-register');
+      if (regBtn) {
+        if (evt.status !== 'PUBLISHED') {
+          regBtn.disabled = true;
+          regBtn.textContent = evt.status;
+        } else if (isReg) {
+          regBtn.disabled = true;
+          regBtn.textContent = 'Already Registered ✓';
+        } else if (isFull) {
+          regBtn.disabled = true;
+          regBtn.textContent = 'Capacity Reached (Full)';
+        } else if (isPast) {
+          regBtn.disabled = true;
+          regBtn.textContent = 'Registration Closed';
+        } else {
+          regBtn.disabled = false;
+          regBtn.textContent = 'Register Now';
+        }
+      }
+
+      this.openModal('modal-event-detail');
+    },
+
+    quickRegister: function(eventId) {
+      const res = window.Store.registerForEvent(eventId);
+      if (res.success) {
+        showCampusToast(res.message, 'success');
+        renderEvents();
+        if (currentRoute === 'club-admin') renderClubAdmin();
+      } else {
+        showCampusToast(res.error, 'error');
+      }
+    },
+
+    handleEventRegisterFromModal: function() {
+      if (!activeDetailEventId) return;
+      const res = window.Store.registerForEvent(activeDetailEventId);
+      if (res.success) {
+        showCampusToast(res.message, 'success');
+        this.viewEventDetails(activeDetailEventId);
+        renderEvents();
+        if (currentRoute === 'club-admin') renderClubAdmin();
+      } else {
+        showCampusToast(res.error, 'error');
+      }
+    },
+
+    toggleFollowClub: function(clubId) {
+      window.Store.toggleFollowClub(clubId);
+      renderClubs();
+      if (currentRoute === 'club-admin') renderClubAdmin();
+    },
+
+    filterEventsByClub: function(clubId) {
+      navigate('events');
+      currentEventsSearch = window.Store.getClubById(clubId)?.name || '';
+      const input = document.getElementById('events-search-input');
+      if (input) input.value = currentEventsSearch;
+      renderEvents();
+    },
+
+    handleCreateEventSubmit: function() {
+      const clubId = document.getElementById('event-input-club')?.value;
+      const title = document.getElementById('event-input-title')?.value;
+      const category = document.getElementById('event-input-category')?.value;
+      const description = document.getElementById('event-input-desc')?.value;
+      const startDate = document.getElementById('event-input-date')?.value;
+      const endDate = document.getElementById('event-input-end-date')?.value;
+      const venue = document.getElementById('event-input-location')?.value;
+      const maxParticipants = document.getElementById('event-input-capacity')?.value;
+      const registrationDeadline = document.getElementById('event-input-deadline')?.value;
+      const posterImage = document.getElementById('event-input-banner')?.value;
+
+      if (!title || !startDate || !venue) {
+        return showCampusToast('Please fill all required event details.', 'error');
+      }
+
+      const res = window.Store.createEvent({
+        clubId,
+        title,
+        category,
+        description,
+        startDate: new Date(startDate).toISOString(),
+        endDate: endDate ? new Date(endDate).toISOString() : null,
+        venue,
+        maxParticipants: parseInt(maxParticipants, 10) || 100,
+        registrationDeadline: registrationDeadline ? new Date(registrationDeadline).toISOString() : null,
+        posterImage
+      });
+
+      if (res.success) {
+        this.closeModal('modal-create-event');
+        const user = window.Store.state.currentUser;
+        if (user.role === 'SUPER_ADMIN') {
+          showCampusToast('Event published successfully!', 'success');
+        } else {
+          showCampusToast('Event submitted! Placed in PENDING_APPROVAL for Admin review.', 'success');
+        }
+        if (currentRoute === 'events') renderEvents();
+        if (currentRoute === 'club-admin') renderClubAdmin();
+        if (currentRoute === 'admin') renderAdmin();
+      } else {
+        showCampusToast(res.error, 'error');
+      }
+    },
+
+    handleCreateAnnouncementSubmit: function() {
+      const clubId = document.getElementById('announcement-input-club')?.value;
+      const priority = document.getElementById('announcement-input-priority')?.value;
+      const title = document.getElementById('announcement-input-title')?.value;
+      const message = document.getElementById('announcement-input-content')?.value;
+
+      if (!title || !message) {
+        return showCampusToast('Please enter both title and message.', 'error');
+      }
+
+      const res = window.Store.createAnnouncement({
+        clubId,
+        priority,
+        title,
+        message
+      });
+
+      if (res.success) {
+        this.closeModal('modal-create-announcement');
+        showCampusToast('Announcement broadcast successfully!', 'success');
+        syncNavHeader();
+        if (currentRoute === 'club-admin') renderClubAdmin();
+        if (currentRoute === 'admin') renderAdmin();
+      } else {
+        showCampusToast(res.error, 'error');
+      }
+    },
+
+    handleDeleteAnnouncement: function(annId) {
+      if (!confirm('Are you sure you want to delete this announcement?')) return;
+      const res = window.Store.deleteAnnouncement(annId);
+      if (res.success) {
+        showCampusToast('Announcement removed.', 'info');
+        if (currentRoute === 'club-admin') renderClubAdmin();
+        if (currentRoute === 'admin') renderAdmin();
+      } else {
+        showCampusToast(res.error, 'error');
+      }
+    },
+
+    handleRequestPresidentSubmit: function() {
+      const clubId = document.getElementById('req-input-club')?.value;
+      const reason = document.getElementById('req-input-statement')?.value;
+
+      if (!clubId || !reason) {
+        return showCampusToast('Please select a club and provide a statement of intent.', 'error');
+      }
+
+      const res = window.Store.submitPresidentRequest(clubId, reason);
+      if (res.success) {
+        this.closeModal('modal-request-president');
+        showCampusToast('Application submitted to Campus Admin for verification.', 'success');
+        syncNavHeader();
+        if (currentRoute === 'admin') renderAdmin();
+      } else {
+        showCampusToast(res.error, 'error');
+      }
+    },
+
+    openRejectionModal: function(targetType, targetId) {
+      document.getElementById('rejection-target-type').value = targetType;
+      document.getElementById('rejection-target-id').value = targetId;
+      document.getElementById('rejection-input-reason').value = '';
+      const titleEl = document.getElementById('rejection-modal-title');
+      if (titleEl) {
+        titleEl.textContent = targetType === 'event' ? 'Reject Event Proposal' : 'Reject Leadership Application';
+      }
+      this.openModal('modal-rejection-reason');
+    },
+
+    handleRejectionSubmit: function() {
+      const targetType = document.getElementById('rejection-target-type')?.value;
+      const targetId = document.getElementById('rejection-target-id')?.value;
+      const reason = document.getElementById('rejection-input-reason')?.value?.trim();
+
+      if (!reason) {
+        return showCampusToast('A rejection reason is required for institutional feedback.', 'error');
+      }
+
+      if (targetType === 'event') {
+        const res = window.Store.rejectEvent(targetId, reason);
+        if (res.success) {
+          this.closeModal('modal-rejection-reason');
+          showCampusToast('Event proposal rejected with feedback.', 'info');
+          if (currentRoute === 'events') renderEvents();
+          if (currentRoute === 'admin') renderAdmin();
+        } else {
+          showCampusToast(res.error, 'error');
+        }
+      } else if (targetType === 'president_request') {
+        const res = window.Store.rejectPresidentRequest(targetId, reason);
+        if (res.success) {
+          this.closeModal('modal-rejection-reason');
+          showCampusToast('President application rejected.', 'info');
+          if (currentRoute === 'admin') renderAdmin();
+        } else {
+          showCampusToast(res.error, 'error');
+        }
+      }
+    },
+
+    handleApproveEvent: function(eventId) {
+      const res = window.Store.approveEvent(eventId);
+      if (res.success) {
+        showCampusToast('Event approved and published to students!', 'success');
+        if (currentRoute === 'events') renderEvents();
+        if (currentRoute === 'admin') renderAdmin();
+      } else {
+        showCampusToast(res.error, 'error');
+      }
+    },
+
+    handleCancelEvent: function(eventId) {
+      if (!confirm('Are you sure you want to cancel this event? Registered students will be notified.')) return;
+      const res = window.Store.cancelEvent(eventId, 'Event cancelled by organizers.');
+      if (res.success) {
+        showCampusToast('Event cancelled. Cancellation alerts sent.', 'warning');
+        if (currentRoute === 'events') renderEvents();
+        if (currentRoute === 'club-admin') renderClubAdmin();
+        if (currentRoute === 'admin') renderAdmin();
+      } else {
+        showCampusToast(res.error, 'error');
+      }
+    },
+
+    handleApprovePresidentRequest: function(reqId) {
+      const res = window.Store.approvePresidentRequest(reqId);
+      if (res.success) {
+        showCampusToast('Leadership approved! Student promoted to Club President.', 'success');
+        syncNavHeader();
+        if (currentRoute === 'admin') renderAdmin();
+        if (currentRoute === 'clubs') renderClubs();
+      } else {
+        showCampusToast(res.error, 'error');
+      }
+    },
+
+    handleRevokePresident: function(clubId) {
+      if (!confirm('Are you sure you want to revoke this student\'s presidency?')) return;
+      const res = window.Store.revokeClubPresident(clubId, 'Revoked by Campus Administration');
+      if (res.success) {
+        showCampusToast('President role revoked.', 'info');
+        syncNavHeader();
+        if (currentRoute === 'admin') renderAdmin();
+        if (currentRoute === 'clubs') renderClubs();
+      } else {
+        showCampusToast(res.error, 'error');
+      }
+    },
+
+    handleDirectAssignPresidentSubmit: function() {
+      const clubId = document.getElementById('assign-input-club')?.value;
+      const userIdent = document.getElementById('assign-input-user')?.value?.trim();
+
+      if (!clubId || !userIdent) {
+        return showCampusToast('Please specify both club and student email/ID.', 'error');
+      }
+
+      const res = window.Store.assignClubPresident(clubId, userIdent, userIdent.split('@')[0]);
+      if (res.success) {
+        this.closeModal('modal-assign-president');
+        showCampusToast('President leadership assigned.', 'success');
+        if (currentRoute === 'admin') renderAdmin();
+        if (currentRoute === 'clubs') renderClubs();
+      } else {
+        showCampusToast(res.error, 'error');
+      }
+    },
+
+    handleCreateClubSubmit: function() {
+      const name = document.getElementById('club-input-name')?.value?.trim();
+      const id = document.getElementById('club-input-slug')?.value?.trim();
+      const category = document.getElementById('club-input-category')?.value;
+      const logo = document.getElementById('club-input-badge')?.value?.trim() || '🏛️';
+      const tagline = document.getElementById('club-input-tagline')?.value?.trim();
+      const description = document.getElementById('club-input-desc')?.value?.trim();
+
+      if (!name || !id || !description) {
+        return showCampusToast('Please complete all required club fields.', 'error');
+      }
+
+      const res = window.Store.createClub({
+        id,
+        name,
+        category,
+        logo,
+        tagline,
+        description
+      });
+
+      if (res.success) {
+        this.closeModal('modal-create-club');
+        showCampusToast(`Club "${name}" created successfully!`, 'success');
+        if (currentRoute === 'clubs') renderClubs();
+        if (currentRoute === 'admin') renderAdmin();
+      } else {
+        showCampusToast(res.error, 'error');
+      }
+    },
+
+    renderEvents: renderEvents,
+    renderClubs: renderClubs,
+    renderClubAdmin: renderClubAdmin,
+    renderAdmin: renderAdmin
+  };
+
+  // Global modal opener bindings
+  window.openCreateEventModal = function(preselectedClubId) {
+    const user = window.Store.state.currentUser;
+    const isPresident = user.role === 'CLUB_PRESIDENT';
+    const isAdmin = user.role === 'SUPER_ADMIN';
+
+    if (!isPresident && !isAdmin) {
+      return showCampusToast('Only Club Presidents or Campus Admin can create events.', 'error');
+    }
+
+    const clubSelect = document.getElementById('event-input-club');
+    if (clubSelect) {
+      const clubs = window.Store.state.clubs || [];
+      clubSelect.innerHTML = clubs.map(c => `
+        <option value="${c.id}">${c.name}</option>
+      `).join('');
+
+      if (isPresident && user.assignedClubId) {
+        clubSelect.value = user.assignedClubId;
+        clubSelect.disabled = true; // Multi-tenant lock
+      } else if (preselectedClubId) {
+        clubSelect.value = preselectedClubId;
+        clubSelect.disabled = false;
+      } else {
+        clubSelect.disabled = false;
+      }
+    }
+
+    // Default dates
+    const now = new Date();
+    const tmrw = new Date(now.getTime() + 86400000);
+    const tmrwStr = tmrw.toISOString().slice(0, 16);
+    const dateInput = document.getElementById('event-input-date');
+    const deadlineInput = document.getElementById('event-input-deadline');
+    if (dateInput) dateInput.value = tmrwStr;
+    if (deadlineInput) deadlineInput.value = tmrwStr;
+
+    CampusApp.openModal('modal-create-event');
+  };
+
+  window.openCreateAnnouncementModal = function(preselectedClubId) {
+    const user = window.Store.state.currentUser;
+    const isPresident = user.role === 'CLUB_PRESIDENT';
+    const isAdmin = user.role === 'SUPER_ADMIN';
+
+    if (!isPresident && !isAdmin) {
+      return showCampusToast('Only Club Presidents or Campus Admin can broadcast announcements.', 'error');
+    }
+
+    const clubSelect = document.getElementById('announcement-input-club');
+    if (clubSelect) {
+      const clubs = window.Store.state.clubs || [];
+      clubSelect.innerHTML = clubs.map(c => `
+        <option value="${c.id}">${c.name}</option>
+      `).join('');
+
+      if (isAdmin) {
+        clubSelect.innerHTML = `<option value="">Entire Campus (All Students)</option>` + clubSelect.innerHTML;
+      }
+
+      if (isPresident && user.assignedClubId) {
+        clubSelect.value = user.assignedClubId;
+        clubSelect.disabled = true;
+      } else if (preselectedClubId) {
+        clubSelect.value = preselectedClubId;
+        clubSelect.disabled = false;
+      } else {
+        clubSelect.disabled = false;
+      }
+    }
+
+    CampusApp.openModal('modal-create-announcement');
+  };
+
+  window.openRequestPresidentModal = function(preselectedClubId) {
+    const clubSelect = document.getElementById('req-input-club');
+    if (clubSelect) {
+      const clubs = window.Store.state.clubs || [];
+      clubSelect.innerHTML = clubs.map(c => `
+        <option value="${c.id}">${c.name} (${c.category})</option>
+      `).join('');
+
+      if (preselectedClubId) {
+        clubSelect.value = preselectedClubId;
+      }
+    }
+    CampusApp.openModal('modal-request-president');
+  };
+
+  window.openCreateClubModal = function() {
+    if (window.Store.state.currentUser.role !== 'SUPER_ADMIN') {
+      return showCampusToast('Only Super Admin can create clubs.', 'error');
+    }
+    CampusApp.openModal('modal-create-club');
+  };
+
+  window.openAssignPresidentModal = function(preselectedClubId) {
+    if (window.Store.state.currentUser.role !== 'SUPER_ADMIN') {
+      return showCampusToast('Only Super Admin can assign presidents.', 'error');
+    }
+    const select = document.getElementById('assign-input-club');
+    if (select) {
+      const clubs = window.Store.state.clubs || [];
+      select.innerHTML = clubs.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+      if (preselectedClubId) select.value = preselectedClubId;
+    }
+    CampusApp.openModal('modal-assign-president');
   };
 
   // Initialize Application
@@ -2805,7 +4153,7 @@
 
     // Support initial route from URL hash if provided (#home, #marketplace, #resources, etc.)
     const initialHash = window.location.hash ? window.location.hash.replace(/^#/, '') : '';
-    const validRoutes = ['landing', 'home', 'marketplace', 'resources', 'opportunities', 'profile', 'chat', 'verify'];
+    const validRoutes = ['landing', 'home', 'marketplace', 'resources', 'opportunities', 'profile', 'chat', 'verify', 'events', 'clubs', 'club-admin', 'admin'];
     if (initialHash && validRoutes.includes(initialHash)) {
       navigate(initialHash);
     } else {
@@ -2816,7 +4164,7 @@
   // Support browser hash change
   window.addEventListener('hashchange', () => {
     const hashRoute = window.location.hash ? window.location.hash.replace(/^#/, '') : '';
-    const validRoutes = ['landing', 'home', 'marketplace', 'resources', 'opportunities', 'profile', 'chat', 'verify'];
+    const validRoutes = ['landing', 'home', 'marketplace', 'resources', 'opportunities', 'profile', 'chat', 'verify', 'events', 'clubs', 'club-admin', 'admin'];
     if (hashRoute && validRoutes.includes(hashRoute) && hashRoute !== currentRoute) {
       navigate(hashRoute, null, false);
     }

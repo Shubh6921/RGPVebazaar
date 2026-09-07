@@ -898,6 +898,400 @@ function normalizePhone(input) {
         if (typeof callback === 'function') callback(payload);
       })
       .subscribe();
+  },
+
+  // =========================================================================
+  // CAMPUS MANAGEMENT & CLUB PRESIDENT API METHODS
+  // =========================================================================
+
+  async fetchCampusClubs() {
+    const client = getClient();
+    if (client) {
+      try {
+        const { data, error } = await client
+          .from('clubs')
+          .select('*, president:profiles!president_id(id, full_name, enrollment_no, role)')
+          .order('name', { ascending: true });
+        if (!error && Array.isArray(data)) return { success: true, data };
+      } catch (e) {
+        console.warn('fetchCampusClubs SDK error, falling back:', e);
+      }
+    }
+    // Fallback: direct REST
+    try {
+      const resp = await fetch(`${SUPABASE_CONFIG.url}/rest/v1/clubs?select=*,president:profiles!president_id(id,full_name,enrollment_no,role)&order=name.asc`, {
+        headers: { apikey: SUPABASE_CONFIG.anonKey, Authorization: `Bearer ${SUPABASE_CONFIG.anonKey}` }
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        return { success: true, data };
+      }
+    } catch (e) {}
+    return { success: false, data: [] };
+  },
+
+  async createCampusClub(clubData) {
+    const client = getClient();
+    if (!client) return { success: false, error: 'Service unavailable' };
+    const { data, error } = await client
+      .from('clubs')
+      .insert(clubData)
+      .select()
+      .single();
+    if (error) return { success: false, error: error.message };
+    return { success: true, club: data };
+  },
+
+  async updateCampusClub(clubId, updates) {
+    const client = getClient();
+    if (!client) return { success: false, error: 'Service unavailable' };
+    const { data, error } = await client
+      .from('clubs')
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq('id', clubId)
+      .select()
+      .single();
+    if (error) return { success: false, error: error.message };
+    return { success: true, club: data };
+  },
+
+  async assignClubPresident(clubId, userId) {
+    const client = getClient();
+    if (!client) return { success: false, error: 'Service unavailable' };
+    const { error: pErr } = await client
+      .from('profiles')
+      .update({ role: 'CLUB_PRESIDENT', updated_at: new Date().toISOString() })
+      .eq('id', userId);
+    if (pErr) return { success: false, error: pErr.message };
+
+    const { data, error: cErr } = await client
+      .from('clubs')
+      .update({ president_id: userId, updated_at: new Date().toISOString() })
+      .eq('id', clubId)
+      .select()
+      .single();
+    if (cErr) return { success: false, error: cErr.message };
+
+    await client.from('club_members').upsert({ club_id: clubId, user_id: userId, role: 'PRESIDENT' });
+    await this.logAdminAudit('ASSIGN_CLUB_PRESIDENT', 'CLUB', clubId, { user_id: userId });
+
+    return { success: true, club: data };
+  },
+
+  async revokeClubPresident(clubId, userId, reason = 'Revoked by Campus Admin') {
+    const client = getClient();
+    if (!client) return { success: false, error: 'Service unavailable' };
+    const { data, error } = await client.rpc('revoke_president_access', {
+      p_user_id: userId,
+      p_club_id: clubId,
+      p_reason: reason
+    });
+    if (error) return { success: false, error: error.message };
+    return { success: true, data };
+  },
+
+  async fetchCampusEvents(filters = {}) {
+    const client = getClient();
+    if (client) {
+      try {
+        let query = client
+          .from('events')
+          .select('*, club:clubs!club_id(id, name, logo, category)')
+          .order('start_date', { ascending: true });
+
+        if (filters.status) query = query.eq('status', filters.status);
+        if (filters.clubId) query = query.eq('club_id', filters.clubId);
+
+        const { data, error } = await query;
+        if (!error && Array.isArray(data)) return { success: true, data };
+      } catch (e) {
+        console.warn('fetchCampusEvents SDK error:', e);
+      }
+    }
+    try {
+      let url = `${SUPABASE_CONFIG.url}/rest/v1/events?select=*,club:clubs!club_id(id,name,logo,category)&order=start_date.asc`;
+      if (filters.status) url += `&status=eq.${encodeURIComponent(filters.status)}`;
+      if (filters.clubId) url += `&club_id=eq.${encodeURIComponent(filters.clubId)}`;
+      const resp = await fetch(url, {
+        headers: { apikey: SUPABASE_CONFIG.anonKey, Authorization: `Bearer ${SUPABASE_CONFIG.anonKey}` }
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        return { success: true, data };
+      }
+    } catch (e) {}
+    return { success: false, data: [] };
+  },
+
+  async createCampusEvent(eventData) {
+    const client = getClient();
+    if (!client) return { success: false, error: 'Service unavailable' };
+    const { data, error } = await client
+      .from('events')
+      .insert(eventData)
+      .select('*, club:clubs!club_id(id, name, logo)')
+      .single();
+    if (error) return { success: false, error: error.message };
+    return { success: true, event: data };
+  },
+
+  async updateCampusEvent(eventId, updates) {
+    const client = getClient();
+    if (!client) return { success: false, error: 'Service unavailable' };
+    const { data, error } = await client
+      .from('events')
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq('id', eventId)
+      .select('*, club:clubs!club_id(id, name, logo)')
+      .single();
+    if (error) return { success: false, error: error.message };
+    return { success: true, event: data };
+  },
+
+  async approveCampusEvent(eventId) {
+    return this.updateCampusEvent(eventId, { status: 'PUBLISHED' });
+  },
+
+  async rejectCampusEvent(eventId, rejectionReason) {
+    return this.updateCampusEvent(eventId, { status: 'REJECTED', rejection_reason: rejectionReason });
+  },
+
+  async cancelCampusEvent(eventId, reason = 'Cancelled by organizers') {
+    const client = getClient();
+    if (!client) return { success: false, error: 'Service unavailable' };
+    const res = await this.updateCampusEvent(eventId, { status: 'CANCELLED', rejection_reason: reason });
+    if (res.success) {
+      try {
+        const { data: regs } = await client.from('event_registrations').select('user_id').eq('event_id', eventId);
+        if (regs && regs.length > 0) {
+          const notifs = regs.map(r => ({
+            recipient_id: r.user_id,
+            type: 'EVENT_CANCELLED',
+            title: 'Event Cancelled',
+            message: `The event you registered for has been cancelled: ${reason}`,
+            related_event_id: eventId
+          }));
+          await client.from('notifications').insert(notifs);
+        }
+      } catch (err) {}
+    }
+    return res;
+  },
+
+  async registerForCampusEvent(eventId) {
+    const client = getClient();
+    if (!client) return { success: false, error: 'Service unavailable' };
+    const { data, error } = await client.rpc('register_for_event', { p_event_id: eventId });
+    if (error) return { success: false, error: error.message };
+    return data;
+  },
+
+  async fetchCampusOpportunities(filters = {}) {
+    const client = getClient();
+    if (client) {
+      try {
+        let query = client
+          .from('opportunities')
+          .select('*')
+          .order('deadline', { ascending: true });
+        if (filters.category && filters.category !== 'all') {
+          query = query.ilike('category', `%${filters.category}%`);
+        }
+        if (filters.status) query = query.eq('status', filters.status);
+        const { data, error } = await query;
+        if (!error && Array.isArray(data)) return { success: true, data };
+      } catch (e) {}
+    }
+    try {
+      let url = `${SUPABASE_CONFIG.url}/rest/v1/opportunities?select=*&order=deadline.asc`;
+      if (filters.status) url += `&status=eq.${encodeURIComponent(filters.status)}`;
+      const resp = await fetch(url, {
+        headers: { apikey: SUPABASE_CONFIG.anonKey, Authorization: `Bearer ${SUPABASE_CONFIG.anonKey}` }
+      });
+      if (resp.ok) return { success: true, data: await resp.json() };
+    } catch (e) {}
+    return { success: false, data: [] };
+  },
+
+  async createCampusOpportunity(oppData) {
+    const client = getClient();
+    if (!client) return { success: false, error: 'Service unavailable' };
+    const { data, error } = await client
+      .from('opportunities')
+      .insert(oppData)
+      .select()
+      .single();
+    if (error) return { success: false, error: error.message };
+    return { success: true, opportunity: data };
+  },
+
+  async fetchCampusAnnouncements(filters = {}) {
+    const client = getClient();
+    if (client) {
+      try {
+        let query = client
+          .from('announcements')
+          .select('*, club:clubs!club_id(id, name, logo)')
+          .order('published_at', { ascending: false });
+        if (filters.clubId) query = query.eq('club_id', filters.clubId);
+        const { data, error } = await query;
+        if (!error && Array.isArray(data)) return { success: true, data };
+      } catch (e) {}
+    }
+    try {
+      let url = `${SUPABASE_CONFIG.url}/rest/v1/announcements?select=*,club:clubs!club_id(id,name,logo)&order=published_at.desc`;
+      if (filters.clubId) url += `&club_id=eq.${encodeURIComponent(filters.clubId)}`;
+      const resp = await fetch(url, {
+        headers: { apikey: SUPABASE_CONFIG.anonKey, Authorization: `Bearer ${SUPABASE_CONFIG.anonKey}` }
+      });
+      if (resp.ok) return { success: true, data: await resp.json() };
+    } catch (e) {}
+    return { success: false, data: [] };
+  },
+
+  async createCampusAnnouncement(annData) {
+    const client = getClient();
+    if (!client) return { success: false, error: 'Service unavailable' };
+    const { data, error } = await client
+      .from('announcements')
+      .insert(annData)
+      .select()
+      .single();
+    if (error) return { success: false, error: error.message };
+    return { success: true, announcement: data };
+  },
+
+  async deleteCampusAnnouncement(id) {
+    const client = getClient();
+    if (!client) return { success: false, error: 'Service unavailable' };
+    const { error } = await client.from('announcements').delete().eq('id', id);
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+  },
+
+  async fetchPresidentRequests() {
+    const client = getClient();
+    if (client) {
+      try {
+        const { data, error } = await client
+          .from('club_president_requests')
+          .select('*, user:profiles!user_id(id, full_name, enrollment_no, branch, batch), club:clubs!requested_club_id(id, name, logo)')
+          .order('created_at', { ascending: false });
+        if (!error && Array.isArray(data)) return { success: true, data };
+      } catch (e) {}
+    }
+    try {
+      const resp = await fetch(`${SUPABASE_CONFIG.url}/rest/v1/club_president_requests?select=*,user:profiles!user_id(id,full_name,enrollment_no,branch,batch),club:clubs!requested_club_id(id,name,logo)&order=created_at.desc`, {
+        headers: { apikey: SUPABASE_CONFIG.anonKey, Authorization: `Bearer ${SUPABASE_CONFIG.anonKey}` }
+      });
+      if (resp.ok) return { success: true, data: await resp.json() };
+    } catch (e) {}
+    return { success: false, data: [] };
+  },
+
+  async submitPresidentRequest(requestedClubId, reason) {
+    const client = getClient();
+    if (!client) return { success: false, error: 'Service unavailable' };
+    const { data: { session } } = await client.auth.getSession();
+    const userId = session?.user?.id;
+    if (!userId) return { success: false, error: 'Authentication required' };
+
+    const { data, error } = await client
+      .from('club_president_requests')
+      .insert({
+        user_id: userId,
+        requested_club_id: requestedClubId,
+        reason: reason.trim(),
+        status: 'PENDING'
+      })
+      .select()
+      .single();
+    if (error) return { success: false, error: error.message };
+    return { success: true, request: data };
+  },
+
+  async approvePresidentRequest(requestId) {
+    const client = getClient();
+    if (!client) return { success: false, error: 'Service unavailable' };
+    const { data, error } = await client.rpc('approve_president_request', { p_request_id: requestId });
+    if (error) return { success: false, error: error.message };
+    return data;
+  },
+
+  async rejectPresidentRequest(requestId, reason) {
+    const client = getClient();
+    if (!client) return { success: false, error: 'Service unavailable' };
+    const { data, error } = await client.rpc('reject_president_request', {
+      p_request_id: requestId,
+      p_rejection_reason: reason
+    });
+    if (error) return { success: false, error: error.message };
+    return data;
+  },
+
+  async fetchUserNotifications() {
+    const client = getClient();
+    if (!client) return { success: false, data: [] };
+    const { data: { session } } = await client.auth.getSession();
+    const userId = session?.user?.id;
+    if (!userId) return { success: true, data: [] };
+
+    const { data, error } = await client
+      .from('notifications')
+      .select('*')
+      .eq('recipient_id', userId)
+      .order('created_at', { ascending: false });
+    if (error) return { success: false, error: error.message, data: [] };
+    return { success: true, data: data || [] };
+  },
+
+  async markNotificationAsRead(id) {
+    const client = getClient();
+    if (!client) return { success: false };
+    await client.from('notifications').update({ is_read: true }).eq('id', id);
+    return { success: true };
+  },
+
+  async markAllNotificationsAsRead() {
+    const client = getClient();
+    if (!client) return { success: false };
+    const { data: { session } } = await client.auth.getSession();
+    const userId = session?.user?.id;
+    if (!userId) return { success: false };
+    await client.from('notifications').update({ is_read: true }).eq('recipient_id', userId).eq('is_read', false);
+    return { success: true };
+  },
+
+  async fetchAdminAuditLogs(filters = {}) {
+    const client = getClient();
+    if (!client) return { success: false, data: [] };
+    let query = client
+      .from('admin_audit_logs')
+      .select('*, user:profiles!user_id(id, full_name, enrollment_no, role)')
+      .order('created_at', { ascending: false });
+    if (filters.action) query = query.eq('action', filters.action);
+    if (filters.resourceType) query = query.eq('resource_type', filters.resourceType);
+    const { data, error } = await query;
+    if (error) return { success: false, error: error.message, data: [] };
+    return { success: true, data: data || [] };
+  },
+
+  async logAdminAudit(action, resourceType, resourceId, metadata = {}) {
+    const client = getClient();
+    if (!client) return;
+    try {
+      const { data: { session } } = await client.auth.getSession();
+      const userId = session?.user?.id;
+      if (userId) {
+        await client.from('admin_audit_logs').insert({
+          user_id: userId,
+          action,
+          resource_type: resourceType,
+          resource_id: String(resourceId),
+          metadata
+        });
+      }
+    } catch (e) {}
   }
 };
 })();

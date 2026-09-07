@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,600&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500&display=swap" rel="stylesheet">
 
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="styles/main.css?v=5">
+  <link rel="stylesheet" href="styles/main.css?v=6">
 </head>
 <body>
 
@@ -40,17 +40,33 @@
       <ul class="nav-links">
         <li class="nav-item active" data-route="landing">Landing</li>
         <li class="nav-item" data-route="home">Home</li>
+        <li class="nav-item" data-route="events">Events</li>
+        <li class="nav-item" data-route="clubs">Clubs</li>
+        <li class="nav-item" data-route="opportunities">Opportunities</li>
         <li class="nav-item" data-route="marketplace">Marketplace</li>
         <li class="nav-item" data-route="resources">Resources</li>
-        <li class="nav-item" data-route="opportunities">Opportunities</li>
+        <!-- Role-Gated Admin Links -->
+        <li class="nav-item" id="nav-item-club-admin" data-route="club-admin" style="display:none; color:var(--primary-crimson); font-weight:700;">Club Admin</li>
+        <li class="nav-item" id="nav-item-super-admin" data-route="admin" style="display:none; color:var(--primary-crimson); font-weight:800; background:rgba(193,18,31,0.08); border-radius:6px;">Admin Console</li>
       </ul>
 
       <!-- Right Nav Actions -->
       <div class="nav-actions">
+        <!-- Developer Role Switcher (Facilitates testing and evaluation across all 3 roles) -->
+        <div class="role-switcher-wrapper" title="Switch user role context for testing">
+          <span style="font-size:0.7rem; color:var(--text-secondary); text-transform:uppercase; font-weight:700;">Role:</span>
+          <select id="dev-role-selector" class="role-switcher-select" onchange="window.handleRoleSwitch(this.value)">
+            <option value="STUDENT">Student (Amit)</option>
+            <option value="CLUB_PRESIDENT_CODING">Coding Pres (Rahul)</option>
+            <option value="CLUB_PRESIDENT_ROBOTICS">Robotics Pres (Abhay)</option>
+            <option value="SUPER_ADMIN">Campus Admin</option>
+          </select>
+        </div>
+
         <!-- Notifications Bell -->
-        <button class="nav-icon-btn" onclick="window.openNotificationsModal()" title="Notifications" aria-label="Notifications">
+        <button class="nav-icon-btn" onclick="window.openNotificationsModal()" title="Notifications" aria-label="Notifications" style="position:relative;">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-          <span id="nav-notif-dot" class="badge-dot" style="display:none;"></span>
+          <span id="nav-notif-dot" class="badge-dot" style="display:none; position:absolute; top:2px; right:2px; width:9px; height:9px; background:var(--primary-crimson); border-radius:50%; border:2px solid white;"></span>
         </button>
 
         <!-- Guest Actions -->
@@ -63,7 +79,7 @@
         <div id="nav-user-chip" class="user-profile-btn" onclick="window.navigateTo('profile')" title="View Profile">
           <div id="nav-user-avatar" class="user-avatar-sm">RS</div>
           <span id="nav-user-name" class="user-name-sm">Rahul</span>
-          <span class="badge-verified" style="padding:0.15rem 0.4rem; font-size:0.68rem;">✓</span>
+          <span id="nav-user-role-badge" class="badge-verified" style="padding:0.15rem 0.4rem; font-size:0.68rem;">✓</span>
         </div>
       </div>
     </div>
@@ -950,6 +966,216 @@
   </section>
 
   <!-- =========================================================================
+       9. CAMPUS EVENTS VIEW (/events)
+       ========================================================================= -->
+  <section id="view-events" class="view-section">
+    <div class="container">
+      <div class="marketplace-header" style="margin-bottom:1.5rem;">
+        <div>
+          <span class="editorial-label">Campus Life</span>
+          <h1 class="page-title font-serif">Campus Events & Sprints</h1>
+          <p class="page-subtitle">Discover hackathons, workshops, coding competitions, and cultural fests organized by verified student societies.</p>
+        </div>
+        <div style="display:flex; gap:0.6rem; align-items:center;">
+          <button id="btn-events-create-action" class="btn btn-primary" onclick="window.openCreateEventModal()" style="display:none;">+ Create Event</button>
+        </div>
+      </div>
+
+      <!-- Events Filter & Search Bar -->
+      <div class="filter-controls-row">
+        <div class="search-input-wrapper">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" id="events-search-input" placeholder="Search events, workshops, hackathons, venues..." oninput="window.handleEventsSearch()">
+        </div>
+        <div class="category-pills-scroll" id="events-category-chips">
+          <button class="filter-pill active" onclick="window.filterEventsCategory('all')">All Events</button>
+          <button class="filter-pill" onclick="window.filterEventsCategory('Coding Competition')">Coding</button>
+          <button class="filter-pill" onclick="window.filterEventsCategory('Workshop & Expo')">Robotics & IoT</button>
+          <button class="filter-pill" onclick="window.filterEventsCategory('Startup Pitch')">E-Cell</button>
+          <button class="filter-pill" onclick="window.filterEventsCategory('Cultural')">Cultural</button>
+          <button class="filter-pill" onclick="window.filterEventsCategory('Sports')">Sports</button>
+        </div>
+      </div>
+
+      <!-- Events Grid Container -->
+      <div class="events-grid" id="events-grid-container">
+        <!-- Injected via app.js -->
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       10. CAMPUS CLUBS DIRECTORY VIEW (/clubs)
+       ========================================================================= -->
+  <section id="view-clubs" class="view-section">
+    <div class="container">
+      <div class="marketplace-header" style="margin-bottom:1.5rem;">
+        <div>
+          <span class="editorial-label">Student Societies</span>
+          <h1 class="page-title font-serif">Campus Clubs Directory</h1>
+          <p class="page-subtitle">Connect with official student chapters, explore technical projects, and join university teams.</p>
+        </div>
+        <div>
+          <button class="btn btn-secondary" onclick="window.openRequestPresidentModal()">
+            🎖️ Request Club Leadership
+          </button>
+        </div>
+      </div>
+
+      <!-- Clubs Search & Category Filter -->
+      <div class="filter-controls-row">
+        <div class="search-input-wrapper">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" id="clubs-search-input" placeholder="Search clubs by name, mission, or category..." oninput="window.handleClubsSearch()">
+        </div>
+        <div class="category-pills-scroll">
+          <button class="filter-pill active" onclick="window.filterClubsCategory('all')">All Clubs</button>
+          <button class="filter-pill" onclick="window.filterClubsCategory('Technical')">Technical</button>
+          <button class="filter-pill" onclick="window.filterClubsCategory('Entrepreneurship')">Entrepreneurship</button>
+          <button class="filter-pill" onclick="window.filterClubsCategory('Cultural')">Cultural</button>
+          <button class="filter-pill" onclick="window.filterClubsCategory('Sports')">Sports</button>
+        </div>
+      </div>
+
+      <!-- Clubs Grid Container -->
+      <div class="clubs-grid" id="clubs-grid-container">
+        <!-- Injected via app.js -->
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       11. CLUB PRESIDENT DASHBOARD (/club-admin)
+       STRICT MULTI-TENANT ISOLATION — LOCKED TO AUTHENTICATED PRESIDENT'S CLUB
+       ========================================================================= -->
+  <section id="view-club-admin" class="view-section">
+    <div class="container">
+      <!-- Dynamic Club Header Banner -->
+      <div class="club-president-banner" id="club-admin-banner">
+        <div class="club-president-banner-content">
+          <div style="display:flex; align-items:center; gap:1.25rem;">
+            <div class="club-badge-logo" id="club-admin-logo">💻</div>
+            <div>
+              <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.25rem;">
+                <h1 id="club-admin-title" style="color:white; font-size:1.85rem; margin:0;">Coding Club RGPV</h1>
+                <span class="badge-status badge-status-published">Active Club</span>
+              </div>
+              <p id="club-admin-desc" style="color:#94A3B8; font-size:0.9rem; max-width:620px; margin:0;">Technical student chapter managing coding sprints, hackathons, and open source development.</p>
+            </div>
+          </div>
+          <div style="display:flex; gap:0.75rem;">
+            <button class="btn btn-primary" onclick="window.openCreateEventModal()">+ Create Event</button>
+            <button class="btn btn-secondary" style="background:rgba(255,255,255,0.12); color:white; border-color:rgba(255,255,255,0.25);" onclick="window.openCreateAnnouncementModal()">+ Broadcast Announcement</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Club Metrics Ribbon -->
+      <div class="admin-stats-grid" id="club-admin-stats-grid">
+        <div class="admin-stat-card">
+          <div class="admin-stat-number" id="club-stat-members">340</div>
+          <div class="admin-stat-label">Total Members</div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-number" id="club-stat-events">1</div>
+          <div class="admin-stat-label">Active Events</div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-number" id="club-stat-regs">48</div>
+          <div class="admin-stat-label">Total Registrations</div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-number" id="club-stat-followers">128</div>
+          <div class="admin-stat-label">Student Followers</div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-number" id="club-stat-announcements">1</div>
+          <div class="admin-stat-label">Announcements</div>
+        </div>
+      </div>
+
+      <!-- Club Admin Sub-Navigation Tabs -->
+      <div class="admin-subnav-bar">
+        <button class="admin-subnav-item active" data-club-tab="events" onclick="window.setClubAdminTab('events')">Club Events</button>
+        <button class="admin-subnav-item" data-club-tab="announcements" onclick="window.setClubAdminTab('announcements')">Announcements</button>
+        <button class="admin-subnav-item" data-club-tab="details" onclick="window.setClubAdminTab('details')">Club Information</button>
+        <button class="admin-subnav-item" data-club-tab="analytics" onclick="window.setClubAdminTab('analytics')">Club Analytics</button>
+      </div>
+
+      <!-- Club Tab Content Area -->
+      <div id="club-admin-tab-content">
+        <!-- Injected via app.js -->
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       12. SUPER ADMIN CONSOLE (/admin)
+       CENTRALIZED CAMPUS MANAGEMENT SYSTEM
+       ========================================================================= -->
+  <section id="view-admin" class="view-section">
+    <div class="container">
+      <div class="marketplace-header" style="margin-bottom:1.5rem;">
+        <div>
+          <span class="editorial-label">University Administration</span>
+          <h1 class="page-title font-serif">Campus Super Admin Console</h1>
+          <p class="page-subtitle">Comprehensive administration of student societies, event approvals, leadership assignments, and platform audit logs.</p>
+        </div>
+        <div style="display:flex; gap:0.6rem;">
+          <button class="btn btn-primary" onclick="window.openCreateClubModal()">+ New Club</button>
+          <button class="btn btn-secondary" onclick="window.openCreateOpportunityModal()">+ Opportunity</button>
+        </div>
+      </div>
+
+      <!-- Super Admin Overview Stats Grid -->
+      <div class="admin-stats-grid" id="super-admin-stats-grid">
+        <div class="admin-stat-card">
+          <div class="admin-stat-number" id="stat-total-students">959</div>
+          <div class="admin-stat-label">Verified Students</div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-number" id="stat-total-clubs">5</div>
+          <div class="admin-stat-label">Campus Clubs</div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-number" id="stat-total-presidents">2</div>
+          <div class="admin-stat-label">Club Presidents</div>
+        </div>
+        <div class="admin-stat-card" style="border-left:3px solid var(--accent-amber);">
+          <div class="admin-stat-number" id="stat-pending-events" style="color:var(--accent-amber);">1</div>
+          <div class="admin-stat-label">Pending Events</div>
+        </div>
+        <div class="admin-stat-card" style="border-left:3px solid var(--primary-crimson);">
+          <div class="admin-stat-number" id="stat-pending-requests" style="color:var(--primary-crimson);">1</div>
+          <div class="admin-stat-label">President Requests</div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-number" id="stat-active-opps">3</div>
+          <div class="admin-stat-label">Opportunities</div>
+        </div>
+      </div>
+
+      <!-- Super Admin Sub-Navigation Tabs -->
+      <div class="admin-subnav-bar">
+        <button class="admin-subnav-item active" data-admin-tab="dashboard" onclick="window.setAdminTab('dashboard')">Overview</button>
+        <button class="admin-subnav-item" data-admin-tab="event-approvals" onclick="window.setAdminTab('event-approvals')">Event Approvals <span id="admin-badge-pending-events" class="badge-status badge-status-pending" style="font-size:0.65rem; margin-left:0.3rem;">1</span></button>
+        <button class="admin-subnav-item" data-admin-tab="president-requests" onclick="window.setAdminTab('president-requests')">President Requests <span id="admin-badge-pending-reqs" class="badge-status badge-status-rejected" style="font-size:0.65rem; margin-left:0.3rem;">1</span></button>
+        <button class="admin-subnav-item" data-admin-tab="clubs" onclick="window.setAdminTab('clubs')">Manage Clubs</button>
+        <button class="admin-subnav-item" data-admin-tab="all-events" onclick="window.setAdminTab('all-events')">All Events</button>
+        <button class="admin-subnav-item" data-admin-tab="opportunities" onclick="window.setAdminTab('opportunities')">Opportunities</button>
+        <button class="admin-subnav-item" data-admin-tab="announcements" onclick="window.setAdminTab('announcements')">Announcements</button>
+        <button class="admin-subnav-item" data-admin-tab="analytics" onclick="window.setAdminTab('analytics')">Analytics</button>
+        <button class="admin-subnav-item" data-admin-tab="audit-logs" onclick="window.setAdminTab('audit-logs')">Audit Logs</button>
+      </div>
+
+      <!-- Admin Tab Content Area -->
+      <div id="super-admin-tab-content">
+        <!-- Injected via app.js -->
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
        MODALS
        ========================================================================= -->
 
@@ -1496,6 +1722,351 @@
     </ul>
   </nav>
 
+  <!-- CAMPUS ADMIN & CLUB MANAGEMENT MODALS -->
+
+  <!-- 1. Event Detail & Registration Modal -->
+  <div id="modal-event-detail" class="campus-modal-overlay">
+    <div class="campus-modal campus-modal-lg">
+      <div class="campus-modal-header">
+        <div>
+          <span id="modal-event-badge" class="badge badge-published">Event</span>
+          <h3 id="modal-event-title" class="campus-modal-title" style="margin-top: 0.25rem;">Event Title</h3>
+        </div>
+        <button class="campus-modal-close" onclick="CampusApp.closeModal('modal-event-detail')">&times;</button>
+      </div>
+      <div class="campus-modal-body">
+        <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1.25rem;">
+          <div style="flex: 1; min-width: 260px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem; background: #F8FAFC; padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+              <div>
+                <div style="font-size: 0.75rem; color: #64748B; text-transform: uppercase; font-weight: 600;">Host Club</div>
+                <div id="modal-event-club" style="font-weight: 600; color: var(--text-main);">Club Name</div>
+              </div>
+              <div>
+                <div style="font-size: 0.75rem; color: #64748B; text-transform: uppercase; font-weight: 600;">Category</div>
+                <div id="modal-event-category" style="font-weight: 600; color: var(--text-main);">Category</div>
+              </div>
+              <div>
+                <div style="font-size: 0.75rem; color: #64748B; text-transform: uppercase; font-weight: 600;">Date & Time</div>
+                <div id="modal-event-datetime" style="font-weight: 600; color: var(--text-main); font-size: 0.85rem;">Date</div>
+              </div>
+              <div>
+                <div style="font-size: 0.75rem; color: #64748B; text-transform: uppercase; font-weight: 600;">Location</div>
+                <div id="modal-event-location" style="font-weight: 600; color: var(--text-main);">Location</div>
+              </div>
+              <div>
+                <div style="font-size: 0.75rem; color: #64748B; text-transform: uppercase; font-weight: 600;">Capacity / Seats</div>
+                <div id="modal-event-capacity" style="font-weight: 600; color: var(--text-main);">Seats</div>
+              </div>
+              <div>
+                <div style="font-size: 0.75rem; color: #64748B; text-transform: uppercase; font-weight: 600;">Deadline</div>
+                <div id="modal-event-deadline" style="font-weight: 600; color: var(--text-main); font-size: 0.85rem;">Deadline</div>
+              </div>
+            </div>
+
+            <h4 style="font-size: 1rem; margin-bottom: 0.5rem; font-weight: 700;">About This Event</h4>
+            <div id="modal-event-description" style="font-size: 0.92rem; line-height: 1.6; color: #334155; margin-bottom: 1.25rem;">
+              Description goes here...
+            </div>
+            <div id="modal-event-rejection-box" style="display:none; background: #FEF2F2; border-left: 4px solid #EF4444; padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 1rem;">
+              <strong style="color: #991B1B;">Rejection Reason:</strong>
+              <p id="modal-event-rejection-text" style="color: #B91C1C; margin: 0.25rem 0 0 0; font-size: 0.88rem;"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="campus-modal-footer">
+        <button class="btn btn-ghost" onclick="CampusApp.closeModal('modal-event-detail')">Close</button>
+        <button id="btn-modal-event-register" class="btn btn-primary" onclick="CampusApp.handleEventRegisterFromModal()">Register Now</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Create / Edit Event Modal -->
+  <div id="modal-create-event" class="campus-modal-overlay">
+    <div class="campus-modal campus-modal-lg">
+      <div class="campus-modal-header">
+        <div>
+          <h3 class="campus-modal-title">Create Campus Event</h3>
+          <p style="font-size: 0.82rem; color: #64748B; margin: 0;">Submit event proposal for campus publication</p>
+        </div>
+        <button class="campus-modal-close" onclick="CampusApp.closeModal('modal-create-event')">&times;</button>
+      </div>
+      <div class="campus-modal-body">
+        <div id="event-approval-notice" style="background: #EFF6FF; border: 1px solid #BFDBFE; color: #1E40AF; padding: 0.75rem 1rem; border-radius: 6px; font-size: 0.85rem; margin-bottom: 1.25rem;">
+          ℹ️ <strong>Campus Governance Rule:</strong> Events submitted by Club Presidents are set to <span class="badge badge-pending">PENDING_APPROVAL</span>. Campus Super Admin reviews and publishes events to the official student portal.
+        </div>
+        <form id="form-create-event" onsubmit="event.preventDefault(); CampusApp.handleCreateEventSubmit();">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div>
+              <label style="display:block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem;">Host Club *</label>
+              <select id="event-input-club" class="form-control" style="width: 100%;" required>
+                <!-- Injected dynamically -->
+              </select>
+            </div>
+            <div>
+              <label style="display:block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem;">Category *</label>
+              <select id="event-input-category" class="form-control" style="width: 100%;" required>
+                <option value="Hackathon">Hackathon</option>
+                <option value="Workshop">Technical Workshop</option>
+                <option value="Seminar">Guest Lecture & Seminar</option>
+                <option value="Cultural">Cultural & Arts</option>
+                <option value="Sports">Athletics & Sports</option>
+                <option value="Tech Fest">Annual Tech Fest</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 1rem;">
+            <label style="display:block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem;">Event Title *</label>
+            <input type="text" id="event-input-title" class="form-control" placeholder="e.g. CodeSprint 2026: 24-Hour Campus Hackathon" style="width: 100%;" required />
+          </div>
+
+          <div style="margin-bottom: 1rem;">
+            <label style="display:block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem;">Event Description *</label>
+            <textarea id="event-input-desc" class="form-control" rows="4" placeholder="Detailed schedule, prerequisites, rules, prize pool, or eligibility..." style="width: 100%;" required></textarea>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div>
+              <label style="display:block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem;">Start Date & Time *</label>
+              <input type="datetime-local" id="event-input-date" class="form-control" style="width: 100%;" required />
+            </div>
+            <div>
+              <label style="display:block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem;">End Date & Time</label>
+              <input type="datetime-local" id="event-input-end-date" class="form-control" style="width: 100%;" />
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div>
+              <label style="display:block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem;">Campus Location / Venue *</label>
+              <input type="text" id="event-input-location" class="form-control" placeholder="e.g. CS Lab 3 / Auditorium 1" style="width: 100%;" required />
+            </div>
+            <div>
+              <label style="display:block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem;">Capacity (Max Registrations) *</label>
+              <input type="number" id="event-input-capacity" class="form-control" placeholder="100" min="1" max="5000" style="width: 100%;" required />
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div>
+              <label style="display:block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem;">Registration Deadline *</label>
+              <input type="datetime-local" id="event-input-deadline" class="form-control" style="width: 100%;" required />
+            </div>
+            <div>
+              <label style="display:block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem;">Banner / Cover Image URL</label>
+              <input type="url" id="event-input-banner" class="form-control" placeholder="https://images.unsplash.com/..." style="width: 100%;" />
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="campus-modal-footer">
+        <button class="btn btn-ghost" onclick="CampusApp.closeModal('modal-create-event')">Cancel</button>
+        <button class="btn btn-primary" onclick="CampusApp.handleCreateEventSubmit()">Submit Event</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Create Campus Club Modal (Admin Only) -->
+  <div id="modal-create-club" class="campus-modal-overlay">
+    <div class="campus-modal">
+      <div class="campus-modal-header">
+        <div>
+          <h3 class="campus-modal-title">Create Official Club</h3>
+          <p style="font-size: 0.82rem; color: #64748B; margin: 0;">Super Admin Campus Club Registration</p>
+        </div>
+        <button class="campus-modal-close" onclick="CampusApp.closeModal('modal-create-club')">&times;</button>
+      </div>
+      <div class="campus-modal-body">
+        <form id="form-create-club" onsubmit="event.preventDefault(); CampusApp.handleCreateClubSubmit();">
+          <div style="margin-bottom: 1rem;">
+            <label style="display:block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem;">Club Name *</label>
+            <input type="text" id="club-input-name" class="form-control" placeholder="e.g. RGPV Aerospace Society" style="width: 100%;" required />
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div>
+              <label style="display:block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem;">Slug (Unique ID) *</label>
+              <input type="text" id="club-input-slug" class="form-control" placeholder="aerospace-society" style="width: 100%;" required />
+            </div>
+            <div>
+              <label style="display:block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem;">Category *</label>
+              <select id="club-input-category" class="form-control" style="width: 100%;" required>
+                <option value="Technical">Technical</option>
+                <option value="Cultural">Cultural</option>
+                <option value="Sports">Sports</option>
+                <option value="Social">Social</option>
+                <option value="Academic">Academic</option>
+              </select>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 80px 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div>
+              <label style="display:block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem;">Icon</label>
+              <input type="text" id="club-input-badge" class="form-control" placeholder="🚀" style="width: 100%; text-align: center; font-size: 1.25rem;" value="🚀" />
+            </div>
+            <div>
+              <label style="display:block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem;">Tagline / Focus</label>
+              <input type="text" id="club-input-tagline" class="form-control" placeholder="Drones, Rockets & Satellite Systems" style="width: 100%;" />
+            </div>
+          </div>
+          <div style="margin-bottom: 1rem;">
+            <label style="display:block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem;">Description *</label>
+            <textarea id="club-input-desc" class="form-control" rows="3" placeholder="Mission, activities, and membership criteria..." style="width: 100%;" required></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="campus-modal-footer">
+        <button class="btn btn-ghost" onclick="CampusApp.closeModal('modal-create-club')">Cancel</button>
+        <button class="btn btn-primary" onclick="CampusApp.handleCreateClubSubmit()">Create Club</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Create Announcement Modal -->
+  <div id="modal-create-announcement" class="campus-modal-overlay">
+    <div class="campus-modal">
+      <div class="campus-modal-header">
+        <div>
+          <h3 class="campus-modal-title">Broadcast Announcement</h3>
+          <p style="font-size: 0.82rem; color: #64748B; margin: 0;">Send official notification to campus students</p>
+        </div>
+        <button class="campus-modal-close" onclick="CampusApp.closeModal('modal-create-announcement')">&times;</button>
+      </div>
+      <div class="campus-modal-body">
+        <form id="form-create-announcement" onsubmit="event.preventDefault(); CampusApp.handleCreateAnnouncementSubmit();">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div>
+              <label style="display:block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem;">From / Scope *</label>
+              <select id="announcement-input-club" class="form-control" style="width: 100%;" required>
+                <!-- Injected dynamically -->
+              </select>
+            </div>
+            <div>
+              <label style="display:block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem;">Priority *</label>
+              <select id="announcement-input-priority" class="form-control" style="width: 100%;" required>
+                <option value="normal">Normal</option>
+                <option value="urgent">Urgent / Alert</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-bottom: 1rem;">
+            <label style="display:block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem;">Title *</label>
+            <input type="text" id="announcement-input-title" class="form-control" placeholder="e.g. Selection results for Coding Team announced" style="width: 100%;" required />
+          </div>
+          <div style="margin-bottom: 1rem;">
+            <label style="display:block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem;">Content / Message *</label>
+            <textarea id="announcement-input-content" class="form-control" rows="4" placeholder="Announcement body and action items..." style="width: 100%;" required></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="campus-modal-footer">
+        <button class="btn btn-ghost" onclick="CampusApp.closeModal('modal-create-announcement')">Cancel</button>
+        <button class="btn btn-primary" onclick="CampusApp.handleCreateAnnouncementSubmit()">Broadcast</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Request Club Leadership Modal (Student) -->
+  <div id="modal-request-president" class="campus-modal-overlay">
+    <div class="campus-modal">
+      <div class="campus-modal-header">
+        <div>
+          <h3 class="campus-modal-title">Request Club Leadership</h3>
+          <p style="font-size: 0.82rem; color: #64748B; margin: 0;">Apply to become an authorized Club President</p>
+        </div>
+        <button class="campus-modal-close" onclick="CampusApp.closeModal('modal-request-president')">&times;</button>
+      </div>
+      <div class="campus-modal-body">
+        <div style="background: #F8FAFC; border: 1px solid var(--border-color); padding: 0.85rem; border-radius: 6px; font-size: 0.85rem; margin-bottom: 1rem; line-height: 1.45;">
+          <strong>🏛️ University Governance Verification:</strong>
+          Leadership applications require enrollment verification and approval by the Super Admin console.
+        </div>
+        <form id="form-request-president" onsubmit="event.preventDefault(); CampusApp.handleRequestPresidentSubmit();">
+          <div style="margin-bottom: 1rem;">
+            <label style="display:block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem;">Select Club to Lead *</label>
+            <select id="req-input-club" class="form-control" style="width: 100%;" required>
+              <!-- Injected dynamically -->
+            </select>
+          </div>
+          <div style="margin-bottom: 1rem;">
+            <label style="display:block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem;">Statement of Intent / Vision *</label>
+            <textarea id="req-input-statement" class="form-control" rows="3" placeholder="Why do you wish to lead this club? Outline your event vision and roadmap..." style="width: 100%;" required></textarea>
+          </div>
+          <div style="margin-bottom: 1rem;">
+            <label style="display:block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem;">Relevant Experience / Portfolio Links</label>
+            <input type="text" id="req-input-experience" class="form-control" placeholder="GitHub, LinkedIn, prior hackathon coordination, etc." style="width: 100%;" />
+          </div>
+        </form>
+      </div>
+      <div class="campus-modal-footer">
+        <button class="btn btn-ghost" onclick="CampusApp.closeModal('modal-request-president')">Cancel</button>
+        <button class="btn btn-primary" onclick="CampusApp.handleRequestPresidentSubmit()">Submit Application</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Rejection Reason Modal (Admin) -->
+  <div id="modal-rejection-reason" class="campus-modal-overlay">
+    <div class="campus-modal">
+      <div class="campus-modal-header">
+        <div>
+          <h3 class="campus-modal-title" id="rejection-modal-title">Reject Proposal</h3>
+          <p style="font-size: 0.82rem; color: #64748B; margin: 0;">Provide official feedback to the applicant</p>
+        </div>
+        <button class="campus-modal-close" onclick="CampusApp.closeModal('modal-rejection-reason')">&times;</button>
+      </div>
+      <div class="campus-modal-body">
+        <form id="form-rejection-reason" onsubmit="event.preventDefault(); CampusApp.handleRejectionSubmit();">
+          <input type="hidden" id="rejection-target-type" value="" />
+          <input type="hidden" id="rejection-target-id" value="" />
+          <div style="margin-bottom: 1rem;">
+            <label style="display:block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem;">Reason for Rejection *</label>
+            <textarea id="rejection-input-reason" class="form-control" rows="4" placeholder="Explain missing information, scheduling conflicts, or policy violations..." style="width: 100%;" required></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="campus-modal-footer">
+        <button class="btn btn-ghost" onclick="CampusApp.closeModal('modal-rejection-reason')">Cancel</button>
+        <button class="btn btn-danger" onclick="CampusApp.handleRejectionSubmit()">Confirm Rejection</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. Assign President Direct Modal (Admin) -->
+  <div id="modal-assign-president" class="campus-modal-overlay">
+    <div class="campus-modal">
+      <div class="campus-modal-header">
+        <div>
+          <h3 class="campus-modal-title">Assign Club President</h3>
+          <p style="font-size: 0.82rem; color: #64748B; margin: 0;">Directly appoint a verified student</p>
+        </div>
+        <button class="campus-modal-close" onclick="CampusApp.closeModal('modal-assign-president')">&times;</button>
+      </div>
+      <div class="campus-modal-body">
+        <form id="form-assign-president" onsubmit="event.preventDefault(); CampusApp.handleDirectAssignPresidentSubmit();">
+          <div style="margin-bottom: 1rem;">
+            <label style="display:block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem;">Select Club *</label>
+            <select id="assign-input-club" class="form-control" style="width: 100%;" required>
+              <!-- Injected dynamically -->
+            </select>
+          </div>
+          <div style="margin-bottom: 1rem;">
+            <label style="display:block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem;">Student Email / User ID *</label>
+            <input type="text" id="assign-input-user" class="form-control" placeholder="0101cs261001@rgpv.ac.in" style="width: 100%;" required />
+          </div>
+        </form>
+      </div>
+      <div class="campus-modal-footer">
+        <button class="btn btn-ghost" onclick="CampusApp.closeModal('modal-assign-president')">Cancel</button>
+        <button class="btn btn-primary" onclick="CampusApp.handleDirectAssignPresidentSubmit()">Assign Leadership</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Stack -->
+  <div id="campus-toast-container" class="campus-toast-container"></div>
+
   <!-- Campus Roster, Supabase Client & Real Auth Layer -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/roster.js?v=5"></script>
@@ -1504,5 +2075,7 @@
   <!-- Application Scripts -->
   <script src="js/store.js?v=5"></script>
   <script src="js/app.js?v=5"></script>
+  <!-- Classic Trendy Cursor Animation -->
+  <script src="js/cursor.js?v=6"></script>
 </body>
 </html>
