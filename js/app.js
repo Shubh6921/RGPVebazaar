@@ -1444,7 +1444,7 @@
           <button class="btn btn-ghost btn-sm" id="btn-modal-report" onclick="window.openReportListing();">🚩 Report</button>
           <button class="btn btn-secondary" id="btn-modal-offer" onclick="window.closeModal('modal-product-detail'); window.openMakeOfferModal(window.activeProductModalItem);">💰 Make Offer</button>
           <button class="btn btn-secondary" id="btn-modal-exchange" onclick="window.closeModal('modal-product-detail'); window.openProposeExchangeModal(window.activeProductModalItem);">🔄 Propose Exchange</button>
-          <button class="btn btn-primary" id="btn-modal-chat" onclick="window.closeModal('modal-product-detail'); navigate('chat', 'conv-shubham');">💬 Chat with Seller</button>
+          <button class="btn btn-primary" id="btn-modal-chat" onclick="window.closeModal('modal-product-detail'); window.startChatFromListing(window.activeProductModalItem ? window.activeProductModalItem.id : null);">💬 Chat with Seller</button>
         `;
       }
     }
@@ -1873,51 +1873,494 @@
   };
 
   // =========================================================================
-  // TRANSACTION CHAT (/chat)
+  // TRANSACTION CHAT & REALTIME MESSAGING (/chat)
   // =========================================================================
+  let chatSearchQuery = '';
+  let chatCurrentAttachment = null;
+  let chatTypingTimer = null;
+  let chatPartnerTypingTimer = null;
+  let activeChatSubscription = null;
+
+  function updateChatNavBadge() {
+    const totalUnread = window.Store.getTotalUnreadChatCount();
+    const navDot = document.getElementById('nav-chat-dot');
+    if (navDot) {
+      navDot.style.display = totalUnread > 0 ? 'block' : 'none';
+      navDot.title = `${totalUnread} unread messages`;
+    }
+    const inboxBadge = document.getElementById('inbox-total-unread-badge');
+    if (inboxBadge) {
+      if (totalUnread > 0) {
+        inboxBadge.textContent = totalUnread;
+        inboxBadge.style.display = 'inline-block';
+      } else {
+        inboxBadge.style.display = 'none';
+      }
+    }
+  }
+
+  function setChatConnectionStatus(status, text) {
+    const badge = document.getElementById('chat-connection-badge');
+    const badgeText = document.getElementById('chat-connection-text');
+    if (!badge || !badgeText) return;
+    badge.className = `chat-status-badge ${status}`;
+    badgeText.textContent = text;
+  }
+
+  // Network state listeners
+  window.addEventListener('online', () => {
+    setChatConnectionStatus('online', 'Live Realtime');
+    showCampusToast('Internet connection restored. Chat is live.', 'success');
+    if (currentRoute === 'chat') {
+      renderChat(activeChatConversationId);
+    }
+  });
+
+  window.addEventListener('offline', () => {
+    setChatConnectionStatus('offline', 'Offline (will retry)');
+    showCampusToast('Network disconnected. Messages will save locally.', 'warning');
+  });
+
   function renderChat(convId) {
-    const conv = window.Store.state.conversations.find(c => c.id === convId) || window.Store.state.conversations[0];
+    const currentUser = window.Store.state.currentUser;
+    const conversations = window.Store.state.conversations || [];
+    let conv = conversations.find(c => c.id === convId);
+
+    if (!conv) {
+      conv = conversations.find(c => c.id === activeChatConversationId) || conversations[0];
+    }
+
+    if (!conv) {
+      const fallback = window.Store.state.conversations[0];
+      if (fallback) conv = fallback;
+    }
+
     if (!conv) return;
 
     activeChatConversationId = conv.id;
+    window.activeChatPartnerId = conv.partnerId;
+
+    // Render Inbox List
+    renderChatInbox();
 
     // Header
-    document.getElementById('chat-partner-name').textContent = conv.partnerName;
-    document.getElementById('chat-partner-program').textContent = conv.partnerProgram;
+    const partnerNameEl = document.getElementById('chat-partner-name');
+    const partnerProgEl = document.getElementById('chat-partner-program');
+    if (partnerNameEl) partnerNameEl.textContent = conv.partnerName || 'Campus Student';
+    if (partnerProgEl) partnerProgEl.textContent = conv.partnerProgram || (conv.partnerEnrollment ? `${conv.partnerEnrollment} · Verified` : 'Verified Student');
 
     // Pinned Listing
-    document.getElementById('chat-pinned-title').textContent = conv.listingTitle;
-    document.getElementById('chat-pinned-price').textContent = '₹' + conv.listingPrice;
-    document.getElementById('chat-pinned-img').src = conv.listingImage;
-    document.getElementById('chat-pinned-meetup').textContent = conv.listingMeetup;
+    const pinnedTitle = document.getElementById('chat-pinned-title');
+    const pinnedPrice = document.getElementById('chat-pinned-price');
+    const pinnedImg = document.getElementById('chat-pinned-img');
+    const pinnedMeetup = document.getElementById('chat-pinned-meetup');
+
+    if (pinnedTitle) pinnedTitle.textContent = conv.listingTitle || 'Campus Marketplace Deal';
+    if (pinnedPrice) pinnedPrice.textContent = '₹' + (conv.listingPrice || 0);
+    if (pinnedImg) pinnedImg.src = conv.listingImage || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80';
+    if (pinnedMeetup) pinnedMeetup.textContent = conv.listingMeetup || 'Central Library';
 
     // Messages
+    renderChatMessages(conv);
+
+    // Mark as read immediately
+    window.Store.markConversationAsRead(conv.id);
+    updateChatNavBadge();
+
+    // Subscribe to realtime updates for this conversation
+    if (window.SupaChat && typeof window.SupaChat.subscribeToConversation === 'function') {
+      if (activeChatSubscription) {
+        window.SupaChat.unsubscribeChatChannel();
+      }
+
+      activeChatSubscription = window.SupaChat.subscribeToConversation(conv.id, {
+        onMessage: (serverMsg) => {
+          const isMine = serverMsg.sender_id === currentUser.id;
+          window.Store.addRealtimeMessage(conv.id, serverMsg, currentUser.id);
+          const updatedConv = window.Store.state.conversations.find(c => c.id === conv.id);
+          renderChatMessages(updatedConv);
+          renderChatInbox();
+          const msgContainer = document.getElementById('chat-messages-container');
+          if (msgContainer) msgContainer.scrollTop = msgContainer.scrollHeight;
+          if (!isMine) {
+            window.Store.markConversationAsRead(conv.id);
+            updateChatNavBadge();
+          }
+        },
+        onStatusChange: (updatedMsg) => {
+          const c = window.Store.state.conversations.find(x => x.id === conv.id);
+          if (c && c.messages) {
+            const m = c.messages.find(msg => msg.id === updatedMsg.id || (updatedMsg.client_message_id && msg.clientMessageId === updatedMsg.client_message_id));
+            if (m) {
+              m.status = updatedMsg.status;
+              m.read_at = updatedMsg.read_at;
+              renderChatMessages(c);
+            }
+          }
+        },
+        onTyping: (payload) => {
+          if (payload && payload.userId !== currentUser.id) {
+            handlePartnerTyping(payload.userName || conv.partnerName || 'Student', payload.isTyping !== false);
+          }
+        }
+      });
+    }
+  }
+
+  function renderChatInbox() {
+    const inboxContainer = document.getElementById('chat-inbox-list');
+    if (!inboxContainer) return;
+
+    const conversations = window.Store.state.conversations || [];
+    const query = (chatSearchQuery || '').toLowerCase().trim();
+
+    const filtered = conversations.filter(c => {
+      if (!query) return true;
+      const nameMatch = (c.partnerName || '').toLowerCase().includes(query);
+      const titleMatch = (c.listingTitle || '').toLowerCase().includes(query);
+      const msgMatch = (c.lastMessage || '').toLowerCase().includes(query);
+      return nameMatch || titleMatch || msgMatch;
+    });
+
+    if (filtered.length === 0) {
+      inboxContainer.innerHTML = `
+        <div style="padding: 2rem 1rem; text-align: center; color: var(--text-secondary); font-size: 0.85rem;">
+          ${query ? 'No conversations found matching "' + query + '"' : 'No conversations yet. Open a marketplace listing to start chatting!'}
+        </div>
+      `;
+      return;
+    }
+
+    inboxContainer.innerHTML = filtered.map(c => {
+      const isActive = c.id === activeChatConversationId;
+      const unreadCount = parseInt(c.unreadCount, 10) || 0;
+      const isUnread = unreadCount > 0;
+      const initials = (c.partnerName || 'Student').split(' ').map(p => p[0]).join('').substr(0, 2).toUpperCase();
+
+      return `
+        <div class="chat-inbox-item ${isActive ? 'active' : ''} ${isUnread ? 'unread' : ''}" onclick="window.selectChatConversation('${c.id}')">
+          <div class="chat-inbox-avatar">
+            ${initials}
+            <span style="position:absolute; bottom:0; right:0; width:9px; height:9px; border-radius:50%; background:#10B981; border:2px solid white;"></span>
+          </div>
+          <div class="chat-inbox-info">
+            <div class="chat-inbox-top">
+              <span class="chat-inbox-name">${c.partnerName}</span>
+              <span class="chat-inbox-time">${c.lastMessageTime || ''}</span>
+            </div>
+            <div class="chat-inbox-bottom">
+              <span class="chat-inbox-preview">${c.lastMessage || 'Tap to send a message...'}</span>
+              ${isUnread ? `<span class="chat-unread-badge">${unreadCount}</span>` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    updateChatNavBadge();
+  }
+
+  function renderChatMessages(conv) {
     const msgContainer = document.getElementById('chat-messages-container');
-    msgContainer.innerHTML = conv.messages.map(m => `
-      <div class="chat-bubble ${m.sender}">
-        <div>${m.text}</div>
-        <div style="font-size:0.7rem; opacity:0.7; text-align:right; margin-top:0.25rem;">${m.time}</div>
-      </div>
-    `).join('');
+    if (!msgContainer || !conv) return;
+
+    const messages = conv.messages || [];
+    const currentUser = window.Store.state.currentUser;
+
+    if (messages.length === 0) {
+      msgContainer.innerHTML = `
+        <div style="margin:auto; text-align:center; padding: 2rem 1rem; color: var(--text-secondary);">
+          <div style="font-size:2.5rem; margin-bottom:0.5rem;">💬</div>
+          <div style="font-weight:700; color:var(--obsidian); margin-bottom:0.25rem;">Start the Conversation</div>
+          <div style="font-size:0.85rem;">Discuss meetup locations, inspect condition, or negotiate fair campus pricing safely.</div>
+        </div>
+      `;
+      return;
+    }
+
+    msgContainer.innerHTML = messages.map(m => {
+      const isMine = m.sender === 'mine' || m.sender_id === currentUser.id;
+      let statusHtml = '';
+      if (isMine) {
+        if (m.status === 'sending') {
+          statusHtml = `<span class="msg-status-icon" title="Sending...">⏳</span>`;
+        } else if (m.status === 'failed') {
+          statusHtml = `<span class="msg-status-failed">⚠️ Failed · <span class="chat-retry-btn" onclick="window.retryMessage('${m.clientMessageId || m.id}')">Retry</span></span>`;
+        } else if (m.status === 'read') {
+          statusHtml = `<span class="msg-status-icon" style="color:#60A5FA;" title="Read">✓✓</span>`;
+        } else if (m.status === 'delivered') {
+          statusHtml = `<span class="msg-status-icon" title="Delivered">✓✓</span>`;
+        } else {
+          statusHtml = `<span class="msg-status-icon" title="Sent">✓</span>`;
+        }
+      }
+
+      let attachmentHtml = '';
+      if (m.attachments && m.attachments.length > 0) {
+        attachmentHtml = m.attachments.map(att => `
+          <img src="${att.url || att}" class="chat-attachment-img" alt="Attachment" onclick="window.open('${att.url || att}', '_blank')" />
+        `).join('');
+      }
+
+      return `
+        <div class="chat-bubble ${isMine ? 'mine' : 'theirs'}">
+          ${attachmentHtml}
+          <div>${m.text || m.content || ''}</div>
+          <div class="chat-msg-meta">
+            <span>${m.time || ''}</span>
+            ${statusHtml}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Older messages button state
+    const loadOlderBox = document.getElementById('chat-load-older-container');
+    if (loadOlderBox) {
+      loadOlderBox.style.display = messages.length >= 25 ? 'block' : 'none';
+    }
 
     msgContainer.scrollTop = msgContainer.scrollHeight;
   }
 
-  // Send message
+  function handlePartnerTyping(name, isTyping) {
+    const indicator = document.getElementById('chat-typing-indicator');
+    const nameEl = document.getElementById('chat-typing-name');
+    const statusText = document.getElementById('chat-partner-status-text');
+
+    if (!indicator) return;
+
+    if (isTyping) {
+      if (nameEl) nameEl.textContent = name;
+      indicator.style.display = 'inline-flex';
+      if (statusText) {
+        statusText.textContent = 'Typing...';
+        statusText.style.color = 'var(--primary-crimson)';
+      }
+      clearTimeout(chatPartnerTypingTimer);
+      chatPartnerTypingTimer = setTimeout(() => {
+        indicator.style.display = 'none';
+        if (statusText) {
+          statusText.textContent = '● Online';
+          statusText.style.color = '#059669';
+        }
+      }, 3500);
+    } else {
+      indicator.style.display = 'none';
+      if (statusText) {
+        statusText.textContent = '● Online';
+        statusText.style.color = '#059669';
+      }
+    }
+  }
+
+  // User chat actions
+  window.selectChatConversation = (convId) => {
+    if (activeChatSubscription && window.SupaChat) {
+      window.SupaChat.unsubscribeChatChannel();
+      activeChatSubscription = null;
+    }
+    renderChat(convId);
+  };
+
+  window.handleChatSearch = (query) => {
+    chatSearchQuery = query;
+    renderChatInbox();
+  };
+
+  window.syncChatInbox = async () => {
+    if (window.Store.syncConversationsWithBackend) {
+      await window.Store.syncConversationsWithBackend();
+    }
+    renderChatInbox();
+    showToast('Conversations refreshed.');
+  };
+
+  window.handleChatAttachment = (input) => {
+    const file = input.files && input.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file (PNG, JPG, WebP).');
+      input.value = '';
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image size exceeds 5MB limit.');
+      input.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      chatCurrentAttachment = {
+        dataUrl: e.target.result,
+        name: file.name,
+        size: file.size
+      };
+
+      const previewBox = document.getElementById('chat-attachment-preview');
+      if (previewBox) {
+        previewBox.innerHTML = `
+          <img src="${chatCurrentAttachment.dataUrl}" style="width:36px; height:36px; object-fit:cover; border-radius:6px; border:1px solid var(--border-color);">
+          <span style="font-size:0.8rem; font-weight:600; color:var(--obsidian);">${file.name}</span>
+          <button type="button" class="btn btn-ghost btn-xs" onclick="window.removeChatAttachment()" style="margin-left:auto; color:#ef4444;">✕ Remove</button>
+        `;
+        previewBox.style.display = 'flex';
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  window.removeChatAttachment = () => {
+    chatCurrentAttachment = null;
+    const input = document.getElementById('chat-file-input');
+    if (input) input.value = '';
+    const previewBox = document.getElementById('chat-attachment-preview');
+    if (previewBox) previewBox.style.display = 'none';
+  };
+
+  window.retryMessage = (msgId) => {
+    window.Store.retryFailedMessage(activeChatConversationId, msgId);
+    const conv = window.Store.state.conversations.find(c => c.id === activeChatConversationId);
+    renderChatMessages(conv);
+  };
+
+  window.loadOlderMessages = async () => {
+    const conv = window.Store.state.conversations.find(c => c.id === activeChatConversationId);
+    if (!conv || !conv.messages || conv.messages.length === 0) return;
+
+    const oldest = conv.messages[0];
+    if (!oldest || !oldest.created_at) return;
+
+    const btn = document.getElementById('btn-load-older-messages');
+    if (btn) btn.textContent = 'Loading...';
+
+    if (window.SupaChat && typeof window.SupaChat.fetchMessages === 'function') {
+      const res = await window.SupaChat.fetchMessages(conv.id, { limit: 20, beforeCursor: oldest.created_at });
+      if (res && res.success && res.data && res.data.length > 0) {
+        const currentUser = window.Store.state.currentUser;
+        const olderFormatted = res.data.map(m => ({
+          id: m.id,
+          clientMessageId: m.client_message_id,
+          conversation_id: conv.id,
+          sender: m.sender_id === currentUser.id ? 'mine' : 'theirs',
+          sender_id: m.sender_id,
+          text: m.content || m.text,
+          content: m.content || m.text,
+          attachments: m.attachments || [],
+          time: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          created_at: m.created_at,
+          status: m.status || 'sent'
+        }));
+
+        conv.messages = [...olderFormatted, ...conv.messages];
+        window.Store.saveState();
+        renderChatMessages(conv);
+      } else {
+        const loadOlderBox = document.getElementById('chat-load-older-container');
+        if (loadOlderBox) loadOlderBox.style.display = 'none';
+      }
+    }
+
+    if (btn) btn.textContent = '↑ Load Older Messages';
+  };
+
+  window.startChatFromListing = (listingId) => {
+    if (!listingId) {
+      navigate('chat');
+      return;
+    }
+
+    const listing = window.Store.state.listings.find(l => l.id === listingId);
+    if (!listing) {
+      navigate('chat');
+      return;
+    }
+
+    const currentUser = window.Store.state.currentUser;
+    const sellerId = listing.seller_id || (listing.seller && listing.seller.id);
+
+    if (sellerId && currentUser && (sellerId === currentUser.id || (currentUser.enrollment && listing.seller?.enrollment === currentUser.enrollment))) {
+      showCampusToast('This is your own listing. You cannot chat with yourself.', 'warning');
+      return;
+    }
+
+    const res = window.Store.createOrFindConversation(sellerId || 'ea7fbb68-db0b-43e8-92b1-297bfde7f92b', listing.id);
+    if (res && res.conversation) {
+      navigate('chat', res.conversation.id);
+    } else {
+      navigate('chat');
+    }
+  };
+
+  // Send message event wiring
   const btnSendMessage = document.getElementById('btn-send-chat-msg');
   const chatInput = document.getElementById('chat-msg-input');
   if (btnSendMessage && chatInput) {
     const handleSend = () => {
       const txt = chatInput.value.trim();
-      if (!txt) return;
-      window.Store.sendMessage(activeChatConversationId, txt);
+      const hasAttachment = Boolean(chatCurrentAttachment);
+      if (!txt && !hasAttachment) return;
+
+      const attachments = chatCurrentAttachment ? [{
+        url: chatCurrentAttachment.dataUrl,
+        name: chatCurrentAttachment.name,
+        type: 'image'
+      }] : [];
+
+      const clientMsgId = 'cmsg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+      window.Store.sendMessage(activeChatConversationId, txt, window.Store.state.currentUser, {
+        clientMessageId: clientMsgId,
+        attachments: attachments
+      });
+
+      // Clear input and attachment
       chatInput.value = '';
-      renderChat(activeChatConversationId);
+      window.removeChatAttachment();
+
+      // Clear typing indicator signal
+      if (window.SupaChat && window.SupaChat.sendTypingIndicator) {
+        window.SupaChat.sendTypingIndicator(activeChatConversationId, {
+          userId: window.Store.state.currentUser.id,
+          userName: window.Store.state.currentUser.name,
+          isTyping: false
+        });
+      }
+
+      // Optimistic instant re-render
+      const currentConv = window.Store.state.conversations.find(c => c.id === activeChatConversationId);
+      renderChatMessages(currentConv);
+      renderChatInbox();
     };
 
     btnSendMessage.addEventListener('click', handleSend);
     chatInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') handleSend();
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleSend();
+      }
+    });
+
+    // Debounced typing indicator broadcast
+    chatInput.addEventListener('input', () => {
+      if (window.SupaChat && window.SupaChat.sendTypingIndicator) {
+        window.SupaChat.sendTypingIndicator(activeChatConversationId, {
+          userId: window.Store.state.currentUser.id,
+          userName: window.Store.state.currentUser.name,
+          isTyping: true
+        });
+
+        clearTimeout(chatTypingTimer);
+        chatTypingTimer = setTimeout(() => {
+          window.SupaChat.sendTypingIndicator(activeChatConversationId, {
+            userId: window.Store.state.currentUser.id,
+            userName: window.Store.state.currentUser.name,
+            isTyping: false
+          });
+        }, 2500);
+      }
     });
   }
 
@@ -4150,6 +4593,42 @@
     initSupabaseSession();
     initCreateListingImageHandlers();
     renderLanding();
+
+    // Initial Chat Sync & Navigation Badge
+    updateChatNavBadge();
+    if (window.Store.syncConversationsWithBackend) {
+      window.Store.syncConversationsWithBackend();
+    }
+
+    // Global Store Listener for Chat events
+    window.Store.subscribe((event) => {
+      if (!event) return;
+      if (['new_message', 'message_sent', 'message_failed', 'new_realtime_message', 'conversation_read', 'conversations_synced'].includes(event.type)) {
+        updateChatNavBadge();
+        if (currentRoute === 'chat') {
+          renderChatInbox();
+        }
+      }
+    });
+
+    // Global Inbox Listener for Realtime Notifications when on other screens
+    if (window.SupaChat && typeof window.SupaChat.subscribeToUserInbox === 'function') {
+      const curUser = window.Store.state.currentUser;
+      if (curUser && curUser.id && curUser.id !== 'user-guest') {
+        window.SupaChat.subscribeToUserInbox(curUser.id, (payload) => {
+          if (payload && payload.new && payload.new.conversation_id) {
+            const convId = payload.new.conversation_id;
+            const isInsideConv = (currentRoute === 'chat' && activeChatConversationId === convId);
+            if (!isInsideConv) {
+              window.Store.addRealtimeMessage(convId, payload.new, curUser.id);
+              updateChatNavBadge();
+              const snippet = (payload.new.content || 'Sent a message').substr(0, 38);
+              showCampusToast(`💬 New Message: "${snippet}"`, 'info');
+            }
+          }
+        });
+      }
+    }
 
     // Support initial route from URL hash if provided (#home, #marketplace, #resources, etc.)
     const initialHash = window.location.hash ? window.location.hash.replace(/^#/, '') : '';
