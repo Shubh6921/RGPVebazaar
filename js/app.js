@@ -3309,6 +3309,8 @@
       navigate('landing');
       showToast('Signed out of campus session.');
     }
+  };
+
   // =========================================================================
   // CAMPUS ADMIN & CLUB PRESIDENT MANAGEMENT SYSTEM
   // =========================================================================
