@@ -17,9 +17,10 @@ $res2 = Invoke-RestMethod -Uri "https://jjcmiubasrvubfrkystv.supabase.co/rest/v1
 Write-Host "`nTest 2 - Invalid Enrollment (0101FAKE9999):" -ForegroundColor Cyan
 Write-Host ($res2 | ConvertTo-Json -Depth 4)
 
-# Test 4: Check Electronics student (AADITYA SINGH RATHOD)
-$body4 = '{"p_enrollment":"0101EC261001"}'
-$res4 = Invoke-RestMethod -Uri "https://jjcmiubasrvubfrkystv.supabase.co/rest/v1/rpc/check_enrollment" -Method Post -Headers $headers -Body $body4
-Write-Host "`nTest 4 - Valid Enrollment (0101EC261001):" -ForegroundColor Cyan
-Write-Host ($res4 | ConvertTo-Json -Depth 4)
+# Test 5: Check Electronics student (AMAN HATILE - 0101EC261018)
+$body5 = '{"p_enrollment":"0101EC261018"}'
+$res5 = Invoke-RestMethod -Uri "https://jjcmiubasrvubfrkystv.supabase.co/rest/v1/rpc/check_enrollment" -Method Post -Headers $headers -Body $body5
+Write-Host "`nTest 5 - Valid Enrollment (0101EC261018):" -ForegroundColor Cyan
+Write-Host ($res5 | ConvertTo-Json -Depth 4)
+
 
