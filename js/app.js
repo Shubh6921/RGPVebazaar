@@ -756,7 +756,7 @@
                     <span style="font-size:0.75rem; color:var(--text-secondary);">${r.uploadDate || 'Recent'}</span>
                   </div>
                   <h4 style="font-size:1.15rem; font-family:var(--font-display); margin-bottom:0.4rem;">${r.title}</h4>
-                  <p style="font-size:0.85rem; color:var(--text-secondary); line-height:1.45;">${r.uploadedBy.name} · ${r.branch} Sem ${r.semester} · ${r.pages} pages</p>
+                  <p style="font-size:0.85rem; color:var(--text-secondary); line-height:1.45;">${(r.uploadedBy && r.uploadedBy.name) ? r.uploadedBy.name : 'Verified Student'} · ${r.branch} Sem ${r.semester} · ${r.pages} pages</p>
                 </div>
                 <div style="padding-top:1rem; border-top:1px solid var(--border-light); font-size:0.82rem; font-weight:600; color:var(--primary-crimson); display:flex; align-items:center; justify-content:space-between;">
                   <span>View Verified Document</span>
@@ -794,7 +794,7 @@
                     <span class="badge-verified">${ICONS.check} Verified Student</span>
                   </div>
                   <h4 style="font-size:1.15rem; font-family:var(--font-display); margin-bottom:0.4rem;">${exchItem.title}</h4>
-                  <p style="font-size:0.85rem; color:var(--text-secondary); line-height:1.45;">${exchItem.seller.name}: ${exchItem.exchangeWish || 'Available for barter swap'}</p>
+                  <p style="font-size:0.85rem; color:var(--text-secondary); line-height:1.45;">${(exchItem.seller && exchItem.seller.name) ? exchItem.seller.name : 'Student'}: ${exchItem.exchangeWish || 'Available for barter swap'}</p>
                 </div>
                 <div style="padding-top:1rem; border-top:1px solid var(--border-light); font-size:0.82rem; font-weight:600; color:var(--primary-crimson); display:flex; align-items:center; justify-content:space-between;">
                   <span>Propose Exchange</span>
@@ -853,7 +853,7 @@
               </div>
               <div class="product-card-footer">
                 <div class="product-seller-info">
-                  <span class="badge-verified">${ICONS.check} ${item.seller.name.split(' ')[0]}</span>
+                  <span class="badge-verified">${ICONS.check} ${((item.seller && item.seller.name) ? item.seller.name : 'Student').split(' ')[0]}</span>
                   <span class="product-location">${ICONS.mapPin} ${item.meetupLocation}</span>
                 </div>
               </div>
@@ -894,7 +894,7 @@
               </div>
             </div>
             <div class="resource-footer">
-              <span class="badge-verified">${ICONS.check} ${res.uploadedBy.name}</span>
+              <span class="badge-verified">${ICONS.check} ${(res.uploadedBy && res.uploadedBy.name) ? res.uploadedBy.name : 'Verified Student'}</span>
               <button class="btn btn-sm btn-secondary">View / Download</button>
             </div>
           </div>
@@ -1995,11 +1995,11 @@
               <span>${r.pages} pgs (${r.fileSize})</span>
             </div>
             <p style="font-size:0.85rem; color:var(--text-secondary); line-height:1.45; margin-bottom:1.25rem;">
-              ${r.description.substring(0, 110)}...
+              ${(r.description || '').substring(0, 110)}...
             </p>
           </div>
           <div class="resource-footer">
-            <span class="badge-verified">${ICONS.check} ${r.uploadedBy.name}</span>
+            <span class="badge-verified">${ICONS.check} ${(r.uploadedBy && r.uploadedBy.name) ? r.uploadedBy.name : 'Verified Student'}</span>
             <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); window.openResourceViewerModal('${r.id}')">
               ${ICONS.download} View / Download
             </button>
@@ -2577,13 +2577,16 @@
     }
   });
 
-  // Set up listeners for routing
-  document.querySelectorAll('[data-route]').forEach(el => {
-    el.addEventListener('click', (e) => {
+  // Set up listeners for routing (desktop navbar, mobile navigation, and any [data-route] elements)
+  document.addEventListener('click', (e) => {
+    const navTarget = e.target.closest('[data-route]');
+    if (navTarget) {
       e.preventDefault();
-      const r = el.getAttribute('data-route');
-      navigate(r);
-    });
+      const r = navTarget.getAttribute('data-route');
+      if (r) {
+        navigate(r);
+      }
+    }
   });
 
   // Set up marketplace filter inputs
@@ -2783,14 +2786,37 @@
     }
   };
 
-  // Initialize
-  syncNavHeader();
-  initGlobalSearch();
-  initSupabaseSession();
-  initCreateListingImageHandlers();
-  renderLanding();
+  // Initialize Application
+  function initializeApp() {
+    syncNavHeader();
+    initGlobalSearch();
+    initSupabaseSession();
+    initCreateListingImageHandlers();
+    renderLanding();
 
-  // If user navigated directly or defaults
-  navigate('landing');
-});
+    // Support initial route from URL hash if provided (#home, #marketplace, #resources, etc.)
+    const initialHash = window.location.hash ? window.location.hash.replace(/^#/, '') : '';
+    const validRoutes = ['landing', 'home', 'marketplace', 'resources', 'opportunities', 'profile', 'chat', 'verify'];
+    if (initialHash && validRoutes.includes(initialHash)) {
+      navigate(initialHash);
+    } else {
+      navigate('landing');
+    }
+  }
+
+  // Support browser hash change
+  window.addEventListener('hashchange', () => {
+    const hashRoute = window.location.hash ? window.location.hash.replace(/^#/, '') : '';
+    const validRoutes = ['landing', 'home', 'marketplace', 'resources', 'opportunities', 'profile', 'chat', 'verify'];
+    if (hashRoute && validRoutes.includes(hashRoute) && hashRoute !== currentRoute) {
+      navigate(hashRoute, null, false);
+    }
+  });
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeApp);
+  } else {
+    initializeApp();
+  }
+})();
 

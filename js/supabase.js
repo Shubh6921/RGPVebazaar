@@ -293,7 +293,7 @@ window.SupaAuth = {
 
         // Ensure browser client establishes authenticated Supabase Auth session with auth.uid()
         try {
-          const email = norm.toLowerCase() + '@rgpv.campus';
+          const email = norm.toLowerCase() + '@rgpv.ac.in';
           const { data: authData, error: authErr } = await client.auth.signInWithPassword({
             email: email,
             password: 'RgpvVerified2026!'
